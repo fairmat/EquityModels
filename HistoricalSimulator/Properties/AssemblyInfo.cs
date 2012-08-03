@@ -23,7 +23,7 @@ using Mono.Addins;
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
 [assembly: AssemblyTitle("Historical Simulator")]
-[assembly: AssemblyDescription("Simulate future realizations of underlying asset using "+
+[assembly: AssemblyDescription("Simulate future realizations of underlying asset using " +
                                "historical stock realizations.")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Fairmat SRL")]
@@ -57,5 +57,5 @@ using Mono.Addins;
 [assembly: Addin("Historical Simulator", "1.0", Category = "Stochastic Process")]
 [assembly: AddinDependency("Fairmat", "1.0")]
 [assembly: AddinAuthor("Fairmat SRL")]
-[assembly: AddinDescription("Simulate future realizations of underlying asset using "+
+[assembly: AddinDescription("Simulate future realizations of underlying asset using " +
                             "historical stock realizations.")]
