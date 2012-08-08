@@ -26,5 +26,9 @@ namespace HistoricalSimulator
         /// Translates historical realizations forward starting from the start date.
         /// </summary>
         TranslateHistoricalRealizationsForward = 0,
+		/// <summary>
+		/// Simulate using historical increments
+		/// </summary>
+		Bootstrap=1,
     }
 }

@@ -60,6 +60,12 @@ namespace HistoricalSimulator
         /// </summary>
         [NonSerialized]
         private List<Tuple<DateTime, Vector>> fileContent;
+
+		/// <summary>
+		/// memorize information for implementing bootstrap 
+		/// </summary>
+		[NonSerialized]
+		private Bootstrap bootstrap;
         #endregion // Fields
 
         #region Properties
@@ -83,6 +89,8 @@ namespace HistoricalSimulator
 
         #endregion // Properties
 
+
+
         #region Constructors
         /// <summary>
         /// Initializes the object.
@@ -105,18 +113,28 @@ namespace HistoricalSimulator
         /// <param name="outDynamic">Where the dynamic should be written.</param>
         public void Simulate(double[] dates, IReadOnlyMatrixSlice noise, IMatrixSlice outDynamic)
         {
-            for (int i = 0; i < dates.Length; i++)
-            {
-                int dateIndex;
-                if (!this.simulationDateIndexes.TryGetValue(dates[i], out dateIndex))
-                    dateIndex = 0;
+			switch(OperatingMode)
+			{
+			 case OperatingMode.TranslateHistoricalRealizationsForward:
 
-                Tuple<DateTime, Vector> value = this.fileContent[dateIndex];
-                for (int j = 0; j < value.Item2.Length - 1; j++)
-                {
-                    outDynamic[i, j] = value.Item2[j];
-                }
-            }
+	            for (int i = 0; i < dates.Length; i++)
+	            {
+	                int dateIndex;
+	                if (!this.simulationDateIndexes.TryGetValue(dates[i], out dateIndex))
+	                    dateIndex = 0;
+
+	                Tuple<DateTime, Vector> value = this.fileContent[dateIndex];
+	                for (int j = 0; j < value.Item2.Length - 1; j++)
+	                {
+	                    outDynamic[i, j] = value.Item2[j];
+	                }
+	            }
+				break;
+				case OperatingMode.Bootstrap:
+					bootstrap.Simulate(dates,outDynamic);
+				break;
+			}
+
         }
         #endregion // IFullSimulator implementation
 
@@ -198,7 +216,6 @@ namespace HistoricalSimulator
                             data[j] = DoubleHelper.FromString(lineTokens[j + 1]);
                         }
 
-                        Vector v = new Vector(data);
                         this.fileContent.Add(new Tuple<DateTime, Vector>(date, new Vector(data)));
                     }
 
@@ -244,6 +261,11 @@ namespace HistoricalSimulator
             {
                 this.fileContent = null;
             }
+
+			//after reading the input, do the other initializations if needed
+			if(OperatingMode== OperatingMode.Bootstrap)
+				this.bootstrap= new Bootstrap(fileContent);
+
         }
 
         /// <summary>
