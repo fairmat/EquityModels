@@ -52,6 +52,9 @@
       <HintPath>..\..\DVPLReferences\DVPLDOME.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="CoreExtensions">
+      <HintPath>..\..\DVPLReferences\CoreExtensions.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />

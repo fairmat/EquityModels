@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using DVPLI;
+using DVPLDOM;
 
 namespace Dupire
 {
@@ -19,7 +20,7 @@ namespace Dupire
 	/// Implements Dupire local volatiltiy model simulation
 	/// </summary>
 	[Serializable]
-    public class Dupire:  IExtensibleProcess, IParsable,IMarkovSimulator
+    public class Dupire: IExtensibleProcess, IParsable, IMarkovSimulator
     {
 		[SettingDescription("S0")]
 		public IModelParameter s0;//scalar
@@ -30,8 +31,11 @@ namespace Dupire
 		public IModelParameter localVol;//2d function
 
 		[NonSerialized] private DupireContext context;
-
-
+		[NonSerialized] private double[] mu;
+		[NonSerialized] private Function rFunc;
+		[NonSerialized] private Function qFunc;
+		[NonSerialized] private PFunction2D.PFunction2D localVolFunc;
+		[NonSerialized] private double[] simDates;
 
         public Dupire ()
         {
@@ -83,6 +87,16 @@ namespace Dupire
         public void Setup(double[] simulationDates)
         {
 			//todo: creates context class 
+			mu = new double[simulationDates.Length];
+			double[] zr = new double[simulationDates.Length];
+			for (int i = 0; i < simulationDates.Length; i++)
+				zr[i] = ZR(simulationDates[i]);
+			for (int i = 0; i < simulationDates.Length - 1; i++)
+				mu[i] = ( zr[i + 1] * simulationDates[i + 1] - zr[i] * simulationDates[i] )
+					/ (simulationDates[i + 1] - simulationDates[i]);
+			mu[simulationDates.Length - 1] = mu[simulationDates.Length - 2];
+			simDates = simulationDates;
+			// la superficie della local vol va precalcolata?
         }
 
         /// <summary>
@@ -128,17 +142,17 @@ namespace Dupire
 		#region IMarkovSimulator implementation
 		public unsafe void a (int i, double* x, double* a)
 		{
-			throw new System.NotImplementedException ();
+			a[0] = mu[i] - 0.5 * localVolFunc.Evaluate(simDates[i], x[0]);
 		}
 
 		public unsafe void b (int i, double* x, double* b)
 		{
-			throw new System.NotImplementedException ();
+			b[0] = localVolFunc.Evaluate(simDates[i], x[0]);
 		}
 
 		public void isLog (ref bool[] isLog)
 		{
-			isLog[0]=true;
+			isLog[0] = true;
 		}
 
 		public DynamicInfo DynamicInfo {
@@ -153,6 +167,10 @@ namespace Dupire
 			}
 		}
 		#endregion
+		double ZR(double t)
+		{
+			return ( rFunc.Evaluate(t) - qFunc.Evaluate(t) );
+		}
     }
 }
 
