@@ -43,12 +43,6 @@ namespace HistoricalSimulator
         private static char[] elementSeparators = new char[] { ' ', ';', '\t' };
 
         /// <summary>
-        /// A buffered copy of the lines of the file.
-        /// </summary>
-        [NonSerialized]
-        private string[] fileLines;
-
-        /// <summary>
         /// The starting index representing the entry point of the file.
         /// </summary>
         [NonSerialized]
@@ -60,6 +54,18 @@ namespace HistoricalSimulator
         /// </summary>
         [NonSerialized]
         private Dictionary<double, int> simulationDateIndexes;
+
+        /// <summary>
+        /// Contains the list of mappings in the file between the date and the array of values.
+        /// </summary>
+        [NonSerialized]
+        private List<Tuple<DateTime, Vector>> fileContent;
+
+		/// <summary>
+		/// memorize information for implementing bootstrap 
+		/// </summary>
+		[NonSerialized]
+		private Bootstrap bootstrap;
         #endregion // Fields
 
         #region Properties
@@ -83,6 +89,8 @@ namespace HistoricalSimulator
 
         #endregion // Properties
 
+
+
         #region Constructors
         /// <summary>
         /// Initializes the object.
@@ -105,18 +113,28 @@ namespace HistoricalSimulator
         /// <param name="outDynamic">Where the dynamic should be written.</param>
         public void Simulate(double[] dates, IReadOnlyMatrixSlice noise, IMatrixSlice outDynamic)
         {
-            for (int i = 0; i < dates.Length; i++)
-            {
-                int dateIndex;
-                if (!this.simulationDateIndexes.TryGetValue(dates[i], out dateIndex))
-                    dateIndex = 0;
+			switch(OperatingMode)
+			{
+			 case OperatingMode.TranslateHistoricalRealizationsForward:
 
-                string[] lineTokens = this.fileLines[dateIndex].Split(HistoricalSimulator.elementSeparators);
-                for (int j = 0; j < lineTokens.Length - 1; j++)
-                {
-                    outDynamic[i, j] = DoubleHelper.FromString(lineTokens[j + 1]);
-                }
-            }
+	            for (int i = 0; i < dates.Length; i++)
+	            {
+	                int dateIndex;
+	                if (!this.simulationDateIndexes.TryGetValue(dates[i], out dateIndex))
+	                    dateIndex = 0;
+
+	                Tuple<DateTime, Vector> value = this.fileContent[dateIndex];
+	                for (int j = 0; j < value.Item2.Length - 1; j++)
+	                {
+	                    outDynamic[i, j] = value.Item2[j];
+	                }
+	            }
+				break;
+				case OperatingMode.Bootstrap:
+					bootstrap.Simulate(dates,outDynamic);
+				break;
+			}
+
         }
         #endregion // IFullSimulator implementation
 
@@ -170,11 +188,11 @@ namespace HistoricalSimulator
                 if (File.Exists(FilePath))
                 {
                     // Store the lines of the file
-                    this.fileLines = File.ReadAllLines(FilePath)
-                                         .Where(s => s != string.Empty)
-                                         .ToArray();
+                    string[] fileLines = File.ReadAllLines(FilePath)
+                                             .Where(s => s != string.Empty)
+                                             .ToArray();
 
-                    List<string> tmpList = new List<string>(this.fileLines);
+                    List<string> tmpList = new List<string>(fileLines);
                     tmpList.Sort((s1, s2) =>
                                  {
                                      string d1String = s1.Split(HistoricalSimulator.elementSeparators)[0];
@@ -184,14 +202,28 @@ namespace HistoricalSimulator
 
                                      return d1.CompareTo(d2);
                                  });
-                    this.fileLines = tmpList.ToArray();
+                    fileLines = tmpList.ToArray();
+
+                    // Use the file lines in order to get the file content
+                    this.fileContent = new List<Tuple<DateTime, Vector>>();
+                    for (int i = 0; i < fileLines.Length; i++)
+                    {
+                        string[] lineTokens = fileLines[i].Split(HistoricalSimulator.elementSeparators);
+                        DateTime date = DateTime.Parse(lineTokens[0]);
+                        double[] data = new double[lineTokens.Length - 1];
+                        for (int j = 0; j < data.Length; j++)
+                        {
+                            data[j] = DoubleHelper.FromString(lineTokens[j + 1]);
+                        }
+
+                        this.fileContent.Add(new Tuple<DateTime, Vector>(date, new Vector(data)));
+                    }
 
                     // Calculate the entry point in the file (the index of the starting line)
                     DateTime nearestDate = DateTime.Now.Date;
-                    for (int i = 0; i < this.fileLines.Length; i++)
+                    for (int i = 0; i < this.fileContent.Count; i++)
                     {
-                        string[] lineTokens = this.fileLines[i].Split(HistoricalSimulator.elementSeparators);
-                        DateTime date = DateTime.Parse(lineTokens[0]);
+                        DateTime date = this.fileContent[i].Item1;
                         if (i == 0)
                             nearestDate = date;
                         else
@@ -203,10 +235,9 @@ namespace HistoricalSimulator
 
                     // Calculate the list of dates in the file
                     List<DateTime> dateList = new List<DateTime>();
-                    for (int i = 0; i < this.fileLines.Length; i++)
+                    for (int i = 0; i < this.fileContent.Count; i++)
                     {
-                        string[] lineTokens = this.fileLines[i].Split(HistoricalSimulator.elementSeparators);
-                        DateTime date = DateTime.Parse(lineTokens[0]);
+                        DateTime date = this.fileContent[i].Item1;
                         dateList.Add(date);
                     }
 
@@ -224,12 +255,17 @@ namespace HistoricalSimulator
                     }
                 }
                 else
-                    this.fileLines = null;
+                    this.fileContent = null;
             }
             catch
             {
-                this.fileLines = null;
+                this.fileContent = null;
             }
+
+			//after reading the input, do the other initializations if needed
+			if(OperatingMode== OperatingMode.Bootstrap)
+				this.bootstrap= new Bootstrap(fileContent);
+
         }
 
         /// <summary>

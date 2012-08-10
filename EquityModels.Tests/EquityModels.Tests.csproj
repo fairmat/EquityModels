@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>10.0.0</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{E056296C-95D8-4A2B-A228-83B5FB28A1BD}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <RootNamespace>EquityModels.Tests</RootNamespace>
+    <AssemblyName>EquityModels.Tests</AssemblyName>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug</OutputPath>
+    <DefineConstants>DEBUG;</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <ConsolePause>false</ConsolePause>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>none</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Release</OutputPath>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <ConsolePause>false</ConsolePause>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="nunit.framework">
+      <HintPath>..\..\DVPLReferences\nunit.framework.dll</HintPath>
+    </Reference>
+    <Reference Include="DVPLI">
+      <HintPath>..\..\DVPLReferences\DVPLI.dll</HintPath>
+    </Reference>
+    <Reference Include="DVPLInterfaces">
+      <HintPath>..\..\DVPLReferences\DVPLInterfaces.dll</HintPath>
+    </Reference>
+    <Reference Include="Mono.Addins">
+      <HintPath>..\..\DVPLReferences\Mono.Addins.dll</HintPath>
+    </Reference>
+    <Reference Include="DVPLSolverC">
+      <HintPath>..\..\DVPLReferences\DVPLSolverC.dll</HintPath>
+    </Reference>
+    <Reference Include="DVPLDOM">
+      <HintPath>..\..\DVPLReferences\DVPLDOM.dll</HintPath>
+    </Reference>
+    <Reference Include="DVPLDOME">
+      <HintPath>..\..\DVPLReferences\DVPLDOME.dll</HintPath>
+    </Reference>
+    <Reference Include="CoreExtensions">
+      <HintPath>..\..\DVPLReferences\CoreExtensions.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="AssemblyInfo.cs" />
+    <Compile Include="Dupire\DupireCalibration.cs" />
+    <Compile Include="Dupire\DupireSimulation.cs" />
+  </ItemGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+  <ItemGroup>
+    <ProjectReference Include="..\Dupire\Dupire.csproj">
+      <Project>{1458DF4A-CE48-4010-B123-7DDD00F4B194}</Project>
+      <Name>Dupire</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Dupire\" />
+  </ItemGroup>
+</Project>
