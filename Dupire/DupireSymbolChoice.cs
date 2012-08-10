@@ -42,7 +42,7 @@ namespace Dupire
         /// <returns>A reference to a new IEditable instance.</returns>
         public IEditable CreateInstance()
         {
-            return new StochasticProcessExtendible(null, new Dupire());
+            return new StochasticProcessExtendible(null, new DupireProcess());
         }
         #endregion // IEditableChoice implementation
     }

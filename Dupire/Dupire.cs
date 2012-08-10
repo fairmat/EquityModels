@@ -20,7 +20,7 @@ namespace Dupire
 	/// Implements Dupire local volatiltiy model simulation
 	/// </summary>
 	[Serializable]
-    public class Dupire: IExtensibleProcess, IParsable, IMarkovSimulator, IEstimationResultPopulable
+    public class DupireProcess: IExtensibleProcess, IParsable, IMarkovSimulator, IEstimationResultPopulable
     {
 		[SettingDescription("S0")]
 		public IModelParameter s0;//scalar
@@ -38,7 +38,7 @@ namespace Dupire
 		[NonSerialized] private PFunction2D.PFunction2D localVolFunc;
 		[NonSerialized] private double[] simDates;
 
-        public Dupire ()
+        public DupireProcess ()
         {
         }
 
@@ -178,9 +178,17 @@ namespace Dupire
 		{
 			bool found;
 			s0 = new ModelParameter(PopulateHelper.GetValue("S0", Estimate.Names, Estimate.Values, out found), s0.Description );
-			r = Estimate.Objects[0] as DVPLI.IModelParameter;
-			q = Estimate.Objects[1] as DVPLI.IModelParameter;
-			localVol = Estimate.Objects[2] as DVPLI.IModelParameter;
+			PFunction rFunc = Estimate.Objects[0] as PFunction;
+			PFunction rFuncDest = r.fVRef() as PFunction;
+			rFuncDest.Expr = rFunc.Expr;
+			
+			PFunction qFunc = Estimate.Objects[0] as PFunction;
+			PFunction qFuncDest = q.fVRef() as PFunction;
+			qFuncDest.Expr = qFunc.Expr;
+
+			PFunction2D.PFunction2D localVolSrc = Estimate.Objects[2] as PFunction2D.PFunction2D;
+			PFunction2D.PFunction2D localVolDest= localVol.fVRef() as PFunction2D.PFunction2D;
+			localVolDest.Expr = localVolSrc.Expr;
 		}
 		#endregion
     }
