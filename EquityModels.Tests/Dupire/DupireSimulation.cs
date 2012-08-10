@@ -1,5 +1,5 @@
-/* Copyright (C) 2009-2012 Fairmat SRL (info@fairmat.com, http://www.fairmat.com/)
- * Author(s): Michele Furgeri ()
+/* Copyright (C) 2012 Fairmat SRL (info@fairmat.com, http://www.fairmat.com/)
+ * Author(s): 
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
@@ -20,11 +20,11 @@ using System.Collections.Generic;
 using System.Text;
 using DVPLDOM;
 using DVPLI;
+using DVPLSolver;
 using DVPLUtils;
+using Fairmat.Finance;
 using Mono.Addins;
 using NUnit.Framework;
-using DVPLSolver;
-using Fairmat.Finance;
 
 namespace Dupire
 {
