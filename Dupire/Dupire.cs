@@ -20,12 +20,13 @@ namespace Dupire
 	/// Implements Dupire local volatiltiy model simulation
 	/// </summary>
 	[Serializable]
-    public class Dupire: IExtensibleProcess, IParsable, IMarkovSimulator
+    public class Dupire: IExtensibleProcess, IParsable, IMarkovSimulator, IEstimationResultPopulable
     {
 		[SettingDescription("S0")]
 		public IModelParameter s0;//scalar
-		[SettingDescription("Forwarding Risk Free Rate (Zr)")]
+		[SettingDescription("Time Dependent Risk Free Rate (Zero Rate)")]
 		public IModelParameter r;//1d function
+		[SettingDescription("Time Dependent Continuous Dividend Yield")]
 		public IModelParameter q;//1d function
 		[SettingDescription("Local Volatility")]
 		public IModelParameter localVol;//2d function
@@ -171,6 +172,17 @@ namespace Dupire
 		{
 			return ( rFunc.Evaluate(t) - qFunc.Evaluate(t) );
 		}
+
+		#region IEstimationResultPopulable implementation
+		void IEstimationResultPopulable.Populate (IStochasticProcess Container, EstimationResult Estimate)
+		{
+			bool found;
+			s0 = new ModelParameter(PopulateHelper.GetValue("S0", Estimate.Names, Estimate.Values, out found), s0.Description );
+			r = Estimate.Objects[0] as DVPLI.IModelParameter;
+			q = Estimate.Objects[1] as DVPLI.IModelParameter;
+			localVol = Estimate.Objects[2] as DVPLI.IModelParameter;
+		}
+		#endregion
     }
 }
 

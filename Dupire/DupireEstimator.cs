@@ -57,7 +57,7 @@ namespace Dupire
 					y = Math.Log( locVolStr[j] / Hdataset.S0 ) + integral;
 					den = System.Math.Pow( 1.0 - x[1] * y * dSigmadk / sigma , 2) + x[1] * sigma * x[0] *
 						( dSigmadk - 0.25 * x[1] * sigma * x[0] * dSigmadk * dSigmadk + x[1] * impVol.Partial2(x, 1) );
-					locVolMatrix[i,j] = 0;
+					locVolMatrix[i,j] = Math.Sqrt( num / den );
 				}
 			}
 			
