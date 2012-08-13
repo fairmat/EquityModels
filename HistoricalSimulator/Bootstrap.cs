@@ -36,9 +36,14 @@ namespace HistoricalSimulator
 	   internal void CreateReturnSamples(List<Tuple<DateTime,Vector>> samples)
        {
             returns = new Vector[samples.Count-1];
-            for(int z=1;z<samples.Count;z++)
-                returns[z]=  Vector.Log( samples[z].Item2/samples[z-1].Item2);
-         
+            for (int z = 1; z < samples.Count; z++)
+            {
+                //finds normalization coefficent
+                
+                TimeSpan delta = samples[z].Item1 - samples[z-1].Item1;
+                double dt = delta.TotalDays / 365;
+                returns[z - 1] = Vector.Log(samples[z].Item2 / samples[z - 1].Item2) / dt;
+            }
        }
 
        internal void Simulate(double[] dates,IMatrixSlice outDynamic)
@@ -50,11 +55,12 @@ namespace HistoricalSimulator
             //assumes equispaced dates, otherwise we can normalize returns
             for(int i=1;i<dates.Length;i++)
             {
+                double dt = dates[i] - dates[i - 1];
                 //select a vector of returns
                 double u=Engine.Generator.Uniform();
                 int z =  (int)(u*returns.Length);
                 for(int c=0;c<C;c++)
-                    outDynamic[i,c]=outDynamic[i-1,c]*Math.Exp (returns[z][c]);
+                    outDynamic[i,c]=outDynamic[i-1,c]*Math.Exp (returns[z][c]*dt);
             }
        }
 
