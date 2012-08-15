@@ -1,5 +1,5 @@
 /* Copyright (C) 2012 Fairmat SRL (info@fairmat.com, http://www.fairmat.com/)
- * Author(s): 
+ * Author(s):
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
@@ -40,19 +40,19 @@ namespace Dupire
             Mono.Addins.AddinManager.Registry.ResetConfiguration();
             Mono.Addins.AddinManager.Registry.Update(new Mono.Addins.ConsoleProgressStatus(6));
 
-			//setup fake credentials for fairmat.com
-			//FairmatEstimateDB.FairmatComIntegration credentials = DVPLI.UserSettings.GetSettings(typeof(FairmatEstimateDB.FairmatComIntegration)) as FairmatEstimateDB.FairmatComIntegration;
-			//credentials.Username ="a@b.com";
-			//credentials.Password = new DVPLI.Password("12345");
-			DVPLI.Engine.Parser.NewContext();
+            //setup fake credentials for fairmat.com
+            //FairmatEstimateDB.FairmatComIntegration credentials = DVPLI.UserSettings.GetSettings(typeof(FairmatEstimateDB.FairmatComIntegration)) as FairmatEstimateDB.FairmatComIntegration;
+            //credentials.Username ="a@b.com";
+            //credentials.Password = new DVPLI.Password("12345");
+            DVPLI.Engine.Parser.NewContext();
         }
-        
+
         [Test]
         public void TestCalibration()
         {
-			
-			Assert.AreEqual(0,0);
-		}
-	}
+
+            Assert.AreEqual(0,0);
+        }
+    }
 }
 
