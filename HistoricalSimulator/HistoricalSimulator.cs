@@ -61,11 +61,11 @@ namespace HistoricalSimulator
         [NonSerialized]
         private List<Tuple<DateTime, Vector>> fileContent;
 
-		/// <summary>
-		/// memorize information for implementing bootstrap 
-		/// </summary>
-		[NonSerialized]
-		private Bootstrap bootstrap;
+        /// <summary>
+        /// Memorizes information for implementing bootstrap.
+        /// </summary>
+        [NonSerialized]
+        private Bootstrap bootstrap;
         #endregion // Fields
 
         #region Properties
@@ -89,8 +89,6 @@ namespace HistoricalSimulator
 
         #endregion // Properties
 
-
-
         #region Constructors
         /// <summary>
         /// Initializes the object.
@@ -103,9 +101,11 @@ namespace HistoricalSimulator
 
         #region IFullSimulator implementation
         /// <summary>
-        /// Simulate a realization of the stochastic process driven by the noise matrix noise
-        /// this function is called once for realization.
+        /// Simulate a realization of the stochastic process driven by the noise matrix noise.
         /// </summary>
+        /// <remarks>
+        /// This function is called once for realization.
+        /// </remarks>
         /// <param name="dates">
         /// The dates (in years fractions) at which the process must be simulated.
         /// </param>
@@ -113,28 +113,28 @@ namespace HistoricalSimulator
         /// <param name="outDynamic">Where the dynamic should be written.</param>
         public void Simulate(double[] dates, IReadOnlyMatrixSlice noise, IMatrixSlice outDynamic)
         {
-			switch(OperatingMode)
-			{
-			 case OperatingMode.TranslateHistoricalRealizationsForward:
+            switch (OperatingMode)
+            {
+                case OperatingMode.TranslateHistoricalRealizationsForward:
 
-	            for (int i = 0; i < dates.Length; i++)
-	            {
-	                int dateIndex;
-	                if (!this.simulationDateIndexes.TryGetValue(dates[i], out dateIndex))
-	                    dateIndex = 0;
+                    for (int i = 0; i < dates.Length; i++)
+                    {
+                        int dateIndex;
+                        if (!this.simulationDateIndexes.TryGetValue(dates[i], out dateIndex))
+                            dateIndex = 0;
 
-	                Tuple<DateTime, Vector> value = this.fileContent[dateIndex];
-	                for (int j = 0; j < value.Item2.Length - 1; j++)
-	                {
-	                    outDynamic[i, j] = value.Item2[j];
-	                }
-	            }
-				break;
-				case OperatingMode.Bootstrap:
-					bootstrap.Simulate(dates,outDynamic);
-				break;
-			}
+                        Tuple<DateTime, Vector> value = this.fileContent[dateIndex];
+                        for (int j = 0; j < value.Item2.Length - 1; j++)
+                        {
+                            outDynamic[i, j] = value.Item2[j];
+                        }
+                    }
 
+                    break;
+                case OperatingMode.Bootstrap:
+                    this.bootstrap.Simulate(dates, outDynamic);
+                    break;
+            }
         }
         #endregion // IFullSimulator implementation
 
@@ -262,10 +262,9 @@ namespace HistoricalSimulator
                 this.fileContent = null;
             }
 
-			//after reading the input, do the other initializations if needed
-			if(OperatingMode== OperatingMode.Bootstrap)
-				this.bootstrap= new Bootstrap(fileContent);
-
+            // After reading the input, do the other initializations, if needed.
+            if (OperatingMode == OperatingMode.Bootstrap)
+                this.bootstrap = new Bootstrap(this.fileContent);
         }
 
         /// <summary>

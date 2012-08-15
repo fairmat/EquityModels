@@ -21,50 +21,59 @@ using DVPLI;
 
 namespace HistoricalSimulator
 {
-	/// <summary>
-	/// Implements simulation by bootstrapping historical data
-	/// </summary>
+    /// <summary>
+    /// Implements simulation by bootstrapping historical data.
+    /// </summary>
     internal class Bootstrap
     {
-		Vector[] returns;
+        private Vector[] returns;
 
-		internal Bootstrap(List<Tuple<DateTime,Vector>> samples)
-		{
-			CreateReturnSamples(samples);
-		}
-        //this can be done in setup
-	   internal void CreateReturnSamples(List<Tuple<DateTime,Vector>> samples)
-       {
-            returns = new Vector[samples.Count-1];
+        internal Bootstrap(List<Tuple<DateTime, Vector>> samples)
+        {
+            CreateReturnSamples(samples);
+        }
+
+        // This could be done in setup.
+        internal void CreateReturnSamples(List<Tuple<DateTime, Vector>> samples)
+        {
+            this.returns = new Vector[samples.Count - 1];
             for (int z = 1; z < samples.Count; z++)
             {
-                //finds normalization coefficent
-                
-                TimeSpan delta = samples[z].Item1 - samples[z-1].Item1;
+                // Finds normalization coefficient.
+                TimeSpan delta = samples[z].Item1 - samples[z - 1].Item1;
                 double dt = delta.TotalDays / 365;
-                returns[z - 1] = Vector.Log(samples[z].Item2 / samples[z - 1].Item2) / dt;
+                this.returns[z - 1] = Vector.Log(samples[z].Item2 / samples[z - 1].Item2) / dt;
             }
-       }
+        }
 
-       internal void Simulate(double[] dates,IMatrixSlice outDynamic)
-       {
-            int C= returns[0].Length;//number of components
-            for(int c=0;c<C;c++)
-                outDynamic[0,c]=1;
+        /// <summary>
+        /// Simulate a realization of the stochastic process by bootstrapping historical data.
+        /// </summary>
+        /// <remarks>
+        /// This function is called once for realization.
+        /// </remarks>
+        /// <param name="dates">
+        /// The dates (in years fractions) at which the process must be simulated.
+        /// </param>
+        /// <param name="outDynamic">Where the dynamic should be written.</param>
+        internal void Simulate(double[] dates, IMatrixSlice outDynamic)
+        {
+            // Number of components.
+            int components = this.returns[0].Length;
+            for (int c = 0; c < components; c++)
+                outDynamic[0, c] = 1;
 
-            //assumes equispaced dates, otherwise we can normalize returns
-            for(int i=1;i<dates.Length;i++)
+            // Assumes equispaced dates, otherwise we can normalize returns.
+            for (int i = 1; i < dates.Length; i++)
             {
                 double dt = dates[i] - dates[i - 1];
-                //select a vector of returns
-                double u=Engine.Generator.Uniform();
-                int z =  (int)(u*returns.Length);
-                for(int c=0;c<C;c++)
-                    outDynamic[i,c]=outDynamic[i-1,c]*Math.Exp (returns[z][c]*dt);
+
+                // Selects a vector of returns.
+                double u = Engine.Generator.Uniform();
+                int z = (int)(u * this.returns.Length);
+                for (int c = 0; c < components; c++)
+                    outDynamic[i, c] = outDynamic[i - 1, c] * Math.Exp(this.returns[z][c] * dt);
             }
-       }
-
+        }
     }
-
 }
-
