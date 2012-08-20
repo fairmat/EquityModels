@@ -24,6 +24,7 @@ using DVPLSolver;
 using DVPLUtils;
 using Mono.Addins;
 using NUnit.Framework;
+using Fairmat.MarketData;
 
 namespace Dupire
 {
@@ -50,7 +51,18 @@ namespace Dupire
         [Test]
         public void TestCalibration()
         {
-
+            
+            InterestRateMarketData IData = InterestRateMarketData.FromFile("../../../../../svn/fairmatplugins/TestData/InterestRatesModels/28-06-2012-EU-close.xml");
+            CallPriceMarketData HData = CallPriceMarketData.FromFile("../../../../../svn/fairmatplugins/TestData/Heston/28062012-SX5E_Index-HestonData.xml");
+            
+            List<object> l = new List<object>();
+            l.Add(IData);
+            l.Add(HData);
+   
+            DupireEstimator DE = new DupireEstimator();
+            Console.WriteLine("TestCalibration ok1");
+            EstimationResult res = DE.Estimate(l, null);
+            Console.WriteLine("TestCalibration ok2");
             Assert.AreEqual(0,0);
         }
     }
