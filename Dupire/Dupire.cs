@@ -50,9 +50,9 @@ namespace Dupire
 
         [NonSerialized] private DupireContext context;
         [NonSerialized] private double[] mu;
-        [NonSerialized] private Function rFunc;
-        [NonSerialized] private Function qFunc;
-        [NonSerialized] private PFunction2D.PFunction2D localVolFunc;
+        //[NonSerialized] private Function rFunc;
+        //[NonSerialized] private Function qFunc;
+        //[NonSerialized] private PFunction2D.PFunction2D localVolFunc;
         [NonSerialized] private double[] simDates;
 
         public DupireProcess ()
@@ -113,8 +113,9 @@ namespace Dupire
                 mu[i] = ( zr[i + 1] * simulationDates[i + 1] - zr[i] * simulationDates[i] )
                     / (simulationDates[i + 1] - simulationDates[i]);
             mu[simulationDates.Length - 1] = mu[simulationDates.Length - 2];
-            simDates = simulationDates;
+            this.simDates = simulationDates;
             // la superficie della local vol va precalcolata?
+            
         }
 
         /// <summary>
@@ -153,19 +154,34 @@ namespace Dupire
         /// <returns>true if the the parsing caused errors; otherwise false.</returns>
         public bool Parse(IProject context)
         {
-            return false;
+            
+            bool errors=false;
+            errors=s0.Parse(context);
+            errors=BoolHelper.AddBool(errors,  q.Parse(context));
+            errors = BoolHelper.AddBool(errors, r.Parse(context));
+            errors=BoolHelper.AddBool(errors,localVol.Parse(context));
+            
+            this.context = new DupireContext();
+            this.context.s0 = s0.fV();
+            this.context.q = q.fVRef() as IFunction;
+            this.context.r = r.fVRef() as IFunction;
+            this.context.localVol = localVol.fVRef() as IFunction;
+            
+            return errors;
         }
         #endregion // IParsable implementation
 
         #region IMarkovSimulator implementation
         public unsafe void a (int i, double* x, double* a)
         {
-            a[0] = mu[i] - 0.5 * localVolFunc.Evaluate(simDates[i], x[0]);
+            a[0] = mu[i];
+            
+            a[0]-=0.5 * context.localVol.Evaluate(simDates[i], x[0]);
         }
 
         public unsafe void b (int i, double* x, double* b)
         {
-            b[0] = localVolFunc.Evaluate(simDates[i], x[0]);
+            b[0] = context.localVol.Evaluate(simDates[i], x[0]);
         }
 
         public void isLog (ref bool[] isLog)
@@ -187,7 +203,7 @@ namespace Dupire
         #endregion
         double ZR(double t)
         {
-            return ( rFunc.Evaluate(t) - qFunc.Evaluate(t) );
+            return ( context.r.Evaluate(t) - context.q.Evaluate(t) );
         }
 
         #region IEstimationResultPopulable implementation

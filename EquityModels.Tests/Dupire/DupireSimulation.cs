@@ -70,12 +70,10 @@ namespace Dupire
             double volatility = 0.2;
             double S0 = 100;
 
-            ModelParameter Pstrike = new ModelParameter(strike, "strike");
-            Pstrike.VarName = "strike";
+            ModelParameter Pstrike = new ModelParameter(strike, "","strike");
             rov.Symbols.Add(Pstrike);
 
-            ModelParameter PS0 = new ModelParameter(S0, "S0");
-            Pstrike.VarName = "S0";
+            ModelParameter PS0 = new ModelParameter(S0, "","S0");
             rov.Symbols.Add(PS0);
 
             AFunction payoff = new AFunction(rov);
@@ -124,13 +122,14 @@ namespace Dupire
             rov.NMethods.Technology = ETechType.T_SIMULATION;
             rov.NMethods.PathsNumber = n_sim;
             rov.NMethods.SimulationSteps = n_steps;
+
+           
             ROVSolver solver = new ROVSolver();
             solver.BindToProject(rov);
             solver.DoValuation(-1);
             if (rov.HasErrors)
             {
-                Console.WriteLine("rov.HasErrors = " + rov.HasErrors);
-                Console.WriteLine("Errore = " + rov.m_RuntimeErrorList[0]);
+                rov.DisplayErrors();
             }
             Assert.IsFalse(rov.HasErrors);
             ResultItem price = rov.m_ResultList[0] as ResultItem;
