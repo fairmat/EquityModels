@@ -95,6 +95,7 @@ namespace Dupire
             qfunc.m_IndependentVariables = 1;
             qfunc.m_Value = (RightValue) dy;
             rov.Symbols.Add(qfunc);
+			
             AFunction volfunc = new AFunction(rov);
             volfunc.VarName = "localvol";
             volfunc.m_IndependentVariables = 2;
@@ -126,8 +127,11 @@ namespace Dupire
             ROVSolver solver = new ROVSolver();
             solver.BindToProject(rov);
             solver.DoValuation(-1);
-            Console.WriteLine("rov.HasErrors = " + rov.HasErrors);
-            Console.WriteLine("Errore = " + rov.m_RuntimeErrorList[0]);
+            if (rov.HasErrors)
+            {
+                Console.WriteLine("rov.HasErrors = " + rov.HasErrors);
+                Console.WriteLine("Errore = " + rov.m_RuntimeErrorList[0]);
+            }
             Assert.IsFalse(rov.HasErrors);
             ResultItem price = rov.m_ResultList[0] as ResultItem;
             double SamplePrice = price.m_Value;

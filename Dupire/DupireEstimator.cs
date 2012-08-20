@@ -79,7 +79,7 @@ namespace Dupire
             }
 
             //create dupire outputs
-            PFunction2D.PFunction2D localVol = new PFunction2D.PFunction2D(null);
+            PFunction2D.PFunction2D localVol = new PFunction2D.PFunction2D();
             //localVol.
 
 
