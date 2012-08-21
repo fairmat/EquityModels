@@ -40,21 +40,22 @@ namespace Dupire
 
         public EstimationResult Estimate (System.Collections.Generic.List<object> MarketData, IEstimationSettings settings)
         {
-            Console.WriteLine("Estimate:");
             InterestRateMarketData Mdataset = (InterestRateMarketData)MarketData[0];
             CallPriceMarketData Hdataset = (CallPriceMarketData)MarketData[1];
             EquityCalibrationData HCalData = new EquityCalibrationData(Hdataset, Mdataset);
-            Console.WriteLine("Estimate ok1");
             r = new DVPLDOM.PFunction(null);
             q = new DVPLDOM.PFunction(null);
             r.Expr = (double[,]) ArrayHelper.Concat(HCalData.MaturityDY.ToArray(), HCalData.Rate.ToArray());
             q.Expr = (double[,]) ArrayHelper.Concat(HCalData.MaturityDY.ToArray(), HCalData.DividendYield.ToArray());
             PFunction2D.PFunction2D impVol = new PFunction2D.PFunction2D(Hdataset.Maturity, Hdataset.Strike, Hdataset.Volatility);
+            impVol.Parse(null);
+            r.Parse(null);
+            q.Parse(null);
             Document doc= new Document();
             ProjectROV prj= new ProjectROV(doc);
             doc.Part.Add(prj);
             prj.Symbols.Add(impVol);
-            doc.WriteToXMLFile("impVol.fair");
+            //doc.WriteToXMLFile("impVol.fair");
             
             // todo: spostare nei settings
             int nmat = 100;
@@ -67,38 +68,24 @@ namespace Dupire
             Vector x = new Vector(2);
             for (int i = 0; i < nmat; i++)
             {
-                Console.WriteLine("Estimate ok10, i = " + i);
                 integral = integrate.AdaptLobatto(0.0, locVolMat[i]);
-                Console.WriteLine("Estimate ok11, integral = " + integral);
                 for (int j = 0; j < nstrike; j++)
                 {
-                    Console.WriteLine("Estimate ok12, j = " + j);
                     x[0] = locVolMat[i];
-                    Console.WriteLine("Estimate ok13");
                     x[1] = locVolStr[j];
-                    Console.WriteLine("Estimate ok14");
-                    Console.WriteLine("x = " + x.ToString());
                     sigma = impVol.Evaluate(x);
-                    Console.WriteLine("Estimate ok15");
                     dSigmadk = impVol.Partial(x, 1);
-                    Console.WriteLine("Estimate ok16");
                     num = Math.Pow(sigma, 2) + 2.0 * sigma * x[0] *
                         ( impVol.Partial(x, 0) + ( r.Evaluate(x[0]) - q.Evaluate(x[0])) * x[1] * dSigmadk );
-                    Console.WriteLine("Estimate ok17");
                     y = Math.Log( locVolStr[j] / Hdataset.S0 ) + integral;
-                    Console.WriteLine("Estimate ok18");
                     den = System.Math.Pow( 1.0 - x[1] * y * dSigmadk / sigma , 2) + x[1] * sigma * x[0] *
                         ( dSigmadk - 0.25 * x[1] * sigma * x[0] * dSigmadk * dSigmadk + x[1] * impVol.Partial2(x, 1) );
-                    Console.WriteLine("Estimate ok19");
                     locVolMatrix[i,j] = Math.Sqrt( num / den );
-                    Console.WriteLine("Estimate ok20");
                 }
             }
 
             //create dupire outputs
             PFunction2D.PFunction2D localVol = new PFunction2D.PFunction2D();
-            //localVol.
-
 
             string[] names= new string[]{"S0"};
             Vector param = new Vector(1);
@@ -108,7 +95,6 @@ namespace Dupire
             result.Objects[0] = r;
             result.Objects[1] = q;
             result.Objects[2] = localVol;
-            Console.WriteLine("Estimate ok30");
             return result;
         }
 

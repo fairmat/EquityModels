@@ -52,17 +52,16 @@ namespace Dupire
         public void TestCalibration()
         {
             
-            InterestRateMarketData IData = InterestRateMarketData.FromFile("../../../../../svn/fairmatplugins/TestData/InterestRatesModels/28-06-2012-EU-close.xml");
-            CallPriceMarketData HData = CallPriceMarketData.FromFile("../../../../../svn/fairmatplugins/TestData/Heston/28062012-SX5E_Index-HestonData.xml");
+            InterestRateMarketData IData = InterestRateMarketData.FromFile("../../TestData/IRMD-sample.xml");
+            CallPriceMarketData HData = CallPriceMarketData.FromFile("../../TestData/CallData-sample.xml");
             
             List<object> l = new List<object>();
             l.Add(IData);
             l.Add(HData);
    
             DupireEstimator DE = new DupireEstimator();
-            Console.WriteLine("TestCalibration ok1");
             EstimationResult res = DE.Estimate(l, null);
-            Console.WriteLine("TestCalibration ok2");
+            Console.WriteLine(res.ToString());
             Assert.AreEqual(0,0);
         }
     }
