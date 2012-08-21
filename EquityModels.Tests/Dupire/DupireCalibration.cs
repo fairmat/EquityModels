@@ -52,8 +52,8 @@ namespace Dupire
         public void TestCalibration()
         {
             
-            InterestRateMarketData IData = InterestRateMarketData.FromFile("../../../../../fairmatplugins/TestData/InterestRatesModels/28-06-2012-EU-close.xml");
-            CallPriceMarketData HData = CallPriceMarketData.FromFile("../../../../../fairmatplugins/TestData/Heston/28062012-SX5E_Index-HestonData.xml");
+            InterestRateMarketData IData = InterestRateMarketData.FromFile("../../../../../svn/fairmatplugins/TestData/InterestRatesModels/28-06-2012-EU-close.xml");
+            CallPriceMarketData HData = CallPriceMarketData.FromFile("../../../../../svn/fairmatplugins/TestData/Heston/28062012-SX5E_Index-HestonData.xml");
             
             List<object> l = new List<object>();
             l.Add(IData);

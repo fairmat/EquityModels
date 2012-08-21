@@ -51,7 +51,6 @@ namespace Dupire
         [Test]
         public void TestSimulation()
         {
-            Console.WriteLine("Inizio Test");
             // this test compares the price of a call option optained through monte carlo simulation
             // of a Dupire model with constant local volatility with the Black-Scholes price
 
@@ -61,12 +60,12 @@ namespace Dupire
             ProjectROV rov = new ProjectROV(doc);
             doc.Part.Add(rov);
             doc.DefaultProject.NMethods.m_UseAntiteticPaths = true;
-            int n_sim = 100;
-            int n_steps = 256;
+            int n_sim = 5000;
+            int n_steps = 512;
             double strike = 90.0;
             double maturity = 2.0;
-            double rate = 0.1;
-            double dy = 0.07;
+            double rate = 0.05;
+            double dy = 0.0;
             double volatility = 0.2;
             double S0 = 100;
 
@@ -123,7 +122,6 @@ namespace Dupire
             rov.NMethods.PathsNumber = n_sim;
             rov.NMethods.SimulationSteps = n_steps;
 
-           
             ROVSolver solver = new ROVSolver();
             solver.BindToProject(rov);
             solver.DoValuation(-1);
@@ -137,7 +135,7 @@ namespace Dupire
             double SampleDevSt = price.m_StdErr/Math.Sqrt((double) n_sim);
 
             // calculation of the theoretical value of the call
-            double ThPrice = BlackScholes.Call(rate, S0, strike, volatility, maturity); // todo: calcolare prezzo di BS
+            double ThPrice = BlackScholes.Call(rate, S0, strike, volatility, maturity);
             Console.WriteLine("Theoretical Price  = " + ThPrice.ToString());
             Console.WriteLine("Monte Carlo Price  = " + SamplePrice);
             Console.WriteLine("Standard Deviation = " + SampleDevSt.ToString());

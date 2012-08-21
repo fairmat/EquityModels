@@ -174,9 +174,7 @@ namespace Dupire
         #region IMarkovSimulator implementation
         public unsafe void a (int i, double* x, double* a)
         {
-            a[0] = mu[i];
-            
-            a[0]-=0.5 * context.localVol.Evaluate(simDates[i], x[0]);
+            a[0] = mu[i] - 0.5 * System.Math.Pow(context.localVol.Evaluate(simDates[i], x[0]), 2.0);
         }
 
         public unsafe void b (int i, double* x, double* b)
