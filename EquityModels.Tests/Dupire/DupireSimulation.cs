@@ -60,19 +60,19 @@ namespace Dupire
             ProjectROV rov = new ProjectROV(doc);
             doc.Part.Add(rov);
             doc.DefaultProject.NMethods.m_UseAntiteticPaths = true;
-            int n_sim = 5000;
+            int n_sim = 10000;
             int n_steps = 512;
             double strike = 90.0;
             double maturity = 2.0;
-            double rate = 0.05;
-            double dy = 0.0;
+            double rate = 0.1;
+            double dy = 0.05;
             double volatility = 0.2;
             double S0 = 100;
 
-            ModelParameter Pstrike = new ModelParameter(strike, "","strike");
+            ModelParameter Pstrike = new ModelParameter(strike, "", "strike");
             rov.Symbols.Add(Pstrike);
 
-            ModelParameter PS0 = new ModelParameter(S0, "","S0");
+            ModelParameter PS0 = new ModelParameter(S0, "", "S0");
             rov.Symbols.Add(PS0);
 
             AFunction payoff = new AFunction(rov);
@@ -135,13 +135,12 @@ namespace Dupire
             double SampleDevSt = price.m_StdErr/Math.Sqrt((double) n_sim);
 
             // calculation of the theoretical value of the call
-            double ThPrice = BlackScholes.Call(rate, S0, strike, volatility, maturity);
+            double ThPrice = BlackScholes.Call(rate, S0, strike, volatility, maturity, dy);
             Console.WriteLine("Theoretical Price  = " + ThPrice.ToString());
             Console.WriteLine("Monte Carlo Price  = " + SamplePrice);
             Console.WriteLine("Standard Deviation = " + SampleDevSt.ToString());
             double tol = 4.0 * SampleDevSt;
             Assert.LessOrEqual(Math.Abs(ThPrice - SamplePrice), tol);
-
         }
     }
 }

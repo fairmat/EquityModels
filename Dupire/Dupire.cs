@@ -50,9 +50,6 @@ namespace Dupire
 
         [NonSerialized] private DupireContext context;
         [NonSerialized] private double[] mu;
-        //[NonSerialized] private Function rFunc;
-        //[NonSerialized] private Function qFunc;
-        //[NonSerialized] private PFunction2D.PFunction2D localVolFunc;
         [NonSerialized] private double[] simDates;
 
         public DupireProcess ()
