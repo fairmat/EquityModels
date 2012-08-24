@@ -85,8 +85,8 @@ namespace Dupire
             }
 
             //create dupire outputs
-            PFunction2D.PFunction2D localVol = new PFunction2D.PFunction2D();
-
+            PFunction2D.PFunction2D localVol = new PFunction2D.PFunction2D(locVolMat, locVolStr, locVolMatrix);
+            localVol.Parse(null);
             string[] names= new string[]{"S0"};
             Vector param = new Vector(1);
             param[0] = Hdataset.S0;

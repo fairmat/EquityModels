@@ -96,7 +96,6 @@ namespace Dupire
             PFunction rfunc = new PFunction(rov);
             rfunc = res.Objects[0] as PFunction;
             rfunc.VarName = "r";
-            
             rov.Symbols.Add(rfunc);
 
             PFunction qfunc = new PFunction(rov);
