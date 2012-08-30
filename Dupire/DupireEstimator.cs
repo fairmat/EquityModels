@@ -60,8 +60,12 @@ namespace Dupire
             // todo: spostare nei settings
             int nmat = 100;
             int nstrike = 100;
-            Vector locVolMat = Vector.Linspace(0.0, Hdataset.Maturity[Hdataset.Maturity.Length-1], nmat);
-            Vector locVolStr = Vector.Linspace(0.0, Hdataset.Strike[Hdataset.Strike.Length-1], nstrike);
+            double lastMat = Hdataset.Maturity[Hdataset.Maturity.Length-1];
+            double lastStr = Hdataset.Strike[Hdataset.Strike.Length-1];
+            //Vector locVolMat = Vector.Linspace(lastMat / ((double) nmat), lastMat, nmat);
+            //Vector locVolStr = Vector.Linspace(lastStr / ((double) nstrike), lastStr, nstrike);
+            Vector locVolMat = Vector.Linspace(0.0, lastMat, nmat);
+            Vector locVolStr = Vector.Linspace(0.0, lastStr, nstrike);
             Matrix locVolMatrix = new Matrix(nmat,nstrike);
             Integrate integrate = new Integrate(this);
             double sigma, dSigmadk, num, y, den, integral;
@@ -69,9 +73,19 @@ namespace Dupire
             for (int i = 0; i < nmat; i++)
             {
                 integral = integrate.AdaptLobatto(0.0, locVolMat[i]);
-                for (int j = 0; j < nstrike; j++)
+
+                int j = 0;
+                x[0] = locVolMat[i];
+                x[1] = locVolStr[j];
+                sigma = impVol.Evaluate(x);
+                dSigmadk = impVol.Partial(x, 1);
+                num = Math.Pow(sigma, 2) + 2.0 * sigma * x[0] * impVol.Partial(x, 0);
+                den = 1.0;
+                locVolMatrix[i,j] = Math.Sqrt( num / den );
+                
+                // rest of the cycle
+                for (j = 1; j < nstrike; j++)
                 {
-                    x[0] = locVolMat[i];
                     x[1] = locVolStr[j];
                     sigma = impVol.Evaluate(x);
                     dSigmadk = impVol.Partial(x, 1);

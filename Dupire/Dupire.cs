@@ -88,7 +88,7 @@ namespace Dupire
         {
             get
             {
-                return new ProcessInfo("Dupire Local Volatility Model");
+                return new ProcessInfo("Dupire Local Volatility");
             }
         }
 
