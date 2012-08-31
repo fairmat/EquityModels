@@ -40,6 +40,7 @@
     <Reference Include="System" />
     <Reference Include="nunit.framework">
       <HintPath>..\..\DVPLReferences\nunit.framework.dll</HintPath>
+      <Package>mono-nunit</Package>
     </Reference>
     <Reference Include="DVPLI">
       <HintPath>..\..\DVPLReferences\DVPLI.dll</HintPath>
@@ -69,6 +70,7 @@
     <Compile Include="Dupire\DupireSimulation.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+  <ItemGroup />
   <ItemGroup>
     <ProjectReference Include="..\Dupire\Dupire.csproj">
       <Project>{1458DF4A-CE48-4010-B123-7DDD00F4B194}</Project>
@@ -79,5 +81,4 @@
       <Name>PFunction2D</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup />
 </Project>

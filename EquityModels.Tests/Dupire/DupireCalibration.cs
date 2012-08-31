@@ -64,8 +64,8 @@ namespace Dupire
             //int nmat = HData.Maturity.Length;
             //int nstrike = HData.Strike.Length;
    
-            int i = 0; // maturity
-            int j = 0; // strike
+            int i = 3; // maturity
+            int j = 3; // strike
             
             Engine.MultiThread = true;
 
