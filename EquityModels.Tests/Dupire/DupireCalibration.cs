@@ -38,15 +38,7 @@ namespace Dupire
         [SetUp]
         public void Init()
         {
-            DVPLI.PluginsManager.Init();
-            Mono.Addins.AddinManager.Registry.ResetConfiguration();
-            Mono.Addins.AddinManager.Registry.Update(new Mono.Addins.ConsoleProgressStatus(6));
-
-            //setup fake credentials for fairmat.com
-            //FairmatEstimateDB.FairmatComIntegration credentials = DVPLI.UserSettings.GetSettings(typeof(FairmatEstimateDB.FairmatComIntegration)) as FairmatEstimateDB.FairmatComIntegration;
-            //credentials.Username ="a@b.com";
-            //credentials.Password = new DVPLI.Password("12345");
-            DVPLI.Engine.Parser.NewContext();
+            TestCommon.TestInitialization.CommonInitialization();
         }
 
         [Test]
