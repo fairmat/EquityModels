@@ -23,6 +23,7 @@ using Fairmat.Math;
 
 namespace Dupire
 {
+    [Mono.Addins.Extension("/Fairmat/Estimator")]
     public class DupireEstimator:IEstimator, IIntegrable
     {
         public DupireEstimator ()
@@ -115,7 +116,7 @@ namespace Dupire
 
         public Type ProvidesTo {
             get {
-                throw new System.NotImplementedException ();
+                return typeof(Dupire.DupireProcess);
             }
         }
         #endregion

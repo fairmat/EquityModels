@@ -217,6 +217,7 @@ namespace Dupire
             PFunction2D.PFunction2D localVolSrc = Estimate.Objects[2] as PFunction2D.PFunction2D;
             PFunction2D.PFunction2D localVolDest= localVol.fVRef() as PFunction2D.PFunction2D;
             localVolDest.Expr = localVolSrc.Expr;
+            localVolDest.Interpolation = localVolSrc.Interpolation;
         }
         #endregion
     }
