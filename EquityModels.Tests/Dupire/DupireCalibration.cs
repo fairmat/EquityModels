@@ -17,20 +17,17 @@
 
 using System;
 using System.Collections.Generic;
-using System.Text;
 using DVPLDOM;
 using DVPLI;
 using DVPLSolver;
-using DVPLUtils;
-using Mono.Addins;
-using NUnit.Framework;
-using Fairmat.MarketData;
 using Fairmat.Finance;
+using Fairmat.MarketData;
+using NUnit.Framework;
 
 namespace Dupire
 {
     /// <summary>
-    /// Tests Dupire model calibration
+    /// Tests Dupire model calibration.
     /// </summary>
     [TestFixture]
     public class TestDupireCalibration
@@ -46,19 +43,19 @@ namespace Dupire
         {
             InterestRateMarketData IData = InterestRateMarketData.FromFile("../../TestData/IRMD-sample.xml");
             CallPriceMarketData HData = CallPriceMarketData.FromFile("../../TestData/CallData-sample.xml");
-            
+
             List<object> l = new List<object>();
             l.Add(IData);
             l.Add(HData);
-   
+
             DupireEstimator DE = new DupireEstimator();
             EstimationResult res = DE.Estimate(l, null);
             //int nmat = HData.Maturity.Length;
             //int nstrike = HData.Strike.Length;
-   
+
             int i = 3; // maturity
             int j = 3; // strike
-            
+
             Engine.MultiThread = true;
 
             Document doc = new Document();
@@ -68,23 +65,23 @@ namespace Dupire
             int n_sim = 10000;
             int n_steps = 512;
             double strike = HData.Strike[j];
-            double volatility = HData.Volatility[i,j];
+            double volatility = HData.Volatility[i, j];
             double maturity = HData.Maturity[i];
 
-            ModelParameter Pstrike = new ModelParameter(strike, "","strike");
+            ModelParameter Pstrike = new ModelParameter(strike, string.Empty, "strike");
             rov.Symbols.Add(Pstrike);
 
             AFunction payoff = new AFunction(rov);
             payoff.VarName = "payoff";
             payoff.m_IndependentVariables = 1;
-            payoff.m_Value =(RightValue) ("max(x1 - strike ; 0)");
+            payoff.m_Value = (RightValue)("max(x1 - strike ; 0)");
             rov.Symbols.Add(payoff);
-   
+
             bool found;
             double S0 = PopulateHelper.GetValue("S0", res.Names, res.Values, out found);
-            ModelParameter PS0 = new ModelParameter(S0, "", "S0");
+            ModelParameter PS0 = new ModelParameter(S0, string.Empty, "S0");
             rov.Symbols.Add(PS0);
-            
+
             PFunction rfunc = new PFunction(rov);
             rfunc = res.Objects[0] as PFunction;
             rfunc.VarName = "r";
@@ -94,30 +91,30 @@ namespace Dupire
             qfunc = res.Objects[1] as PFunction;
             qfunc.VarName = "q";
             rov.Symbols.Add(qfunc);
-            
+
             PFunction2D.PFunction2D volfunc = new PFunction2D.PFunction2D(rov);
             volfunc = res.Objects[2] as PFunction2D.PFunction2D;
             volfunc.VarName = "localvol";
             rov.Symbols.Add(volfunc);
 
             DupireProcess process = new DupireProcess();
-            process.s0 = (ModelParameter) "S0";
-            process.r = (ModelParameter) "@r";
-            process.q = (ModelParameter) "@q";
-            process.localVol = (ModelParameter) "@localvol";
+            process.s0 = (ModelParameter)"S0";
+            process.r = (ModelParameter)"@r";
+            process.q = (ModelParameter)"@q";
+            process.localVol = (ModelParameter)"@localvol";
             double rate = rfunc.Evaluate(maturity);
             double dy = qfunc.Evaluate(maturity);
 
             StochasticProcessExtendible s = new StochasticProcessExtendible(rov, process);
             rov.Processes.AddProcess(s);
 
-            //discounting
+            // Set the discounting.
             RiskFreeInfo rfi = rov.GetDiscountingModel() as RiskFreeInfo;
             rfi.ActualizationType = EActualizationType.RiskFree;
             rfi.m_deterministicRF = rate;
             OptionTree op = new OptionTree(rov);
             op.PayoffInfo.PayoffExpression = "payoff(v1)";
-            op.PayoffInfo.Timing.EndingTime.m_Value = (RightValue) maturity;
+            op.PayoffInfo.Timing.EndingTime.m_Value = (RightValue)maturity;
             op.PayoffInfo.European = true;
             rov.Map.Root = op;
 
@@ -132,10 +129,11 @@ namespace Dupire
             {
                 rov.DisplayErrors();
             }
+
             Assert.IsFalse(rov.HasErrors);
             ResultItem price = rov.m_ResultList[0] as ResultItem;
             double SamplePrice = price.m_Value;
-            double SampleDevSt = price.m_StdErr/Math.Sqrt((double) n_sim);
+            double SampleDevSt = price.m_StdErr / Math.Sqrt((double)n_sim);
 
             // calculation of the theoretical value of the call
             double ThPrice = BlackScholes.Call(rate, S0, strike, volatility, maturity, dy);
@@ -147,4 +145,3 @@ namespace Dupire
         }
     }
 }
-

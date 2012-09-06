@@ -16,20 +16,16 @@
  */
 
 using System;
-using System.Collections.Generic;
-using System.Text;
 using DVPLDOM;
 using DVPLI;
 using DVPLSolver;
-using DVPLUtils;
 using Fairmat.Finance;
-using Mono.Addins;
 using NUnit.Framework;
 
 namespace Dupire
 {
     /// <summary>
-    /// Tests Dupire model simulation
+    /// Tests Dupire model simulation.
     /// </summary>
     [TestFixture]
     public class TestDupireSimulation
@@ -43,9 +39,9 @@ namespace Dupire
         [Test]
         public void TestSimulation()
         {
-            // this test compares the price of a call option optained through monte carlo simulation
-            // of a Dupire model with constant local volatility with the Black-Scholes price
-
+            // This test compares the price of a call option optained through monte carlo
+            // simulation of a Dupire model with constant local volatility
+            // with the Black-Scholes price.
             Engine.MultiThread = true;
 
             Document doc = new Document();
@@ -61,52 +57,52 @@ namespace Dupire
             double volatility = 0.2;
             double S0 = 100;
 
-            ModelParameter Pstrike = new ModelParameter(strike, "", "strike");
+            ModelParameter Pstrike = new ModelParameter(strike, string.Empty, "strike");
             rov.Symbols.Add(Pstrike);
 
-            ModelParameter PS0 = new ModelParameter(S0, "", "S0");
+            ModelParameter PS0 = new ModelParameter(S0, string.Empty, "S0");
             rov.Symbols.Add(PS0);
 
             AFunction payoff = new AFunction(rov);
             payoff.VarName = "payoff";
             payoff.m_IndependentVariables = 1;
-            payoff.m_Value =(RightValue) ("max(x1 - strike ; 0)");
+            payoff.m_Value = (RightValue)("max(x1 - strike ; 0)");
             rov.Symbols.Add(payoff);
 
             AFunction rfunc = new AFunction(rov);
             rfunc.VarName = "r";
             rfunc.m_IndependentVariables = 1;
-            rfunc.m_Value = (RightValue) rate;
+            rfunc.m_Value = (RightValue)rate;
             rov.Symbols.Add(rfunc);
 
             AFunction qfunc = new AFunction(rov);
             qfunc.VarName = "q";
             qfunc.m_IndependentVariables = 1;
-            qfunc.m_Value = (RightValue) dy;
+            qfunc.m_Value = (RightValue)dy;
             rov.Symbols.Add(qfunc);
-			
+
             AFunction volfunc = new AFunction(rov);
             volfunc.VarName = "localvol";
             volfunc.m_IndependentVariables = 2;
-            volfunc.m_Value = (RightValue) volatility;
+            volfunc.m_Value = (RightValue)volatility;
             rov.Symbols.Add(volfunc);
 
             DupireProcess process = new DupireProcess();
-            process.s0 = (ModelParameter) "S0";
-            process.r = (ModelParameter) "@r";
-            process.q = (ModelParameter) "@q";
-            process.localVol = (ModelParameter) "@localvol";
+            process.s0 = (ModelParameter)"S0";
+            process.r = (ModelParameter)"@r";
+            process.q = (ModelParameter)"@q";
+            process.localVol = (ModelParameter)"@localvol";
 
             StochasticProcessExtendible s = new StochasticProcessExtendible(rov, process);
             rov.Processes.AddProcess(s);
 
-            //discounting
+            // Set the discounting.
             RiskFreeInfo rfi = rov.GetDiscountingModel() as RiskFreeInfo;
             rfi.ActualizationType = EActualizationType.RiskFree;
             rfi.m_deterministicRF = rate;
             OptionTree op = new OptionTree(rov);
             op.PayoffInfo.PayoffExpression = "payoff(v1)";
-            op.PayoffInfo.Timing.EndingTime.m_Value = (RightValue) maturity;
+            op.PayoffInfo.Timing.EndingTime.m_Value = (RightValue)maturity;
             op.PayoffInfo.European = true;
             rov.Map.Root = op;
 
@@ -121,10 +117,11 @@ namespace Dupire
             {
                 rov.DisplayErrors();
             }
+
             Assert.IsFalse(rov.HasErrors);
             ResultItem price = rov.m_ResultList[0] as ResultItem;
             double SamplePrice = price.m_Value;
-            double SampleDevSt = price.m_StdErr/Math.Sqrt((double) n_sim);
+            double SampleDevSt = price.m_StdErr / Math.Sqrt((double)n_sim);
 
             // calculation of the theoretical value of the call
             double ThPrice = BlackScholes.Call(rate, S0, strike, volatility, maturity, dy);
