@@ -180,11 +180,25 @@ namespace Dupire
             b[0] = context.localVol.Evaluate(simDates[i], x[0]);
         }
 
+        /// <summary>
+        /// Sets the passed array with a Boolean stating if the process
+        /// must be simulated as a log-normal process. In this case it's
+        /// a log-normal process so the first component is set to true.
+        /// </summary>
+        /// <param name="isLog">
+        /// A reference to the array to be set with the required information.
+        /// </param>
         public void isLog(ref bool[] isLog)
         {
             isLog[0] = true;
         }
 
+        /// <summary>
+        /// Gets details about the structure of the functions A and B of the Markov
+        /// process.
+        /// In this case drift is time dependant and not state dependant and
+        /// volatility is state and time dependent.
+        /// </summary>
         public DynamicInfo DynamicInfo
         {
             get
@@ -193,6 +207,9 @@ namespace Dupire
             }
         }
 
+        /// <summary>
+        /// Gets the starting point for the process.
+        /// </summary>
         public double[] x0
         {
             get
@@ -201,6 +218,13 @@ namespace Dupire
             }
         }
         #endregion
+
+        /// <summary>
+        /// Helper function to make functions easier to read.
+        /// Just returns the value of the zero rate at position t.
+        /// </summary>
+        /// <param name="t">The position where to get the value of the zero rate from.</param>
+        /// <returns>The value of the zero rate at position t.</returns>
         private double ZR(double t)
         {
             return (context.r.Evaluate(t) - context.q.Evaluate(t));

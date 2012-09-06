@@ -35,11 +35,25 @@ namespace Dupire
 
         #region IEstimator implementation
 
+        /// <summary>
+        /// Gets the types required by the estimator in order to work:
+        /// InterestRateMarketData and CallPriceMarketData are the
+        /// required types for this estimator.
+        /// </summary>
+        /// <param name="settings">The parameter is not used.</param>
+        /// <param name="multivariateRequest">The parameter is not used.</param>
+        /// <returns>
+        /// An array containing the types InterestRateMarketData and CallPriceMarketData.
+        /// </returns>
         public Type[] GetRequirements(IEstimationSettings settings, bool multivariateRequest)
         {
             return new Type[] { typeof(InterestRateMarketData), typeof(CallPriceMarketData) };
         }
 
+        /// <summary>
+        /// Gets the value requested by the interface ProvidesTo,
+        /// returning <see cref="Dupire.DupireProcess"/> as the type.
+        /// </summary>
         public Type ProvidesTo
         {
             get
