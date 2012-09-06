@@ -23,7 +23,7 @@ using DVPLI;
 namespace Dupire
 {
     /// <summary>
-    /// Dupire context: created after Parsing
+    /// Dupire context: created after Parsing.
     /// </summary>
     internal class DupireContext
     {
@@ -34,10 +34,10 @@ namespace Dupire
     }
 
     /// <summary>
-    /// Implements Dupire local volatiltiy model simulation
+    /// Implements Dupire local volatility model simulation.
     /// </summary>
     [Serializable]
-    public class DupireProcess: IExtensibleProcess, IParsable, IMarkovSimulator, IEstimationResultPopulable
+    public class DupireProcess : IExtensibleProcess, IParsable, IMarkovSimulator, IEstimationResultPopulable
     {
         [SettingDescription("S0")]
         public IModelParameter s0;//scalar
@@ -48,15 +48,18 @@ namespace Dupire
         [SettingDescription("Local Volatility")]
         public IModelParameter localVol;//2d function
 
-        [NonSerialized] private DupireContext context;
-        [NonSerialized] private double[] mu;
-        [NonSerialized] private double[] simDates;
+        [NonSerialized]
+        private DupireContext context;
+        [NonSerialized]
+        private double[] mu;
+        [NonSerialized]
+        private double[] simDates;
 
-        public DupireProcess ()
+        public DupireProcess()
         {
         }
 
-          #region IExtensibleProcess implementation
+        #region IExtensibleProcess implementation
         /// <summary>
         /// Gets a value indicating whether FullSimulation is implemented, in this case it does
         /// so it always returns true.
@@ -107,12 +110,11 @@ namespace Dupire
             for (int i = 0; i < simulationDates.Length; i++)
                 zr[i] = ZR(simulationDates[i]);
             for (int i = 0; i < simulationDates.Length - 1; i++)
-                mu[i] = ( zr[i + 1] * simulationDates[i + 1] - zr[i] * simulationDates[i] )
+                mu[i] = (zr[i + 1] * simulationDates[i + 1] - zr[i] * simulationDates[i])
                     / (simulationDates[i + 1] - simulationDates[i]);
             mu[simulationDates.Length - 1] = mu[simulationDates.Length - 2];
             this.simDates = simulationDates;
             // la superficie della local vol va precalcolata?
-            
         }
 
         /// <summary>
@@ -151,61 +153,64 @@ namespace Dupire
         /// <returns>true if the the parsing caused errors; otherwise false.</returns>
         public bool Parse(IProject context)
         {
-            
-            bool errors=false;
-            errors=s0.Parse(context);
-            errors=BoolHelper.AddBool(errors,  q.Parse(context));
+            bool errors = false;
+            errors = s0.Parse(context);
+            errors = BoolHelper.AddBool(errors, q.Parse(context));
             errors = BoolHelper.AddBool(errors, r.Parse(context));
-            errors=BoolHelper.AddBool(errors,localVol.Parse(context));
-            
+            errors = BoolHelper.AddBool(errors, localVol.Parse(context));
+
             this.context = new DupireContext();
             this.context.s0 = s0.fV();
             this.context.q = q.fVRef() as IFunction;
             this.context.r = r.fVRef() as IFunction;
             this.context.localVol = localVol.fVRef() as IFunction;
-            
+
             return errors;
         }
         #endregion // IParsable implementation
 
         #region IMarkovSimulator implementation
-        public unsafe void a (int i, double* x, double* a)
+        public unsafe void a(int i, double* x, double* a)
         {
             a[0] = mu[i] - 0.5 * System.Math.Pow(context.localVol.Evaluate(simDates[i], x[0]), 2.0);
         }
 
-        public unsafe void b (int i, double* x, double* b)
+        public unsafe void b(int i, double* x, double* b)
         {
             b[0] = context.localVol.Evaluate(simDates[i], x[0]);
         }
 
-        public void isLog (ref bool[] isLog)
+        public void isLog(ref bool[] isLog)
         {
             isLog[0] = true;
         }
 
-        public DynamicInfo DynamicInfo {
-            get {
-                return  new DynamicInfo(true,false,true,true);
+        public DynamicInfo DynamicInfo
+        {
+            get
+            {
+                return new DynamicInfo(true, false, true, true);
             }
         }
 
-        public double[] x0 {
-            get {
-                return  new double[]{context.s0};
+        public double[] x0
+        {
+            get
+            {
+                return new double[] { context.s0 };
             }
         }
         #endregion
-        double ZR(double t)
+        private double ZR(double t)
         {
-            return ( context.r.Evaluate(t) - context.q.Evaluate(t) );
+            return (context.r.Evaluate(t) - context.q.Evaluate(t));
         }
 
         #region IEstimationResultPopulable implementation
-        void IEstimationResultPopulable.Populate (IStochasticProcess Container, EstimationResult Estimate)
+        void IEstimationResultPopulable.Populate(IStochasticProcess Container, EstimationResult Estimate)
         {
             bool found;
-            s0 = new ModelParameter(PopulateHelper.GetValue("S0", Estimate.Names, Estimate.Values, out found), s0.Description );
+            s0 = new ModelParameter(PopulateHelper.GetValue("S0", Estimate.Names, Estimate.Values, out found), s0.Description);
             PFunction rFunc = Estimate.Objects[0] as PFunction;
             PFunction rFuncDest = r.fVRef() as PFunction;
             rFuncDest.Expr = rFunc.Expr;
@@ -215,11 +220,10 @@ namespace Dupire
             qFuncDest.Expr = qFunc.Expr;
 
             PFunction2D.PFunction2D localVolSrc = Estimate.Objects[2] as PFunction2D.PFunction2D;
-            PFunction2D.PFunction2D localVolDest= localVol.fVRef() as PFunction2D.PFunction2D;
+            PFunction2D.PFunction2D localVolDest = localVol.fVRef() as PFunction2D.PFunction2D;
             localVolDest.Expr = localVolSrc.Expr;
             localVolDest.Interpolation = localVolSrc.Interpolation;
         }
         #endregion
     }
 }
-
