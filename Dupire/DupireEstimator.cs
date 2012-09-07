@@ -1,5 +1,5 @@
 /* Copyright (C) 2012 Fairmat SRL (info@fairmat.com, http://www.fairmat.com/)
- * Author(s):
+ * Author(s): Enrico Degiuli (enrico.degiuli@fairmat.com)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
