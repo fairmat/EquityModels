@@ -119,7 +119,12 @@ namespace Dupire
                     y = Math.Log(locVolStr[j] / Hdataset.S0) + integral;
                     den = System.Math.Pow(1.0 - x[1] * y * dSigmadk / sigma, 2) + x[1] * sigma * x[0] *
                         (dSigmadk - 0.25 * x[1] * sigma * x[0] * dSigmadk * dSigmadk + x[1] * impVol.Partial2(x, 1));
-                    locVolMatrix[i, j] = Math.Sqrt(num / den);
+                    locVolMatrix[i, j] = Math.Sqrt(Math.Abs(num / den));
+                    //if (double.IsNaN(locVolMatrix[i, j]))
+                    //{
+                    //    Console.WriteLine("num = {0}, den = {1}", num, den);
+                    //    Console.WriteLine("locVolStr = {0}, locVolMat = {1}, y = {2}, dSigmadk = {3}, sigma = {4}, impvol.Partial2 = {5}", x[1], x[0], y, dSigmadk, sigma, impVol.Partial2(x,1));
+                    //}
                 }
             }
 

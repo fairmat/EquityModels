@@ -53,8 +53,8 @@ namespace Dupire
             //int nmat = HData.Maturity.Length;
             //int nstrike = HData.Strike.Length;
 
-            int i = 3; // maturity
-            int j = 3; // strike
+            int i = 5; // maturity
+            int j = 4; // strike
 
             Engine.MultiThread = true;
 
@@ -63,7 +63,7 @@ namespace Dupire
             doc.Part.Add(rov);
             doc.DefaultProject.NMethods.m_UseAntiteticPaths = true;
             int n_sim = 10000;
-            int n_steps = 512;
+            int n_steps = 500;
             double strike = HData.Strike[j];
             double volatility = HData.Volatility[i, j];
             double maturity = HData.Maturity[i];
@@ -141,7 +141,9 @@ namespace Dupire
             Console.WriteLine("Monte Carlo Price  = " + SamplePrice);
             Console.WriteLine("Standard Deviation = " + SampleDevSt.ToString());
             double tol = 4.0 * SampleDevSt;
+            doc.WriteToXMLFile("Dupire.fair");
             Assert.LessOrEqual(Math.Abs(ThPrice - SamplePrice), tol);
+
         }
     }
 }
