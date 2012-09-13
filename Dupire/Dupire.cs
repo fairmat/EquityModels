@@ -239,7 +239,7 @@ namespace Dupire
             PFunction rFuncDest = r.fVRef() as PFunction;
             rFuncDest.Expr = rFunc.Expr;
 
-            PFunction qFunc = Estimate.Objects[0] as PFunction;
+            PFunction qFunc = Estimate.Objects[1] as PFunction;
             PFunction qFuncDest = q.fVRef() as PFunction;
             qFuncDest.Expr = qFunc.Expr;
 

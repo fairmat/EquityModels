@@ -143,6 +143,8 @@ namespace Dupire
             result.Objects[0] = r;
             result.Objects[1] = q;
             result.Objects[2] = localVol;
+            Console.WriteLine("r = " + HCalData.Rate.ToString());
+            Console.WriteLine("q = " + HCalData.DividendYield.ToString());
             return result;
         }
 
