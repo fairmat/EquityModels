@@ -73,6 +73,7 @@ namespace Dupire
             q.Expr = (double[,])ArrayHelper.Concat(HCalData.MaturityDY.ToArray(), HCalData.DividendYield.ToArray());
             PFunction2D.PFunction2D impVol = new PFunction2D.PFunction2D(Hdataset.Maturity, Hdataset.Strike, Hdataset.Volatility);
             impVol.Interpolation = DVPLUtils.EInterpolationType.LEAST_SQUARES;
+            impVol.Extrapolation = DVPLUtils.ExtrapolationType.USEMODEL;
             impVol.Parse(null);
             r.Parse(null);
             q.Parse(null);
