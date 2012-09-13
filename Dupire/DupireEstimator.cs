@@ -80,7 +80,7 @@ namespace Dupire
             ProjectROV prj = new ProjectROV(doc);
             doc.Part.Add(prj);
             prj.Symbols.Add(impVol);
-            //doc.WriteToXMLFile("impVol.fair");
+            doc.WriteToXMLFile("impVol.fair");
 
             // todo: spostare nei settings
             int nmat = 100;
@@ -125,8 +125,11 @@ namespace Dupire
                     //    Console.WriteLine("num = {0}, den = {1}", num, den);
                     //    Console.WriteLine("locVolStr = {0}, locVolMat = {1}, y = {2}, dSigmadk = {3}, sigma = {4}, impvol.Partial2 = {5}", x[1], x[0], y, dSigmadk, sigma, impVol.Partial2(x,1));
                     //}
+                    Console.WriteLine("locVolMatrix[{0},{1}] = {2}, Part2 = {3}, t = {4}, S = {5}, dSigmadk = {6}, den = {7}, num = {8}, dsigma/dt = {9}", i, j, locVolMatrix[i,j], impVol.Partial2(x, 1), locVolMat[i], locVolStr[j], dSigmadk, den, num, impVol.Partial(x, 0));
                 }
             }
+
+            //Console.WriteLine("locVolMatrix = " + locVolMatrix.ToString());
 
             // Create dupire outputs.
             PFunction2D.PFunction2D localVol = new PFunction2D.PFunction2D(locVolMat, locVolStr, locVolMatrix);
