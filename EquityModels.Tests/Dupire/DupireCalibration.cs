@@ -135,7 +135,7 @@ namespace Dupire
             double samplePrice = price.m_Value;
             double sampleDevSt = price.m_StdErr / Math.Sqrt((double)n_sim);
 
-            // calculation of the theoretical value of the call
+            // Calculation of the theoretical value of the call.
             double theoreticalPrice = BlackScholes.Call(rate, S0, strike, volatility, maturity, dy);
             Console.WriteLine("Theoretical Price  = " + theoreticalPrice.ToString());
             Console.WriteLine("Monte Carlo Price  = " + samplePrice);
