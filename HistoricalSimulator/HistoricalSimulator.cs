@@ -187,7 +187,7 @@ namespace HistoricalSimulator
             {
                 if (File.Exists(FilePath))
                 {
-                    // Store the lines of the file
+                    // Store the lines of the file.
                     string[] fileLines = File.ReadAllLines(FilePath)
                                              .Where(s => s != string.Empty)
                                              .ToArray();
@@ -204,7 +204,7 @@ namespace HistoricalSimulator
                                  });
                     fileLines = tmpList.ToArray();
 
-                    // Use the file lines in order to get the file content
+                    // Use the file lines in order to get the file content.
                     this.fileContent = new List<Tuple<DateTime, Vector>>();
                     for (int i = 0; i < fileLines.Length; i++)
                     {
@@ -219,7 +219,7 @@ namespace HistoricalSimulator
                         this.fileContent.Add(new Tuple<DateTime, Vector>(date, new Vector(data)));
                     }
 
-                    // Calculate the entry point in the file (the index of the starting line)
+                    // Calculate the entry point in the file (the index of the starting line).
                     DateTime nearestDate = DateTime.Now.Date;
                     for (int i = 0; i < this.fileContent.Count; i++)
                     {
@@ -233,7 +233,7 @@ namespace HistoricalSimulator
                             this.startIndex = i;
                     }
 
-                    // Calculate the list of dates in the file
+                    // Calculate the list of dates in the file.
                     List<DateTime> dateList = new List<DateTime>();
                     for (int i = 0; i < this.fileContent.Count; i++)
                     {
@@ -244,7 +244,7 @@ namespace HistoricalSimulator
                     // Calculate for each date the line of the file to use in order the get the
                     // values. Gets the nearest date between each simulation date and the dates
                     // present in the file (if the date is before the entry point use the entry
-                    // point instead)
+                    // point instead).
                     this.simulationDateIndexes = new Dictionary<double, int>();
                     foreach (double doubleDate in simulationDates)
                     {
@@ -281,8 +281,8 @@ namespace HistoricalSimulator
                 try
                 {
                     // Use the number of columns of the first line of the file
-                    // (At the moment don't check for an equal number of elements between each
-                    // line)
+                    // (At the moment don't check for an equal number of elements
+                    // between each line).
                     if (File.Exists(FilePath))
                     {
                         string[] lines = File.ReadLines(FilePath).ToArray();
@@ -369,8 +369,8 @@ namespace HistoricalSimulator
         }
 
         /// <summary>
-        /// Gets the nearest date index to the reference date between the dates contained in the
-        /// array.
+        /// Gets the nearest date index to the reference date between
+        /// the dates contained in the array.
         /// </summary>
         /// <param name="referenceDate">The date to use as reference.</param>
         /// <param name="dates">The array of dates to use.</param>
