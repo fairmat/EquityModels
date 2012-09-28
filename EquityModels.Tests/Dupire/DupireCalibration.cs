@@ -53,8 +53,8 @@ namespace Dupire
             //int nmat = HData.Maturity.Length;
             //int nstrike = HData.Strike.Length;
 
-            int i = 5; // maturity
-            int j = 4; // strike
+            int i = 5; // Maturity.
+            int j = 4; // Strike.
 
             Engine.MultiThread = true;
 
@@ -132,18 +132,17 @@ namespace Dupire
 
             Assert.IsFalse(rov.HasErrors);
             ResultItem price = rov.m_ResultList[0] as ResultItem;
-            double SamplePrice = price.m_Value;
-            double SampleDevSt = price.m_StdErr / Math.Sqrt((double)n_sim);
+            double samplePrice = price.m_Value;
+            double sampleDevSt = price.m_StdErr / Math.Sqrt((double)n_sim);
 
             // calculation of the theoretical value of the call
-            double ThPrice = BlackScholes.Call(rate, S0, strike, volatility, maturity, dy);
-            Console.WriteLine("Theoretical Price  = " + ThPrice.ToString());
-            Console.WriteLine("Monte Carlo Price  = " + SamplePrice);
-            Console.WriteLine("Standard Deviation = " + SampleDevSt.ToString());
-            double tol = 4.0 * SampleDevSt;
+            double theoreticalPrice = BlackScholes.Call(rate, S0, strike, volatility, maturity, dy);
+            Console.WriteLine("Theoretical Price  = " + theoreticalPrice.ToString());
+            Console.WriteLine("Monte Carlo Price  = " + samplePrice);
+            Console.WriteLine("Standard Deviation = " + sampleDevSt.ToString());
+            double tol = 4.0 * sampleDevSt;
             doc.WriteToXMLFile("Dupire.fair");
-            Assert.LessOrEqual(Math.Abs(ThPrice - SamplePrice), tol);
-
+            Assert.LessOrEqual(Math.Abs(theoreticalPrice - samplePrice), tol);
         }
     }
 }

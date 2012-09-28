@@ -26,6 +26,9 @@ namespace Dupire
 {
     /// <summary>
     /// Tests Dupire model simulation.
+    /// This test compares the price of a call option obtained through Monte Carlo
+    /// simulation of a Dupire model with constant local volatility
+    /// with the Black-Scholes price.
     /// </summary>
     [TestFixture]
     public class TestDupireSimulation
@@ -39,9 +42,6 @@ namespace Dupire
         [Test]
         public void TestSimulation()
         {
-            // This test compares the price of a call option optained through monte carlo
-            // simulation of a Dupire model with constant local volatility
-            // with the Black-Scholes price.
             Engine.MultiThread = true;
 
             Document doc = new Document();
@@ -120,16 +120,16 @@ namespace Dupire
 
             Assert.IsFalse(rov.HasErrors);
             ResultItem price = rov.m_ResultList[0] as ResultItem;
-            double SamplePrice = price.m_Value;
-            double SampleDevSt = price.m_StdErr / Math.Sqrt((double)n_sim);
+            double samplePrice = price.m_Value;
+            double sampleDevSt = price.m_StdErr / Math.Sqrt((double)n_sim);
 
-            // calculation of the theoretical value of the call
-            double ThPrice = BlackScholes.Call(rate, S0, strike, volatility, maturity, dy);
-            Console.WriteLine("Theoretical Price  = " + ThPrice.ToString());
-            Console.WriteLine("Monte Carlo Price  = " + SamplePrice);
-            Console.WriteLine("Standard Deviation = " + SampleDevSt.ToString());
-            double tol = 4.0 * SampleDevSt;
-            Assert.LessOrEqual(Math.Abs(ThPrice - SamplePrice), tol);
+            // Calculation of the theoretical value of the call.
+            double theoreticalPrice = BlackScholes.Call(rate, S0, strike, volatility, maturity, dy);
+            Console.WriteLine("Theoretical Price  = " + theoreticalPrice.ToString());
+            Console.WriteLine("Monte Carlo Price  = " + samplePrice);
+            Console.WriteLine("Standard Deviation = " + sampleDevSt.ToString());
+            double tol = 4.0 * sampleDevSt;
+            Assert.LessOrEqual(Math.Abs(theoreticalPrice - samplePrice), tol);
         }
     }
 }
