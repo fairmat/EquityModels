@@ -21,6 +21,7 @@ using DVPLI;
 using Fairmat.MarketData;
 using Fairmat.Math;
 using Fairmat.Statistics;
+
 namespace Dupire
 {
     [Mono.Addins.Extension("/Fairmat/Estimator")]
@@ -62,20 +63,20 @@ namespace Dupire
             }
         }
 
-        public EstimationResult Estimate(System.Collections.Generic.List<object> MarketData, IEstimationSettings settings)
+        public EstimationResult Estimate(System.Collections.Generic.List<object> marketData, IEstimationSettings settings)
         {
-            InterestRateMarketData Mdataset = (InterestRateMarketData)MarketData[0];
-            CallPriceMarketData Hdataset = (CallPriceMarketData)MarketData[1];
+            InterestRateMarketData Mdataset = (InterestRateMarketData)marketData[0];
+            CallPriceMarketData Hdataset = (CallPriceMarketData)marketData[1];
             EquityCalibrationData HCalData = new EquityCalibrationData(Hdataset, Mdataset);
-            r = new DVPLDOM.PFunction(null);
-            q = new DVPLDOM.PFunction(null);
-            r.Expr = (double[,])ArrayHelper.Concat(HCalData.MaturityDY.ToArray(), HCalData.Rate.ToArray());
-            q.Expr = (double[,])ArrayHelper.Concat(HCalData.MaturityDY.ToArray(), HCalData.DividendYield.ToArray());
-            r.Parse(null);
-            q.Parse(null);
+            this.r = new DVPLDOM.PFunction(null);
+            this.q = new DVPLDOM.PFunction(null);
+            this.r.Expr = (double[,])ArrayHelper.Concat(HCalData.MaturityDY.ToArray(), HCalData.Rate.ToArray());
+            this.q.Expr = (double[,])ArrayHelper.Concat(HCalData.MaturityDY.ToArray(), HCalData.DividendYield.ToArray());
+            this.r.Parse(null);
+            this.q.Parse(null);
 
             IFunction impVol = FitImplVolModel(Hdataset);
-           
+
             Document doc = new Document();
             ProjectROV prj = new ProjectROV(doc);
             doc.Part.Add(prj);
@@ -115,7 +116,7 @@ namespace Dupire
                     sigma = impVol.Evaluate(x);
                     dSigmadk = impVol.Partial(x, 1);
                     num = Math.Pow(sigma, 2) + 2.0 * sigma * x[0] *
-                        (impVol.Partial(x, 0) + (r.Evaluate(x[0]) - q.Evaluate(x[0])) * x[1] * dSigmadk);
+                        (impVol.Partial(x, 0) + (this.r.Evaluate(x[0]) - this.q.Evaluate(x[0])) * x[1] * dSigmadk);
                     y = Math.Log(locVolStr[j] / Hdataset.S0) + integral;
                     den = System.Math.Pow(1.0 - x[1] * y * dSigmadk / sigma, 2) + x[1] * sigma * x[0] *
                         (dSigmadk - 0.25 * x[1] * sigma * x[0] * dSigmadk * dSigmadk + x[1] * impVol.Partial2(x, 1));
@@ -125,7 +126,7 @@ namespace Dupire
                     //    Console.WriteLine("num = {0}, den = {1}", num, den);
                     //    Console.WriteLine("locVolStr = {0}, locVolMat = {1}, y = {2}, dSigmadk = {3}, sigma = {4}, impvol.Partial2 = {5}", x[1], x[0], y, dSigmadk, sigma, impVol.Partial2(x,1));
                     //}
-                    Console.WriteLine("locVolMatrix[{0},{1}] = {2}, Part2 = {3}, t = {4}, S = {5}, dSigmadk = {6}, den = {7}, num = {8}, dsigma/dt = {9}", i, j, locVolMatrix[i,j], impVol.Partial2(x, 1), locVolMat[i], locVolStr[j], dSigmadk, den, num, impVol.Partial(x, 0));
+                    Console.WriteLine("locVolMatrix[{0},{1}] = {2}, Part2 = {3}, t = {4}, S = {5}, dSigmadk = {6}, den = {7}, num = {8}, dsigma/dt = {9}", i, j, locVolMatrix[i, j], impVol.Partial2(x, 1), locVolMat[i], locVolStr[j], dSigmadk, den, num, impVol.Partial(x, 0));
                 }
             }
 
@@ -139,8 +140,8 @@ namespace Dupire
             param[0] = Hdataset.S0;
             EstimationResult result = new EstimationResult(names, param);
             result.Objects = new object[3];
-            result.Objects[0] = r;
-            result.Objects[1] = q;
+            result.Objects[0] = this.r;
+            result.Objects[1] = this.q;
             result.Objects[2] = localVol;
             Console.WriteLine("r = " + HCalData.Rate.ToString());
             Console.WriteLine("q = " + HCalData.DividendYield.ToString());
@@ -152,20 +153,19 @@ namespace Dupire
         #region IIntegrable implementation
         double IIntegrable.IntegrandFunc(double x)
         {
-            return (q.Evaluate(x) - r.Evaluate(x));
+            return (this.q.Evaluate(x) - this.r.Evaluate(x));
         }
         #endregion
 
-
         /// <summary>
-        /// This method allows to fit the implied volatility using different models
+        /// This method allows to fit the implied volatility using different models.
         /// </summary>
         /// <param name="Hdataset"></param>
         /// <returns></returns>
         IFunction FitImplVolModel(CallPriceMarketData Hdataset)
         {
-            int model=0;
-            switch(model)
+            int model = 0;
+            switch (model)
             {
                 case 0:
                     PFunction2D.PFunction2D pf = new PFunction2D.PFunction2D(Hdataset.Maturity, Hdataset.Strike, Hdataset.Volatility);
@@ -173,39 +173,41 @@ namespace Dupire
                     pf.Extrapolation = DVPLUtils.ExtrapolationType.USEMODEL;
                     pf.Parse(null);
                     return pf;
-                break;
+                    break;
                 case 1:
 
-            //define a model for fitting the implied volatility
-            Fairmat.Statistics.LinearModel impVol = new Fairmat.Statistics.LinearModel(new Fairmat.Statistics.Predictor[]{   
-            delegate(Vector xx){return 1;},
-             delegate(Vector xx){return xx[0];},
-              delegate(Vector xx){return xx[1];},
-                delegate(Vector xx){return System.Math.Pow(xx[0],2);},
-                  delegate(Vector xx){return System.Math.Pow(xx[1],2);},
-                    delegate(Vector xx){return xx[0]*xx[1];},});
+                    //define a model for fitting the implied volatility
+                    Fairmat.Statistics.LinearModel impVol = new Fairmat.Statistics.LinearModel(
+                                                            new Fairmat.Statistics.Predictor[]{
+                                                            delegate(Vector xx){ return 1; },
+                                                            delegate(Vector xx){ return xx[0]; },
+                                                            delegate(Vector xx){ return xx[1]; },
+                                                            delegate(Vector xx){ return System.Math.Pow(xx[0], 2); },
+                                                            delegate(Vector xx){ return System.Math.Pow(xx[1], 2); },
+                                                            delegate(Vector xx){ return xx[0] * xx[1]; }, });
 
-            // Unroll matrix and coordinate vectors in order to make it suitable
-            // for the Quadratic model implementation.
-            int n = Hdataset.Volatility.R * Hdataset.Volatility.C;
-            Matrix xy = new Matrix(n, 2);
-            Vector z = new Vector(n);
-            int count = 0;
-            for (int x = 0; x < Hdataset.Volatility.R; x++)
-                for (int y = 0; y < Hdataset.Volatility.C; y++)
-                {
-                    xy[count, Range.All] = ((Matrix)new Vector() { Hdataset.Strike[x], Hdataset.Volatility[y] }).T;
-                    z[count] = Hdataset.Volatility[x, y];
-                    count++;
-                }
+                    // Unroll matrix and coordinate vectors in order to make it suitable
+                    // for the Quadratic model implementation.
+                    int n = Hdataset.Volatility.R * Hdataset.Volatility.C;
+                    Matrix xy = new Matrix(n, 2);
+                    Vector z = new Vector(n);
+                    int count = 0;
+                    for (int x = 0; x < Hdataset.Volatility.R; x++)
+                    {
+                        for (int y = 0; y < Hdataset.Volatility.C; y++)
+                        {
+                            xy[count, Range.All] = ((Matrix)new Vector() { Hdataset.Strike[x], Hdataset.Volatility[y] }).T;
+                            z[count] = Hdataset.Volatility[x, y];
+                            count++;
+                        }
+                    }
 
+                    impVol.Estimate(xy, z);
+                    return impVol;
+                    break;
+            }
 
-            impVol.Estimate(xy, z);
-            return impVol;
-            break;
-        }
             return null;
         }
-
     }
 }

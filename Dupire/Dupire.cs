@@ -37,7 +37,8 @@ namespace Dupire
     /// Implements Dupire local volatility model simulation.
     /// </summary>
     [Serializable]
-    public class DupireProcess : IExtensibleProcess, IParsable, IMarkovSimulator, IEstimationResultPopulable
+    public class DupireProcess : IExtensibleProcess, IParsable,
+                                 IMarkovSimulator, IEstimationResultPopulable
     {
         [SettingDescription("S0")]
         public IModelParameter s0;//scalar
@@ -105,14 +106,14 @@ namespace Dupire
         public void Setup(double[] simulationDates)
         {
             //todo: creates context class
-            mu = new double[simulationDates.Length];
+            this.mu = new double[simulationDates.Length];
             double[] zr = new double[simulationDates.Length];
             for (int i = 0; i < simulationDates.Length; i++)
                 zr[i] = ZR(simulationDates[i]);
             for (int i = 0; i < simulationDates.Length - 1; i++)
-                mu[i] = (zr[i + 1] * simulationDates[i + 1] - zr[i] * simulationDates[i])
+                this.mu[i] = (zr[i + 1] * simulationDates[i + 1] - zr[i] * simulationDates[i])
                     / (simulationDates[i + 1] - simulationDates[i]);
-            mu[simulationDates.Length - 1] = mu[simulationDates.Length - 2];
+            this.mu[simulationDates.Length - 1] = this.mu[simulationDates.Length - 2];
             this.simDates = simulationDates;
             // la superficie della local vol va precalcolata?
         }
@@ -154,16 +155,16 @@ namespace Dupire
         public bool Parse(IProject context)
         {
             bool errors = false;
-            errors = s0.Parse(context);
-            errors = BoolHelper.AddBool(errors, q.Parse(context));
-            errors = BoolHelper.AddBool(errors, r.Parse(context));
-            errors = BoolHelper.AddBool(errors, localVol.Parse(context));
+            errors = this.s0.Parse(context);
+            errors = BoolHelper.AddBool(errors, this.q.Parse(context));
+            errors = BoolHelper.AddBool(errors, this.r.Parse(context));
+            errors = BoolHelper.AddBool(errors, this.localVol.Parse(context));
 
             this.context = new DupireContext();
-            this.context.s0 = s0.fV();
-            this.context.q = q.fVRef() as IFunction;
-            this.context.r = r.fVRef() as IFunction;
-            this.context.localVol = localVol.fVRef() as IFunction;
+            this.context.s0 = this.s0.fV();
+            this.context.q = this.q.fVRef() as IFunction;
+            this.context.r = this.r.fVRef() as IFunction;
+            this.context.localVol = this.localVol.fVRef() as IFunction;
 
             return errors;
         }
@@ -172,12 +173,12 @@ namespace Dupire
         #region IMarkovSimulator implementation
         public unsafe void a(int i, double* x, double* a)
         {
-            a[0] = mu[i] - 0.5 * System.Math.Pow(context.localVol.Evaluate(simDates[i], x[0]), 2.0);
+            a[0] = this.mu[i] - 0.5 * System.Math.Pow(this.context.localVol.Evaluate(this.simDates[i], x[0]), 2.0);
         }
 
         public unsafe void b(int i, double* x, double* b)
         {
-            b[0] = context.localVol.Evaluate(simDates[i], x[0]);
+            b[0] = this.context.localVol.Evaluate(this.simDates[i], x[0]);
         }
 
         /// <summary>
@@ -214,7 +215,7 @@ namespace Dupire
         {
             get
             {
-                return new double[] { context.s0 };
+                return new double[] { this.context.s0 };
             }
         }
         #endregion
@@ -227,24 +228,24 @@ namespace Dupire
         /// <returns>The value of the zero rate at position t.</returns>
         private double ZR(double t)
         {
-            return (context.r.Evaluate(t) - context.q.Evaluate(t));
+            return (this.context.r.Evaluate(t) - this.context.q.Evaluate(t));
         }
 
         #region IEstimationResultPopulable implementation
-        void IEstimationResultPopulable.Populate(IStochasticProcess Container, EstimationResult Estimate)
+        void IEstimationResultPopulable.Populate(IStochasticProcess container, EstimationResult estimate)
         {
             bool found;
-            s0 = new ModelParameter(PopulateHelper.GetValue("S0", Estimate.Names, Estimate.Values, out found), s0.Description);
-            PFunction rFunc = Estimate.Objects[0] as PFunction;
-            PFunction rFuncDest = r.fVRef() as PFunction;
+            this.s0 = new ModelParameter(PopulateHelper.GetValue("S0", estimate.Names, estimate.Values, out found), this.s0.Description);
+            PFunction rFunc = estimate.Objects[0] as PFunction;
+            PFunction rFuncDest = this.r.fVRef() as PFunction;
             rFuncDest.Expr = rFunc.Expr;
 
-            PFunction qFunc = Estimate.Objects[1] as PFunction;
-            PFunction qFuncDest = q.fVRef() as PFunction;
+            PFunction qFunc = estimate.Objects[1] as PFunction;
+            PFunction qFuncDest = this.q.fVRef() as PFunction;
             qFuncDest.Expr = qFunc.Expr;
 
-            PFunction2D.PFunction2D localVolSrc = Estimate.Objects[2] as PFunction2D.PFunction2D;
-            PFunction2D.PFunction2D localVolDest = localVol.fVRef() as PFunction2D.PFunction2D;
+            PFunction2D.PFunction2D localVolSrc = estimate.Objects[2] as PFunction2D.PFunction2D;
+            PFunction2D.PFunction2D localVolDest = this.localVol.fVRef() as PFunction2D.PFunction2D;
             localVolDest.Expr = localVolSrc.Expr;
             localVolDest.Interpolation = localVolSrc.Interpolation;
         }
