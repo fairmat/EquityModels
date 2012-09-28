@@ -178,13 +178,13 @@ namespace Dupire
 
                     //define a model for fitting the implied volatility
                     Fairmat.Statistics.LinearModel impVol = new Fairmat.Statistics.LinearModel(
-                                                            new Fairmat.Statistics.Predictor[]{
-                                                            delegate(Vector xx){ return 1; },
-                                                            delegate(Vector xx){ return xx[0]; },
-                                                            delegate(Vector xx){ return xx[1]; },
-                                                            delegate(Vector xx){ return System.Math.Pow(xx[0], 2); },
-                                                            delegate(Vector xx){ return System.Math.Pow(xx[1], 2); },
-                                                            delegate(Vector xx){ return xx[0] * xx[1]; }, });
+                                                            new Fairmat.Statistics.Predictor[] {
+                                                            delegate(Vector xx) { return 1; },
+                                                            delegate(Vector xx) { return xx[0]; },
+                                                            delegate(Vector xx) { return xx[1]; },
+                                                            delegate(Vector xx) { return System.Math.Pow(xx[0], 2); },
+                                                            delegate(Vector xx) { return System.Math.Pow(xx[1], 2); },
+                                                            delegate(Vector xx) { return xx[0] * xx[1]; }, });
 
                     // Unroll matrix and coordinate vectors in order to make it suitable
                     // for the Quadratic model implementation.
