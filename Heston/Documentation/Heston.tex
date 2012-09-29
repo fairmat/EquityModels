@@ -1,0 +1,193 @@
+\newcommand{\pluginName}{Heston Model}
+\newcommand{\pluginVersion}{1.0.9}
+
+\input{../../../DocumentationTemplate/TemplateL3}
+
+\begin{document}
+
+\PluginTitle{\pluginName}{\pluginVersion}
+
+\section{Introduction}
+This plug-in implements the Heston model. Once installed the plug-in offers the possibility of using two new processes, the Heston process and the Heston time dependent drift process. The latter is a generalization of the former in which a parameter is made time dependent. For a general reference on the Heston model see \cite{Heston:ClosedFormSol}.
+
+\section{How to use the plug-in}
+
+\subsection{Heston process}
+
+In the Fairmat user interface when you create a new stochastic process you will find the additional option ``Heston''.
+
+The stochastic process is defined by the parameters shown in table below:
+\begin{center}
+\begin{tabular}{|l|c|}
+  \hline
+\textbf{Fairmat}&\textbf{Documentation}\\
+\textbf{notation}&\textbf{notation}\\
+                     \hline
+ S0     & $S_0$\\
+ V0     & $V_0$\\
+ r  & $r$\\
+ q  & $q$\\
+ k      & $k$ \\
+ theta  & $\theta$\\
+ sigma  & $\sigma$\\
+   \hline
+\end{tabular}
+\end{center}
+$S_0$ and $V_0$ are the starting values for the stock process and the volatility process, the others are parameters regulating the model dynamic.
+
+You can edit the model values shown in the table above directly on the ``Parameters'' tab of the Heston process window by double clicking on them. To set the value of the correlation parameter (called $\rho$ in the following) you have to select the Heston process in the ``Stochastic Process'' window and then click on ``Correlation''.
+
+\subsection{Heston with time dependent drift}
+
+In the Fairmat user interface when you create a new stochastic process you will find the additional option ``Heston time dependent drift''.
+
+The stochastic process is defined by the parameters shown in table below:
+\begin{center}
+\begin{tabular}{|l|c|}
+  \hline
+\textbf{Fairmat}&\textbf{Documentation}\\
+\textbf{notation}&\textbf{notation}\\
+                     \hline
+ S0     & $S_0$\\
+ V0     & $V_0$\\
+ k      & $k$ \\
+ theta  & $\theta$\\
+ sigma  & $\sigma$\\
+ zero rate curve    & $\mathrm{ZR}(t)$\\
+ dividend yield curve    & $q(t)$\\
+   \hline
+\end{tabular}
+\end{center}
+$S_0$ and $V_0$ are the starting values for the stock process and the volatility process, the others are parameters regulating the model dynamic. They are all scalar except the Drift Curve, for this parameter you have to insert a reference to a curve.
+
+You can edit the model values as in the Heston case. Remember that to specify a reference to a previous defined curve {\ttfamily mu} you have to use the notation {\ttfamily @mu}.
+
+\section{Implementation Details}
+
+The Heston model is used to describe the evolution of a stock price (or an index) with stochastic volatility. It is defined by the following stochastic differential equations
+\begin{align}
+& dS(t) = \mu S(t)dt + \sqrt{V(t)}S(t)dW_1(t)\label{eq:dsh}\\
+& dV(t) = k(\theta - V(t))dt + \sigma\sqrt{V(t)}dW_2(t)\\
+& \mathbb{E}[dW_1(t)dW_2(t)] = \rho dt
+\end{align}
+where $S$ represents the price process, $V$ represents the volatility process and $dW_1, dW_2$ are correlated Wiener processes with instantaneous correlation $\rho$.
+
+The price process follows a geometric brownian motion with a stochastic volatility while the volatility follows a square root mean reverting process. Usually $\rho$ is negative, so that a lowering in the stock price is correlated with an increase in the volatility.
+
+The parameters have the following interpretation:
+\begin{itemize}
+\item $\mu$ is the rate of return of the stock price
+\item $k$ is the speed of mean reversion
+\item $\theta$ is the mean reversion level. As $t$ grows to infinity, the expected value of $V(t)$ tends to $\theta$:
+\item $\sigma$ is the "volatility of volatility", in other words it regulates the variance of $V(t)$.
+\end{itemize}
+
+Parameters $k$, $\theta$ and $\sigma$ have to satisfy the constrain $2k\theta>\sigma^2$ (known as the Feller condition) in order to exclude the possibility for $V(t)$ to reach 0.
+
+In the case of Heston with constant drift $\mu$ is set equal to $r-q$ where $r$ is the risk free rate and $q$ is the dividend yield rate of the stock. If you use this kind of model be careful to use a constant discount with risk free rate equal to the $r$ parameter.
+
+The Heston model with time dependent drift is defined by the same stochastic differential equations with the only difference that the $\mu$ parameter is time-dependent so that equation (\ref{eq:dsh}) becomes
+\begin{equation}
+dS(t) = \mu(t) S(t)dt + \sqrt{V(t)}S(t)dW_1(t).
+\end{equation}
+In this case the function $\mu(t)$ is given by
+\begin{equation}\label{eq:mu}
+\mu(t) = \frac{d\mathrm{ZR}(t)}{dt}t + \mathrm{ZR}(t) - q(t)
+\end{equation}
+Indeed if we have to fix a time dependent deterministic short rate $r(t)$ coherent with an osbserved zero rate function $\mathrm{ZR}(t)$ we have to impose that prices of zero coupon bond are given by both expression
+\begin{equation}
+P(0,t) = e^{-\int_0^t r(s)ds} = e^{-\mathrm{ZR}(t)t}
+\end{equation}
+equating the two exponents we have
+\begin{equation}
+\int_0^t r(s)ds = \mathrm{ZR}(t)t
+\end{equation}
+and deriving this expression in $t$ gives us
+\begin{equation}
+r(t) = \frac{d\mathrm{ZR}(t)}{dt}t + \mathrm{ZR}(t).
+\end{equation}
+Given that $\mu(t) = r(t) - q(t)$ we have justified formula (\ref{eq:mu}).
+
+
+\subsection{Simulation and discretization scheme}
+
+Applying straight Euler-Maruyama method to simulate a Heston process, we obtain this formula for the volatility component
+\begin{equation}
+V_{t+1} = V_t + k(\theta - V_t)\Delta t + \sigma\sqrt{V_t}\sqrt{\Delta t} N(0,1)
+\end{equation}
+where $\Delta t = t_{n+1}-t_n$ and $N(0,1)$ represents a realization of a standard normal random variable. Even if the parameters satisfy the Feller condition it is possible for the discretized version of $V$ to reach negative values.
+
+This forces to use a different discretization scheme. In Fairmat simulations are carried out through Euler full truncation method described in \cite{HaastrechtPelsser:EffHestonSim}, characterized by the equations
+\begin{align}
+&\log(S_{t+1}) = \log(S_t) + \left(\mu_t - V_t^+/2\right)\Delta t + \sqrt{V_t^+\Delta t} N_1(0,1)\\
+&V_{t+1} = V_t + k\left(\theta - V_t^+\right)\Delta t + \sigma\sqrt{V_t^+\Delta t} N_2(0,1)\label{eq:Vdisc}
+\end{align}
+where we have used the notation $V_t^+=\max\{V_t,0\}$ and where $N_1(0,1), N_2(0,1)$ are realizations of two $\rho$-correlated standard normal random variable.
+
+Equation (\ref{eq:Vdisc}) can still generate negative values for $V$ but when this happens the next simulation step will have the diffusion term suppressed letting the drift term take the process toward positive values.
+
+This kind of discretization entails no discretization error in the stock price process simulation (with the assumption that $V_t$ remains constant in every $\Delta t$) while it does introduce a small bias in the volatility process. To reduce bias error it is appropriate to simulate using small time steps, for example in \cite{HaastrechtPelsser:EffHestonSim} it is suggested to use at least 32 time steps per year. Both in \cite{HaastrechtPelsser:EffHestonSim} and in \cite{Lord:CompBiasSimSchemes} it is stated that this discretization scheme, compared with other Euler-like schemes, seems to produce the smallest bias.
+
+This algorithm is used for both Heston and Heston time dependent drift processes.
+
+\section{Calibration}
+
+\subsection{Characteristic function and call price formula}
+
+The characteristic function is defined as
+\begin{equation}
+\phi(u,t) = \mathbb{E} \left[\left.e^{iu\log(S(t))}\right|S_0,V_0\right].
+\end{equation}
+For the Heston model it is possible to obtain an explicit formula for the characteristic function
+\begin{align}
+\phi(u,t) = \exp( & iu(\log S_0 + \mu t)) \nonumber\\
+ & \cdot\exp(\theta k \sigma^{-2}((k-\rho\sigma iu - d)t - 2\log( (1-ge^{-dt})/ (1-g) )))\nonumber\\
+ & \cdot\exp(V_0\sigma^{-2}(k-\rho\sigma iu - d)(1-e^{-dt})/(1-ge^{-dt}))
+\end{align}
+where
+\begin{align}
+ d & = \sqrt{(\rho\sigma iu - k)^2 + \sigma^2(iu + u^2)} \\
+ g & = \frac{k-\rho\sigma iu - d}{k-\rho\sigma iu + d}.
+\end{align}
+The form of the $\phi$ function is not equal to that given in Heston original paper but it is an equivalent one which does not have the continuity problem when integrated to find the price of an european call option. This issue is described in \cite{Albrecher:HestonTrap}.
+
+The price of an european call option with strike $K$ and time to maturity $T$ is given by the formula
+\begin{equation}
+C(K,T) = \frac{1}{2}\left[S_0e^{-q T} - Ke^{-r T}\right] + \frac{e^{-r T}}{\pi}\int_0^{\infty}\left[f_1(u) - Kf_2(u)\right]du
+\end{equation}
+where the two functions $f_1$ and $f_2$ are
+\begin{align}
+f_1(u) & = \mathrm{Re}\left[\frac{\exp(-iu\log K)\phi(u-i,T)}{iu}\right]\\
+f_2(u) & = \mathrm{Re}\left[\frac{\exp(-iu\log K)\phi(u,T)}{iu}\right].
+\end{align}
+
+\subsection{Dividend yield calculation}
+
+To estimate the function $\mu(t)$ it is necessary to have the zero coupon curve and a curve describing the expected dividend yield at future dates. The zero coupon curve can be calculated from cash rates and swap rates observed in the market and will be denoted with $ZR(t)$. Expected dividend yields can be calculated through put-call parity relation. In the case of continuous constant dividend yield this relation states that
+\begin{equation}
+p = c -S_te^{-qt} + Ke^{-rt}
+\end{equation}
+where $p,c$ are prices for put and call options with maturity $t$ and strike $K$, and $q$ is the dividend yield. Solving for $q$ we have
+\begin{equation}
+q = -\frac{1}{t}\ln\left[\frac{c-p + Ke^{-rt}}{S_0}\right].
+\end{equation}
+Observing call and put prices for at the money options at different maturities we can calculate $q(t)$ and use this values in formula (\ref{eq:mu}).
+
+\subsection{Objective function}
+
+Given a stock (or index) with value $S_0$ at a certain date, the price of a call option with strike $K$ and maturity $T$ priced with the Heston model can be seen as a function $C_H(V_0, \mu(T), k, \theta, \sigma, K, T)$.
+
+Given a matrix of call prices taken from the market $C_M(i,j)$, where the indexes represent different maturities $T_i$ and strike $K_j$, Fairmat fixes the parameters $(V_0, k, \theta, \sigma)$ searching the minimum of the function
+\begin{equation}
+f(V_0, k, \theta, \sigma) = \sum_{ij}\Big[C_H(V_0, \mu(T_i), k, \theta, \sigma, K_j, T_i) - C_M(i,j)\Big]^2.
+\end{equation}
+
+Information necessary for the calibration is taken from two different xml files, one containing an InterestRateMarketData  structure with data needed to calculate the function $ZR(t)$ and one containing a CallPriceMarketData structure with data regarding option prices for the index.
+
+To calibrate the constant drift version you need the same market data and you also have to specify a maturity on the calibration settings. If the maturity value is $T$ then $r$ and $q$ are set to $r = ZR(T)$ and $q = q(T)$. The remaining parameters are found as before but calibration is performed with $\mu(t)$ constant and equal to $r-q$.
+
+\bibliographystyle{unsrt}
+\bibliography{../../DocumentationTemplate/bibliography}
+\end{document}
+
+

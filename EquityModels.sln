@@ -9,12 +9,18 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PFunction2D", "..\ModelingT
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EquityModels.Tests", "EquityModels.Tests\EquityModels.Tests.csproj", "{E056296C-95D8-4A2B-A228-83B5FB28A1BD}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Heston", "Heston\Heston.csproj", "{50B13FC9-5FEA-44D7-85E8-25B9B7B48BDE}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{C414C745-AFB9-4D23-A468-602ABFA7F2D8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C414C745-AFB9-4D23-A468-602ABFA7F2D8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C414C745-AFB9-4D23-A468-602ABFA7F2D8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C414C745-AFB9-4D23-A468-602ABFA7F2D8}.Release|Any CPU.Build.0 = Release|Any CPU
 		{1458DF4A-CE48-4010-B123-7DDD00F4B194}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{1458DF4A-CE48-4010-B123-7DDD00F4B194}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1458DF4A-CE48-4010-B123-7DDD00F4B194}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -23,14 +29,17 @@ Global
 		{61982E89-DAB3-4E01-BBE7-1BD5E3C71297}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{61982E89-DAB3-4E01-BBE7-1BD5E3C71297}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{61982E89-DAB3-4E01-BBE7-1BD5E3C71297}.Release|Any CPU.Build.0 = Release|Any CPU
-		{C414C745-AFB9-4D23-A468-602ABFA7F2D8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{C414C745-AFB9-4D23-A468-602ABFA7F2D8}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{C414C745-AFB9-4D23-A468-602ABFA7F2D8}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{C414C745-AFB9-4D23-A468-602ABFA7F2D8}.Release|Any CPU.Build.0 = Release|Any CPU
 		{E056296C-95D8-4A2B-A228-83B5FB28A1BD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{E056296C-95D8-4A2B-A228-83B5FB28A1BD}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E056296C-95D8-4A2B-A228-83B5FB28A1BD}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E056296C-95D8-4A2B-A228-83B5FB28A1BD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{50B13FC9-5FEA-44D7-85E8-25B9B7B48BDE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{50B13FC9-5FEA-44D7-85E8-25B9B7B48BDE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{50B13FC9-5FEA-44D7-85E8-25B9B7B48BDE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{50B13FC9-5FEA-44D7-85E8-25B9B7B48BDE}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(MonoDevelopProperties) = preSolution
 		StartupItem = EquityModels.Tests\EquityModels.Tests.csproj
@@ -40,8 +49,5 @@ Global
 		$1.inheritsSet = VisualStudio
 		$1.inheritsScope = text/plain
 		$1.scope = text/plain
-	EndGlobalSection
-	GlobalSection(SolutionProperties) = preSolution
-		HideSolutionNode = FALSE
 	EndGlobalSection
 EndGlobal
