@@ -1,7 +1,7 @@
 Equity Models
 ============
 
-This repository holds several plugins implementing Equity Models.
+This repository holds several Fairmat (www.fairmat.com) plugins implementing Equity Models.
 
 Historical Simulator: A plugin which simulates future realizations of underlying assets using historical stock realizations.
 
