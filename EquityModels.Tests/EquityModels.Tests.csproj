@@ -65,6 +65,9 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Heston\TestHeston.cs" />
+    <Compile Include="Heston\TestHestonCallPrice.cs" />
+    <Compile Include="Heston\TestHestonExtended.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Dupire\DupireCalibration.cs" />
     <Compile Include="Dupire\DupireSimulation.cs" />
@@ -80,6 +83,10 @@
     <ProjectReference Include="..\..\ModelingTools\PFunction2D\PFunction2D.csproj">
       <Project>{61982E89-DAB3-4E01-BBE7-1BD5E3C71297}</Project>
       <Name>PFunction2D</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Heston\Heston.csproj">
+      <Project>{50B13FC9-5FEA-44D7-85E8-25B9B7B48BDE}</Project>
+      <Name>Heston</Name>
     </ProjectReference>
   </ItemGroup>
 </Project>
