@@ -33,7 +33,7 @@ namespace Dupire
         /// </summary>
         public string Description
         {
-            get { return "Dupire Local Volatility Model"; }
+            get { return "Equity/Dupire Local Volatility Model"; }
         }
 
         /// <summary>
