@@ -1,0 +1,5 @@
+Name: Dupire local volatility model
+
+Description: The Dupire local volatility model simulates equity or index price with a volatility that is a deterministic function but depends on time and price value. Once installed the plug-in offers the possibility of using Dupire model for simulation and to calibrate it with respect of series of call prices.
+
+Tags: stochastic process, calibration, equity, local volatility, Dupire.

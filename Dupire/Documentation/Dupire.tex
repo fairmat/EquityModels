@@ -48,17 +48,17 @@ where $S$ represents the price process, and $dW$ is a Wiener processes.
 
 Applying straight Euler-Maruyama method to simulate a local volatility process, we obtain the following formula
 \begin{equation}
-S_{n+1} = S_n + (r(t_n) - q(t_n))S_n\Delta t + \sigma(t_n,S_n)\sqrt{\Delta t} N(0,1)
+S_{n+1} = S_n + [r(t_n) - q(t_n)]S_n\Delta t + \sigma(t_n,S_n)\sqrt{\Delta t} N(0,1)
 \end{equation}
 where $\Delta t = t_{n+1}-t_n$ and $N(0,1)$ represents a realization of a standard normal random variable. 
 
 By using the discretization described above it is possible for $S$ to reach negative values, therefore  the best approach to overcome the problem is to simulate $log(S(t))$ process. Apply Ito's lemma, from equation (\ref{eq:sde}) we can deduce
 \begin{equation}
-d\left[\log\left(S(t)\right)\right] = \left(r(t) - q(t)- \frac{1}{2}\sigma^2(t, S(t)) \right)dt + \sigma(t, S(t))dW % CONTROLLARE!!!
+d\left[\log\left(S(t)\right)\right] = \left[r(t) - q(t)- \frac{1}{2}\sigma^2(t, S(t)) \right]dt + \sigma(t, S(t))dW % CONTROLLARE!!!
 \end{equation}
 and its discrete counterpart is
 \begin{align}
-\log(S_{n+1}) = \log(S_n) + \left(r(t_n) - q(t_n) - \frac{1}{2}\sigma^2(t_n, S_n) \right)\Delta t\nonumber\\
+\log(S_{n+1}) = \log(S_n) + \left[r(t_n) - q(t_n) - \frac{1}{2}\sigma^2(t_n, S_n) \right]\Delta t\nonumber\\
  + \sigma(t_n, S_n)\sqrt{\Delta t} N_1(0,1)
 \end{align}
 Simulating the stock price this way entails no discretization error and solve the problem of generating negative index value.
@@ -67,7 +67,7 @@ Simulating the stock price this way entails no discretization error and solve th
 
 It can be demonstrated that supposing to have a continuous surface of implied volatilities $\Sigma(t,S)$, the surface of local volatility is complitely determined by Dupire's formula
 \begin{equation}\label{eq:LocVolFromImpVol}
-\sigma^2(t, S) = \frac{ \Sigma^2 + 2\Sigma t (\frac{\partial\Sigma}{\partial t} + (r(t) - q(t))S\frac{\partial\Sigma}{\partial S} ) }{ \left( 1- \frac{yS}{\Sigma} \frac{\partial\Sigma}{\partial S} \right)^2 + tS\Sigma\left( \frac{\partial\Sigma}{\partial S} - \frac{1}{4} tS\Sigma \left(\frac{\partial\Sigma}{\partial S}\right)^2 + S\frac{\partial^2\Sigma}{\partial S^2} \right) }
+\sigma^2(t, S) = \frac{ \Sigma^2 + 2\Sigma t \left[\frac{\partial\Sigma}{\partial t} + (r(t) - q(t))S\frac{\partial\Sigma}{\partial S} \right] }{ \left( 1- \frac{yS}{\Sigma} \frac{\partial\Sigma}{\partial S} \right)^2 + tS\Sigma\left[ \frac{\partial\Sigma}{\partial S} - \frac{1}{4} tS\Sigma \left(\frac{\partial\Sigma}{\partial S}\right)^2 + S\frac{\partial^2\Sigma}{\partial S^2} \right] }
 \end{equation}
 where for simplicity we suppressed the $(t,S)$ dependency of $\Sigma$ and where
 \begin{equation}
