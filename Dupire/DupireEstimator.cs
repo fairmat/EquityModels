@@ -25,7 +25,7 @@ using Fairmat.Statistics;
 namespace Dupire
 {
     [Mono.Addins.Extension("/Fairmat/Estimator")]
-    public class DupireEstimator : IEstimator, IIntegrable
+    public class DupireEstimator : IEstimatorEx, IIntegrable
     {
         private PFunction r;
         private PFunction q;
@@ -33,6 +33,15 @@ namespace Dupire
         public DupireEstimator()
         {
         }
+
+        public IEstimationSettings DefaultSettings
+        {
+            get
+            {
+                return UserSettings.GetSettings(typeof(DupireCalibrationSettings)) as DupireCalibrationSettings;
+            }
+        }
+
 
         #region IEstimator implementation
 
@@ -68,8 +77,18 @@ namespace Dupire
             InterestRateMarketData Mdataset = (InterestRateMarketData)marketData[0];
             CallPriceMarketData Hdataset = (CallPriceMarketData)marketData[1];
 
-            return FairmatEstimate(Mdataset, Hdataset);
+            //gets the settings
+            DupireCalibrationSettings calibrationSettings =  settings as DupireCalibrationSettings;
 
+            switch(calibrationSettings.LocalVolatilityCalculation)
+            {
+                case LocalVolatilityCalculation.Method1:
+                    return FairmatEstimate(Mdataset, Hdataset);
+                case LocalVolatilityCalculation.QuantLib:
+                    return QuantLibEstimate(Mdataset, Hdataset);
+                default:
+                    throw new NotImplementedException("Method not implemented");
+            }
         }
 
         #endregion
