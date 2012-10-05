@@ -49,11 +49,14 @@ namespace Dupire
             l.Add(HData);
 
             DupireEstimator DE = new DupireEstimator();
-            EstimationResult res = DE.Estimate(l, null);
+            DupireCalibrationSettings settings = new DupireCalibrationSettings();
+            //settings.LocalVolatilityCalculation = LocalVolatilityCalculation.Method1;
+            settings.LocalVolatilityCalculation = LocalVolatilityCalculation.QuantLib;
+            EstimationResult res = DE.Estimate(l, settings);
             //int nmat = HData.Maturity.Length;
             //int nstrike = HData.Strike.Length;
 
-            int i = 5; // Maturity.
+            int i = 4; // Maturity.
             int j = 4; // Strike.
 
             Engine.MultiThread = true;

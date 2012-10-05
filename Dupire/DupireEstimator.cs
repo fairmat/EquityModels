@@ -78,7 +78,7 @@ namespace Dupire
             CallPriceMarketData Hdataset = (CallPriceMarketData)marketData[1];
 
             //gets the settings
-            DupireCalibrationSettings calibrationSettings =  settings as DupireCalibrationSettings;
+            DupireCalibrationSettings calibrationSettings = settings as DupireCalibrationSettings;
 
             switch(calibrationSettings.LocalVolatilityCalculation)
             {
@@ -160,8 +160,8 @@ namespace Dupire
                         dt = 0.0001;
                         strikept = strike * Math.Exp(integrate.AdaptLobatto(0.0, t + dt));
                         wpt = impVol.Evaluate(t + dt, strikept);
-                        if (wpt <                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        w) 
-                            Console.WriteLine("Decreasing variance at strike {0} between time {1} and time {2}", strike, t, t + dt);
+                        //if (wpt < w)
+                        //    Console.WriteLine("Decreasing variance at strike {0} between time {1} and time {2}", strike, t, t + dt);
                         dwdt = (wpt - w) / dt;
                     }
                     else
@@ -172,10 +172,10 @@ namespace Dupire
                         wpt = impVol.Evaluate(t + dt, strikept);
                         wmt = impVol.Evaluate(t + dt, strikemt);
 
-                        if (wpt < w) 
-                            Console.WriteLine("Decreasing variance at strike {0} between time {1} and time {2}", strike, t, t + dt);
-                        if (w < wmt) 
-                            Console.WriteLine("Decreasing variance at strike {0} between time {1} and time {2}", strike, t-dt, t);
+                        //if (wpt < w) 
+                        //    Console.WriteLine("Decreasing variance at strike {0} between time {1} and time {2}", strike, t, t + dt);
+                        //if (w < wmt) 
+                        //    Console.WriteLine("Decreasing variance at strike {0} between time {1} and time {2}", strike, t-dt, t);
                         dwdt = (wpt - wmt) / (2.0 * dt);
                     }
                     if (dwdy == 0.0 && d2wdy2 == 0.0)
@@ -186,9 +186,9 @@ namespace Dupire
                         den2 = 0.25 * (-0.25 - 1.0 / w + y * y / w / w) * dwdy * dwdy;
                         den3 = 0.5 * d2wdy2;
                         locVolMatrix[i,j] = dwdt / (den1 + den2 + den3);
-                        if (locVolMatrix[i,j] < 0.0)
-                            Console.WriteLine("Negative local vol^2 at strike {0} and time {1}; " +
-                                "Black vol surface is not smooth enought.", strike, t);
+                        //if (locVolMatrix[i,j] < 0.0)
+                        //    Console.WriteLine("Negative local vol^2 at strike {0} and time {1}; " +
+                        //        "Black vol surface is not smooth enought.", strike, t);
                     }
                 }
             }
@@ -269,7 +269,7 @@ namespace Dupire
                     //    Console.WriteLine("num = {0}, den = {1}", num, den);
                     //    Console.WriteLine("locVolStr = {0}, locVolMat = {1}, y = {2}, dSigmadk = {3}, sigma = {4}, impvol.Partial2 = {5}", x[1], x[0], y, dSigmadk, sigma, impVol.Partial2(x,1));
                     //}
-                    Console.WriteLine("locVolMatrix[{0},{1}] = {2}, Part2 = {3}, t = {4}, S = {5}, dSigmadk = {6}, den = {7}, num = {8}, dsigma/dt = {9}", i, j, locVolMatrix[i, j], impVol.Partial2(x, 1), locVolMat[i], locVolStr[j], dSigmadk, den, num, impVol.Partial(x, 0));
+                    //Console.WriteLine("locVolMatrix[{0},{1}] = {2}, Part2 = {3}, t = {4}, S = {5}, dSigmadk = {6}, den = {7}, num = {8}, dsigma/dt = {9}", i, j, locVolMatrix[i, j], impVol.Partial2(x, 1), locVolMat[i], locVolStr[j], dSigmadk, den, num, impVol.Partial(x, 0));
                 }
             }
 
