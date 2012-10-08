@@ -258,6 +258,7 @@ namespace HestonExtended
                 si.LatentSize = 1;
                 si.NoiseSize = 2;
                 si.StateSize = 2;
+                si.DefaultComponent = 0;
                 return si;
             }
         }

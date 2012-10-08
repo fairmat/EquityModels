@@ -209,6 +209,7 @@ namespace Heston
                 si.LatentSize = 1;
                 si.NoiseSize = 2;
                 si.StateSize = 2;
+                si.DefaultComponent = 0;//the equity is defined at component zero
                 return si;
             }
         }
