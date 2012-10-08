@@ -79,7 +79,6 @@ namespace Dupire
 
             //gets the settings
             DupireCalibrationSettings calibrationSettings = settings as DupireCalibrationSettings;
-
             switch(calibrationSettings.LocalVolatilityCalculation)
             {
                 case LocalVolatilityCalculation.Method1:
@@ -96,9 +95,14 @@ namespace Dupire
         private EstimationResult QuantLibEstimate(InterestRateMarketData Mdataset, CallPriceMarketData Hdataset)
         {
             EquityCalibrationData HCalData = new EquityCalibrationData(Hdataset, Mdataset);
+
+            bool hasArbitrage = HCalData.HasArbitrageOpportunity();
+            if (hasArbitrage)
+                Console.WriteLine("Market data contain arbitrage opportunity");
+
             this.r = new DVPLDOM.PFunction(null);
             this.q = new DVPLDOM.PFunction(null);
-            this.r.Expr = (double[,])ArrayHelper.Concat(HCalData.MaturityDY.ToArray(), HCalData.Rate.ToArray());
+            this.r.Expr = (double[,])ArrayHelper.Concat(Mdataset.ZRMarketDates.ToArray(), Mdataset.ZRMarket.ToArray());
             this.q.Expr = (double[,])ArrayHelper.Concat(HCalData.MaturityDY.ToArray(), HCalData.DividendYield.ToArray());
             this.r.Parse(null);
             this.q.Parse(null);
@@ -215,7 +219,7 @@ namespace Dupire
             EquityCalibrationData HCalData = new EquityCalibrationData(Hdataset, Mdataset);
             this.r = new DVPLDOM.PFunction(null);
             this.q = new DVPLDOM.PFunction(null);
-            this.r.Expr = (double[,])ArrayHelper.Concat(HCalData.MaturityDY.ToArray(), HCalData.Rate.ToArray());
+            this.r.Expr = (double[,])ArrayHelper.Concat(Mdataset.ZRMarketDates.ToArray(), Mdataset.ZRMarket.ToArray());
             this.q.Expr = (double[,])ArrayHelper.Concat(HCalData.MaturityDY.ToArray(), HCalData.DividendYield.ToArray());
             this.r.Parse(null);
             this.q.Parse(null);
