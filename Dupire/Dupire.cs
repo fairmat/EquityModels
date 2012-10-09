@@ -51,6 +51,17 @@ namespace Dupire
 
         [NonSerialized]
         private DupireContext context;
+        /// <summary>
+        /// Temporary calculated Function fitting the zero rate values.
+        /// </summary>
+        [NonSerialized]
+        private Function zrCurve;
+
+        /// <summary>
+        /// Temporary calculated Function fitting the dividend yield values.
+        /// </summary>
+        [NonSerialized]
+        private Function dyCurve;
         [NonSerialized]
         private double[] mu;
         [NonSerialized]
@@ -107,15 +118,13 @@ namespace Dupire
         {
             //todo: creates context class
             this.mu = new double[simulationDates.Length];
-            double[] zr = new double[simulationDates.Length];
+            Vector time = new Vector(1);
             for (int i = 0; i < simulationDates.Length; i++)
-                zr[i] = ZR(simulationDates[i]);
-            for (int i = 0; i < simulationDates.Length - 1; i++)
-                this.mu[i] = (zr[i + 1] * simulationDates[i + 1] - zr[i] * simulationDates[i])
-                    / (simulationDates[i + 1] - simulationDates[i]);
-            this.mu[simulationDates.Length - 1] = this.mu[simulationDates.Length - 2];
+            {
+                time[0] = simulationDates[i];
+                this.mu[i] =  this.zrCurve.Partial(time, 0) * time[0] + this.zrCurve.Evaluate(time) - this.dyCurve.Evaluate(time);
+            }
             this.simDates = simulationDates;
-            // la superficie della local vol va precalcolata?
         }
 
         /// <summary>
@@ -129,6 +138,7 @@ namespace Dupire
                 simulationInfo.NoiseSize = 1;
                 simulationInfo.LatentSize = 0;
                 simulationInfo.StateSize = 1;
+                simulationInfo.DefaultComponent = -1;
                 return simulationInfo;
             }
         }
@@ -166,8 +176,52 @@ namespace Dupire
             this.context.r = this.r.fVRef() as IFunction;
             this.context.localVol = this.localVol.fVRef() as IFunction;
 
+            return RetrieveCurve(context, errors);
+        }
+
+        /// <summary>
+        /// Retrieves zr and dy curve from the model.
+        /// </summary>
+        /// <param name="p_Context">The parameter is not used.</param>
+        /// <param name="errors">
+        /// The current status of errors, if errors happened previously to this call.
+        /// </param>
+        /// <returns>True if there have been errors during this call or before.</returns>
+        private bool RetrieveCurve(IProject p_Context, bool errors)
+        {
+            // check the presence of a zero rate curve
+            object zrref = Engine.Parser.EvaluateAsReference(this.r.Expression);
+            if (!Engine.Parser.GetParserError())
+            {
+                this.zrCurve = zrref as Function;
+                if (this.zrCurve == null)
+                {
+                    errors = true;
+                    p_Context.AddError("Cannot find the zero rate curve " +
+                                       this.r.Expression);
+                }
+            }
+            else
+                errors = true;
+
+            // check the presence of a dividend yield curve
+            object dyref = Engine.Parser.EvaluateAsReference(this.q.Expression);
+            if (!Engine.Parser.GetParserError())
+            {
+                this.dyCurve = dyref as Function;
+                if (this.dyCurve == null)
+                {
+                    errors = true;
+                    p_Context.AddError("Cannot find the dividend yield curve " +
+                                       this.q.Expression);
+                }
+            }
+            else
+                errors = true;
+
             return errors;
         }
+
         #endregion // IParsable implementation
 
         #region IMarkovSimulator implementation
@@ -220,34 +274,28 @@ namespace Dupire
         }
         #endregion
 
-        /// <summary>
-        /// Helper function to make functions easier to read.
-        /// Just returns the value of the zero rate at position t.
-        /// </summary>
-        /// <param name="t">The position where to get the value of the zero rate from.</param>
-        /// <returns>The value of the zero rate at position t.</returns>
-        private double ZR(double t)
-        {
-            return (this.context.r.Evaluate(t) - this.context.q.Evaluate(t));
-        }
-
         #region IEstimationResultPopulable implementation
         void IEstimationResultPopulable.Populate(IStochasticProcess container, EstimationResult estimate)
         {
             bool found;
             this.s0 = new ModelParameter(PopulateHelper.GetValue("S0", estimate.Names, estimate.Values, out found), this.s0.Description);
-            PFunction rFunc = estimate.Objects[0] as PFunction;
-            PFunction rFuncDest = this.r.fVRef() as PFunction;
-            rFuncDest.Expr = rFunc.Expr;
 
-            PFunction qFunc = estimate.Objects[1] as PFunction;
-            PFunction qFuncDest = this.q.fVRef() as PFunction;
-            qFuncDest.Expr = qFunc.Expr;
+            bool errors = RetrieveCurve(container.Context, false);
+            if (!errors)
+            {
+                PFunction rFunc = estimate.Objects[0] as PFunction;
+                PFunction rFuncDest = this.r.fVRef() as PFunction;
+                rFuncDest.Expr = rFunc.Expr;
 
-            PFunction2D.PFunction2D localVolSrc = estimate.Objects[2] as PFunction2D.PFunction2D;
-            PFunction2D.PFunction2D localVolDest = this.localVol.fVRef() as PFunction2D.PFunction2D;
-            localVolDest.Expr = localVolSrc.Expr;
-            localVolDest.Interpolation = localVolSrc.Interpolation;
+                PFunction qFunc = estimate.Objects[1] as PFunction;
+                PFunction qFuncDest = this.q.fVRef() as PFunction;
+                qFuncDest.Expr = qFunc.Expr;
+
+                PFunction2D.PFunction2D localVolSrc = estimate.Objects[2] as PFunction2D.PFunction2D;
+                PFunction2D.PFunction2D localVolDest = this.localVol.fVRef() as PFunction2D.PFunction2D;
+                localVolDest.Expr = localVolSrc.Expr;
+                localVolDest.Interpolation = localVolSrc.Interpolation;
+            }
         }
         #endregion
     }

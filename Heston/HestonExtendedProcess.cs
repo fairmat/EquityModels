@@ -492,8 +492,11 @@ namespace HestonExtended
             // Update the correlation matrix.
             prj.Processes.r.Set(index, index + 1, (RightValue)PopulateHelper.GetValue("rho", estimate.Names, estimate.Values, out found));
             bool errors = RetrieveCurve(stocProcess.Context, false);
-            this.zrCurve.Expr = (estimate.Objects[0] as Matrix).ToArray();
-            this.dyCurve.Expr = (estimate.Objects[1] as Matrix).ToArray();
+            if (!errors)
+            {
+                this.zrCurve.Expr = (estimate.Objects[0] as Matrix).ToArray();
+                this.dyCurve.Expr = (estimate.Objects[1] as Matrix).ToArray();
+            }
         }
     }
 }
