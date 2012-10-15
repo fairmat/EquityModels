@@ -128,13 +128,9 @@ namespace Dupire
             int nstrike = 100;
             double lastMat = Hdataset.Maturity[Hdataset.Maturity.Length - 1];
             double lastStr = Hdataset.Strike[Hdataset.Strike.Length - 1];
-            //Vector locVolMat = Vector.Linspace(lastMat / ((double) nmat), lastMat, nmat);
-            //Vector locVolStr = Vector.Linspace(lastStr / ((double) nstrike), lastStr, nstrike);
             Vector locVolMat = Vector.Linspace(0.0, lastMat, nmat);
             Vector locVolStr = Vector.Linspace(0.0, lastStr, nstrike);
             Matrix locVolMatrix = new Matrix(nmat, nstrike);
-            //Integrate integrate = new Integrate(this);
-            //double sigma, dSigmadk, num, y, den, integral;
             double t, dt, forwardValue, y, dy, strike, strikep, strikem, w, wp, wm, dwdy;
             double d2wdy2, den1, den2, den3, strikept, strikemt, wpt, wmt, dwdt;
             Integrate integrate = new Integrate(this);
@@ -204,12 +200,14 @@ namespace Dupire
             Vector param = new Vector(1);
             param[0] = Hdataset.S0;
             EstimationResult result = new EstimationResult(names, param);
-            result.Objects = new object[3];
+            //result.Objects = new object[3];
+            result.Objects = new object[4];
             result.Objects[0] = this.r;
             result.Objects[1] = this.q;
             result.Objects[2] = localVol;
-            Console.WriteLine("r = " + HCalData.Rate.ToString());
-            Console.WriteLine("q = " + HCalData.DividendYield.ToString());
+            result.Objects[3] = impVol;
+            //Console.WriteLine("r = " + HCalData.Rate.ToString());
+            //Console.WriteLine("q = " + HCalData.DividendYield.ToString());
             return result;
         }
 
@@ -217,6 +215,11 @@ namespace Dupire
         private EstimationResult FairmatEstimate(InterestRateMarketData Mdataset, CallPriceMarketData Hdataset)
         {
             EquityCalibrationData HCalData = new EquityCalibrationData(Hdataset, Mdataset);
+
+            bool hasArbitrage = HCalData.HasArbitrageOpportunity();
+            if (hasArbitrage)
+                Console.WriteLine("Market data contain arbitrage opportunity");
+
             this.r = new DVPLDOM.PFunction(null);
             this.q = new DVPLDOM.PFunction(null);
             this.r.Expr = (double[,])ArrayHelper.Concat(Mdataset.ZRMarketDates.ToArray(), Mdataset.ZRMarket.ToArray());
@@ -284,12 +287,15 @@ namespace Dupire
             Vector param = new Vector(1);
             param[0] = Hdataset.S0;
             EstimationResult result = new EstimationResult(names, param);
-            result.Objects = new object[3];
+            //result.Objects = new object[3];
+            result.Objects = new object[4];
             result.Objects[0] = this.r;
             result.Objects[1] = this.q;
             result.Objects[2] = localVol;
-            Console.WriteLine("r = " + HCalData.Rate.ToString());
-            Console.WriteLine("q = " + HCalData.DividendYield.ToString());
+            result.Objects[3] = impVol;
+
+            //Console.WriteLine("r = " + HCalData.Rate.ToString());
+            //Console.WriteLine("q = " + HCalData.DividendYield.ToString());
             return result;
         }
 

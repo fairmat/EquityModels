@@ -50,13 +50,13 @@ namespace Dupire
 
             DupireEstimator DE = new DupireEstimator();
             DupireCalibrationSettings settings = new DupireCalibrationSettings();
-            //settings.LocalVolatilityCalculation = LocalVolatilityCalculation.Method1;
-            settings.LocalVolatilityCalculation = LocalVolatilityCalculation.QuantLib;
+            settings.LocalVolatilityCalculation = LocalVolatilityCalculation.Method1;
+            //settings.LocalVolatilityCalculation = LocalVolatilityCalculation.QuantLib;
             EstimationResult res = DE.Estimate(l, settings);
             //int nmat = HData.Maturity.Length;
             //int nstrike = HData.Strike.Length;
 
-            int i = 4; // Maturity.
+            int i = 5; // Maturity.
             int j = 4; // Strike.
 
             Engine.MultiThread = true;
@@ -68,12 +68,16 @@ namespace Dupire
             int n_sim = 10000;
             int n_steps = 500;
             double strike = HData.Strike[j];
-            double volatility = HData.Volatility[i, j];
+            //double volatility = HData.Volatility[i, j];
+            PFunction2D.PFunction2D impvolfunc = new PFunction2D.PFunction2D(rov);
+            impvolfunc = res.Objects[3] as PFunction2D.PFunction2D;
+            impvolfunc.VarName = "impvol";
+            rov.Symbols.Add(impvolfunc);
+            double volatility = impvolfunc.Evaluate(HData.Maturity[i], HData.Strike[j]);
             double maturity = HData.Maturity[i];
 
             ModelParameter Pstrike = new ModelParameter(strike, string.Empty, "strike");
             rov.Symbols.Add(Pstrike);
-
             AFunction payoff = new AFunction(rov);
             payoff.VarName = "payoff";
             payoff.m_IndependentVariables = 1;
@@ -84,7 +88,6 @@ namespace Dupire
             double S0 = PopulateHelper.GetValue("S0", res.Names, res.Values, out found);
             ModelParameter PS0 = new ModelParameter(S0, string.Empty, "S0");
             rov.Symbols.Add(PS0);
-
             PFunction rfunc = new PFunction(rov);
             rfunc = res.Objects[0] as PFunction;
             rfunc.VarName = "r";
@@ -99,7 +102,6 @@ namespace Dupire
             volfunc = res.Objects[2] as PFunction2D.PFunction2D;
             volfunc.VarName = "localvol";
             rov.Symbols.Add(volfunc);
-
             DupireProcess process = new DupireProcess();
             process.s0 = (ModelParameter)"S0";
             process.r = (ModelParameter)"@r";
@@ -124,7 +126,6 @@ namespace Dupire
             rov.NMethods.Technology = ETechType.T_SIMULATION;
             rov.NMethods.PathsNumber = n_sim;
             rov.NMethods.SimulationSteps = n_steps;
-
             ROVSolver solver = new ROVSolver();
             solver.BindToProject(rov);
             solver.DoValuation(-1);
