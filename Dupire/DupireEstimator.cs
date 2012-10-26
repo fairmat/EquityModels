@@ -21,6 +21,7 @@ using DVPLI;
 using Fairmat.MarketData;
 using Fairmat.Math;
 using Fairmat.Statistics;
+using Fairmat.Finance;
 
 namespace Dupire
 {
@@ -41,7 +42,6 @@ namespace Dupire
                 return UserSettings.GetSettings(typeof(DupireCalibrationSettings)) as DupireCalibrationSettings;
             }
         }
-
 
         #region IEstimator implementation
 
@@ -107,22 +107,41 @@ namespace Dupire
             this.r.Parse(null);
             this.q.Parse(null);
 
-            IFunction impVol = FitImplVolModel(Hdataset);
+            Vector locVolMat, locVolStr;
+            //IFunction fittedSurface = FitImplVolModel(Hdataset);
+            //Matrix locVolMatrix = LocVolMatrixFromImpliedVol(Hdataset, fittedSurface, out locVolMat, out locVolStr);
+            CallPriceSurface fittedSurface = CallPriceSurface.NoArbitrageSurface(HCalData);
+            Matrix locVolMatrix = LocVolMatrixFromCallPrices(Hdataset, fittedSurface, out locVolMat, out locVolStr);
 
-            Document doc = new Document();
-            ProjectROV prj = new ProjectROV(doc);
-            doc.Part.Add(prj);
-            prj.Symbols.Add(impVol);
-            //doc.WriteToXMLFile("impVol.fair");
+            // Create dupire outputs.
+            PFunction2D.PFunction2D localVol = new PFunction2D.PFunction2D(locVolMat, locVolStr, locVolMatrix);
+            localVol.Parse(null);
+            string[] names = new string[] { "S0" };
+            Vector param = new Vector(1);
+            param[0] = Hdataset.S0;
+            EstimationResult result = new EstimationResult(names, param);
+            //result.Objects = new object[3];
+            result.Objects = new object[4];
+            result.Objects[0] = this.r;
+            result.Objects[1] = this.q;
+            result.Objects[2] = localVol;
+            result.Objects[3] = fittedSurface;
 
-            // todo: spostare nei settings
+            //Console.WriteLine("r = " + HCalData.Rate.ToString());
+            //Console.WriteLine("q = " + HCalData.DividendYield.ToString());
+            return result;
+        }
+
+        private Matrix LocVolMatrixFromImpliedVol(CallPriceMarketData Hdataset, IFunction impVol, out Vector locVolMat, out Vector locVolStr)
+        {
             int nmat = 100;
             int nstrike = 100;
-            double lastMat = Hdataset.Maturity[Hdataset.Maturity.Length - 1];
-            double lastStr = Hdataset.Strike[Hdataset.Strike.Length - 1];
-            Vector locVolMat = Vector.Linspace(0.0, lastMat, nmat);
-            Vector locVolStr = Vector.Linspace(0.0, lastStr, nstrike);
+            double lastMat = Hdataset.Maturity[Range.End];
+            double lastStr = Hdataset.Strike[Range.End];
+            locVolMat = Vector.Linspace(0.0, lastMat, nmat);
+            locVolStr = Vector.Linspace(0.0, lastStr, nstrike);
             Matrix locVolMatrix = new Matrix(nmat, nstrike);
+
             Integrate integrate = new Integrate(this);
             double sigma, dSigmadk, num, y, den, integral;
             Vector x = new Vector(2);
@@ -159,24 +178,42 @@ namespace Dupire
                     //Console.WriteLine("locVolMatrix[{0},{1}] = {2}, Part2 = {3}, t = {4}, S = {5}, dSigmadk = {6}, den = {7}, num = {8}, dsigma/dt = {9}", i, j, locVolMatrix[i, j], impVol.Partial2(x, 1), locVolMat[i], locVolStr[j], dSigmadk, den, num, impVol.Partial(x, 0));
                 }
             }
+            return locVolMatrix;
+        }
 
-            // Create dupire outputs.
-            PFunction2D.PFunction2D localVol = new PFunction2D.PFunction2D(locVolMat, locVolStr, locVolMatrix);
-            localVol.Parse(null);
-            string[] names = new string[] { "S0" };
-            Vector param = new Vector(1);
-            param[0] = Hdataset.S0;
-            EstimationResult result = new EstimationResult(names, param);
-            //result.Objects = new object[3];
-            result.Objects = new object[4];
-            result.Objects[0] = this.r;
-            result.Objects[1] = this.q;
-            result.Objects[2] = localVol;
-            result.Objects[3] = impVol;
-
-            //Console.WriteLine("r = " + HCalData.Rate.ToString());
-            //Console.WriteLine("q = " + HCalData.DividendYield.ToString());
-            return result;
+        private Matrix LocVolMatrixFromCallPrices(CallPriceMarketData Hdataset, IFunction CallPrice, out Vector locVolMat, out Vector locVolStr)
+        {
+            int nmat = 100;
+            int nstrike = 100;
+            double lastMat = Hdataset.Maturity[Range.End];
+            double lastStr = Hdataset.Strike[Range.End];
+            locVolMat = Vector.Linspace(0.0, lastMat, nmat);
+            locVolStr = Vector.Linspace(0.0, lastStr, nstrike);
+            Matrix locVolMatrix = new Matrix(nmat, nstrike);
+            double num, den, call, dCdt, dCdk, d2Cdk2;
+            Vector x = new Vector(2);
+            for (int i = 0; i < nmat; i++)
+            {
+                x[0] = locVolMat[i];
+                for (int j = 0; j < nstrike; j++)
+                {
+                    x[1] = locVolStr[j];
+                    call = CallPrice.Evaluate(x);
+                    dCdt = CallPrice.Partial(x, 0);
+                    dCdk = CallPrice.Partial(x, 1);
+                    d2Cdk2 = CallPrice.Partial2(x, 1);
+                    num = dCdt + (this.r.Evaluate(x[0]) - this.q.Evaluate(x[0])) * x[1] * dCdk + this.q.Evaluate(x[0]) * call;
+                    den = x[1] * x[1] * d2Cdk2;
+                    locVolMatrix[i, j] = 2.0 * num / den;
+                    //if (double.IsNaN(locVolMatrix[i, j]))
+                    //{
+                    //    Console.WriteLine("num = {0}, den = {1}", num, den);
+                    //    Console.WriteLine("locVolStr = {0}, locVolMat = {1}, y = {2}, dSigmadk = {3}, sigma = {4}, impvol.Partial2 = {5}", x[1], x[0], y, dSigmadk, sigma, impVol.Partial2(x,1));
+                    //}
+                    //Console.WriteLine("locVolMatrix[{0},{1}] = {2}, Part2 = {3}, t = {4}, S = {5}, dSigmadk = {6}, den = {7}, num = {8}, dsigma/dt = {9}", i, j, locVolMatrix[i, j], impVol.Partial2(x, 1), locVolMat[i], locVolStr[j], dSigmadk, den, num, impVol.Partial(x, 0));
+                }
+            }
+            return locVolMatrix;
         }
 
         #region IIntegrable implementation
