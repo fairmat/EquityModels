@@ -41,8 +41,11 @@ namespace Dupire
         [Test]
         public void TestCalibration()
         {
-            InterestRateMarketData IData = InterestRateMarketData.FromFile("../../TestData/IRMD-sample.xml");
-            CallPriceMarketData HData = CallPriceMarketData.FromFile("../../TestData/CallData-sample.xml");
+            //InterestRateMarketData IData = InterestRateMarketData.FromFile("../../TestData/IRMD-sample.xml");
+            //CallPriceMarketData HData = CallPriceMarketData.FromFile("../../TestData/CallData-sample.xml");
+            InterestRateMarketData IData = InterestRateMarketData.FromFile("../../TestData/IRMD-EU-30102012-close.xml");
+            CallPriceMarketData HData = CallPriceMarketData.FromFile("../../TestData/30102012-SX5E_Index-HestonData.xml");
+
 
             List<object> l = new List<object>();
             l.Add(IData);
@@ -69,11 +72,15 @@ namespace Dupire
             int n_steps = 500;
             double strike = HData.Strike[j];
             //double volatility = HData.Volatility[i, j];
+            
+            /*
             PFunction2D.PFunction2D impvolfunc = new PFunction2D.PFunction2D(rov);
             impvolfunc = res.Objects[3] as PFunction2D.PFunction2D;
             impvolfunc.VarName = "impvol";
             rov.Symbols.Add(impvolfunc);
             double volatility = impvolfunc.Evaluate(HData.Maturity[i], HData.Strike[j]);
+             */
+            double volatility = 0.2;
             double maturity = HData.Maturity[i];
 
             ModelParameter Pstrike = new ModelParameter(strike, string.Empty, "strike");
@@ -138,6 +145,8 @@ namespace Dupire
             ResultItem price = rov.m_ResultList[0] as ResultItem;
             double samplePrice = price.m_Value;
             double sampleDevSt = price.m_StdErr / Math.Sqrt((double)n_sim);
+
+            Console.WriteLine("Surf = " + volfunc.Expr);
 
             // Calculation of the theoretical value of the call.
             double theoreticalPrice = BlackScholes.Call(rate, S0, strike, volatility, maturity, dy);

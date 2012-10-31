@@ -176,7 +176,7 @@ namespace HestonEstimator
             Vector param = new Vector(8);
             param[0] = callDataSet.S0;
             param[Range.New(1, 5)] = solution.x;
-            param[6] = equityCalData.Rate[0];
+            param[6] = equityCalData.ShortRate;
             param[7] = equityCalData.DividendYield[0];
             result = new EstimationResult(names, param);
             return result;
