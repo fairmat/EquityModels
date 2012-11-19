@@ -38,7 +38,7 @@ namespace Heston
         {
             get
             {
-                return "Heston";
+                return "Equity/" + "Heston";
             }
         }
 
