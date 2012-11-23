@@ -169,13 +169,7 @@ namespace Dupire
                     y = Math.Log(locVolStr[j] / Hdataset.S0) + integral;
                     den = System.Math.Pow(1.0 - x[1] * y * dSigmadk / sigma, 2) + x[1] * sigma * x[0] *
                         (dSigmadk - 0.25 * x[1] * sigma * x[0] * dSigmadk * dSigmadk + x[1] * impVol.Partial2(x, 1));
-                    locVolMatrix[i, j] = Math.Sqrt(Math.Abs(num / den));
-                    //if (double.IsNaN(locVolMatrix[i, j]))
-                    //{
-                    //    Console.WriteLine("num = {0}, den = {1}", num, den);
-                    //    Console.WriteLine("locVolStr = {0}, locVolMat = {1}, y = {2}, dSigmadk = {3}, sigma = {4}, impvol.Partial2 = {5}", x[1], x[0], y, dSigmadk, sigma, impVol.Partial2(x,1));
-                    //}
-                    //Console.WriteLine("locVolMatrix[{0},{1}] = {2}, Part2 = {3}, t = {4}, S = {5}, dSigmadk = {6}, den = {7}, num = {8}, dsigma/dt = {9}", i, j, locVolMatrix[i, j], impVol.Partial2(x, 1), locVolMat[i], locVolStr[j], dSigmadk, den, num, impVol.Partial(x, 0));
+                    locVolMatrix[i, j] = Math.Sqrt(num / den);
                 }
             }
             return locVolMatrix;
@@ -185,11 +179,18 @@ namespace Dupire
         {
             int nmat = 100;
             int nstrike = 100;
+            double firstMat = Hdataset.Maturity[0];
+            double firstStr = Hdataset.Strike[0];
             double lastMat = Hdataset.Maturity[Range.End];
             double lastStr = Hdataset.Strike[Range.End];
-            locVolMat = Vector.Linspace(0.0, lastMat, nmat);
-            locVolStr = Vector.Linspace(0.0, lastStr, nstrike);
+            //locVolMat = Vector.Linspace(0.0, lastMat, nmat);
+            //locVolStr = Vector.Linspace(lastStr/nstrike, lastStr, nstrike);
+            double delta = (lastStr - firstStr) / nmat;
+            locVolMat = Vector.Linspace(firstMat, lastMat, nmat);
+            locVolStr = Vector.Linspace(firstStr + delta, lastStr - delta, nstrike);
             Matrix locVolMatrix = new Matrix(nmat, nstrike);
+            // this next matrix is created only for debugging pourpose
+            Matrix squaredLocVolMatrix = new Matrix(nmat, nstrike);
             double num, den, call, dCdt, dCdk, d2Cdk2;
             Vector x = new Vector(2);
             for (int i = 0; i < nmat; i++)
@@ -204,13 +205,8 @@ namespace Dupire
                     d2Cdk2 = CallPrice.Partial2(x, 1);
                     num = dCdt + (this.r.Evaluate(x[0]) - this.q.Evaluate(x[0])) * x[1] * dCdk + this.q.Evaluate(x[0]) * call;
                     den = x[1] * x[1] * d2Cdk2;
-                    locVolMatrix[i, j] = 2.0 * num / den;
-                    //if (double.IsNaN(locVolMatrix[i, j]))
-                    //{
-                    //    Console.WriteLine("num = {0}, den = {1}", num, den);
-                    //    Console.WriteLine("locVolStr = {0}, locVolMat = {1}, y = {2}, dSigmadk = {3}, sigma = {4}, impvol.Partial2 = {5}", x[1], x[0], y, dSigmadk, sigma, impVol.Partial2(x,1));
-                    //}
-                    //Console.WriteLine("locVolMatrix[{0},{1}] = {2}, Part2 = {3}, t = {4}, S = {5}, dSigmadk = {6}, den = {7}, num = {8}, dsigma/dt = {9}", i, j, locVolMatrix[i, j], impVol.Partial2(x, 1), locVolMat[i], locVolStr[j], dSigmadk, den, num, impVol.Partial(x, 0));
+                    squaredLocVolMatrix[i, j] = 2.0 * num / den;
+                    locVolMatrix[i, j] = Math.Sqrt( Math.Abs( 2.0 * num / den ) );
                 }
             }
             return locVolMatrix;
