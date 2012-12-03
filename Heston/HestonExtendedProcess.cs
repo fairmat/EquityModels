@@ -36,18 +36,21 @@ namespace HestonExtended
         /// Previously referenced the zr,
         /// now it's just kept for compatibility.
         /// </summary>
+        
         public IModelParameter MuReference;
 
         /// <summary>
         /// Reference to the zero rate curve.
         /// </summary>
         [OptionalField(VersionAdded = 2)]
+        [ExternalSymbolReference("RateCurve", typeof(PFunction))]
         public IModelParameter zrReference;
 
         /// <summary>
         /// Reference to the dividend yield curve.
         /// </summary>
         [OptionalField(VersionAdded = 2)]
+        [ExternalSymbolReference("DividendCurve", typeof(PFunction))]
         public IModelParameter dyReference;
 
         /// <summary>
