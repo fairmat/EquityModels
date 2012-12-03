@@ -29,9 +29,9 @@ namespace HestonEstimator
     /// Implements and resolves the Heston optimization problem.
     /// </summary>
     [Mono.Addins.Extension("/Fairmat/Estimator")]
-    public class CallEstimator : IEstimator
+    public class CallEstimator : IEstimator, IEstimatorEx2
     {
-        #region IEstimatorEx Members
+        #region IEstimator Members
 
         /// <summary>
         /// Gets the value requested by the interface ProvidesTo,
@@ -60,6 +60,10 @@ namespace HestonEstimator
             return new Type[] { typeof(InterestRateMarketData), typeof(CallPriceMarketData) };
         }
 
+        public unsafe EstimationResult Estimate(List<object> marketData, IEstimationSettings settings)
+        {
+            return Estimate(marketData, settings, null);
+        }
         /// <summary>
         /// Attempts to solve the Heston optimization problem using
         /// <see cref="Heston.HestonOptimizationProblem"/>.
@@ -69,7 +73,7 @@ namespace HestonEstimator
         /// </param>
         /// <param name="settings">The parameter is not used.</param>
         /// <returns>The results of the optimization.</returns>
-        public unsafe EstimationResult Estimate(List<object> marketData, IEstimationSettings settings)
+        public unsafe EstimationResult Estimate(List<object> marketData, IEstimationSettings settings,IController controller)
         {
             InterestRateMarketData interestDataSet = (InterestRateMarketData)marketData[0];
             CallPriceMarketData callDataSet = (CallPriceMarketData)marketData[1];
@@ -95,7 +99,7 @@ namespace HestonEstimator
             IOptimizationAlgorithm solver2 = new SteepestDescent();
 
             DESettings o = new DESettings();
-
+            o.controller = controller;
             o.NP = 40;
             o.MaxIter = 40;
             o.Verbosity = 1;
@@ -111,7 +115,8 @@ namespace HestonEstimator
 
             // GA
             solution = solver.Minimize(problem, o, x0);
-
+            if (solution.errors)
+                return null;
             o.epsilon = 10e-8;
             o.options = "qn";
             o.h = 10e-8;
@@ -124,6 +129,8 @@ namespace HestonEstimator
             {
                 solution = solver2.Minimize(problem, o, x0);
             }
+            if (solution.errors)
+                return null;
 
             string[] names = new string[] { "S0", "kappa", "theta", "sigma", "rho", "V0" };
             Vector param = new Vector(6);
