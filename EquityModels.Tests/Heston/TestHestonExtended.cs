@@ -118,8 +118,8 @@ namespace Heston
             Assert.IsFalse(rov.HasErrors);
 
             ResultItem price = rov.m_ResultList[0] as ResultItem;
-            double samplePrice = discount * price.m_Value;
-            double sampleDevSt = price.m_StdErr / Math.Sqrt((double)n_sim);
+            double samplePrice = discount * price.value;
+            double sampleDevSt = price.stdDev / Math.Sqrt((double)n_sim);
 
             // Calculates the theoretical value of the call.
             Vector param = new Vector(5);

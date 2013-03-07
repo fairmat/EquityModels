@@ -143,8 +143,8 @@ namespace Dupire
 
             Assert.IsFalse(rov.HasErrors);
             ResultItem price = rov.m_ResultList[0] as ResultItem;
-            double samplePrice = price.m_Value;
-            double sampleDevSt = price.m_StdErr / Math.Sqrt((double)n_sim);
+            double samplePrice = price.value;
+            double sampleDevSt = price.stdDev / Math.Sqrt((double)n_sim);
 
             Console.WriteLine("Surf = " + volfunc.Expr);
 
