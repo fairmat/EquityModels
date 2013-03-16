@@ -1,5 +1,4 @@
-﻿using DVPLDOM;
-/* Copyright (C) 2013 Fairmat SRL (info@fairmat.com, http://www.fairmat.com/)
+﻿/* Copyright (C) 2013 Fairmat SRL (info@fairmat.com, http://www.fairmat.com/)
  * Author(s): Safe Khampol (safe.khampol@gmail.com)
  *            Matteo Tesser (matteo.tesser@fairmat.com)
  *            Enrico Degiuli (enrico.degiuli@fairmat.com)
@@ -17,6 +16,8 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
+using DVPLDOM;
 using DVPLI;
 using Mono.Addins;
 
