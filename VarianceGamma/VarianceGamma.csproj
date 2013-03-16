@@ -63,23 +63,12 @@
       <HintPath>..\..\DVPLReferences\DVPLInterfaces.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="DVPLSolverC">
-      <HintPath>..\..\DVPLReferences\DVPLSolverC.dll</HintPath>
-    </Reference>
-    <Reference Include="DVPLUtils">
-      <HintPath>..\..\DVPLReferences\DVPLUtils.dll</HintPath>
-    </Reference>
     <Reference Include="Fairmat.Optimization">
       <HintPath>..\..\DVPLReferences\Fairmat.Optimization.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Mono.Addins">
       <HintPath>..\..\DVPLReferences\Mono.Addins.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="nunit.framework, Version=2.6.2.12296, Culture=neutral, PublicKeyToken=96d09a1eb7f44a77, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\DVPLReferences\nunit.framework.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="System" />
