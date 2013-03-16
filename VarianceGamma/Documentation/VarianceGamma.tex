@@ -1,0 +1,341 @@
+\newcommand{\pluginName}{Variance Gamma Model}
+\newcommand{\pluginVersion}{1.0}
+
+\input{../../../DocumentationTemplate/TemplateL3}
+
+\section{Preface}
+\emph{This plug-is has been developed starting from the University of Edinburgh MSC in finance and operation research dissertation of Safe Khampol. The aim of the dissertation was to implement a calibration and Monte Carlo simulation procedure for The Variance Gamma (VG) Model for Matlab and for the Fairmat plug-in system.} 
+
+\section{Introduction}
+The Variance Gamma (VG) is a  mathematical model for simulating stock prices and allows closed form 
+calculation of European options, one popular financial derivative product. 
+The model is both simple and robust at the same time and is a very good 
+alternation to the existing models like Heston stochastic volatility model 
+and Black-Scholes Model which may be biased when applied to real market 
+circumstance. (Comment:Heston is good no comparison with Heston unless)
+
+In the codes, we generated entirely option prices of VG examples by picking 
+all the input variables and using VG closed form and VG Fast Fourier 
+Transform methods to compute their values. After that, each method that has 
+been used in the example will be served as model price in the calibration. 
+Then, the VG calibration will estimate three parameters $\theta $, $\sigma $ 
+and $\upsilon $ and those parameters will be substituted into computation of 
+VG Monte Carlo and Back Scholes option pricing and VG Simulation of Price 
+Path as Gamma time-changed Brownian Motion and difference of Gamma.
+
+As a reminder, all the symbols or names in C{\#} and Matlab have the same 
+meaning by assuming s$_{0}$ is the current stock price, k is strike price, t 
+(or T-t) is time to maturity starting from time 0, q is a dividend, $\theta 
+$ (theta) is the drift in the Brownian motion, $\sigma $ (sigma) is the 
+volatility of the Brownian motion, and $\upsilon $ (nu) is the variance rate 
+of gamma time change. Some methods do not include the dividend, q.
+
+In this work we implemented both valuation models of Black-Scholes and 
+Variance Gamma. In VG model, there are various ways to find VG option price. 
+However, the recommended VG option pricing models are VG closed form, VG 
+Monte Carlo, Fast Fourier Transform methods and will be explained in 
+details. In case of the calibration of parameters, either Fast Fourier 
+transform or closed-form has different advantages such as time of 
+calibration, accuracy of estimated parameters and limitation of constraint. 
+Finally, the VG simulation of stock price and comparison of BS and VG option 
+are employed by calibrated parameters. These topics will be explained in the 
+following sections.
+
+\section{Variance Gamma Closed-form formulas for European Call 
+options}
+
+The first formula is closed-form for Variance Gamma European option pricing 
+model by Madan, Carr and Eric. The original equation contradicts with the 
+following formula because it contains mistakes in the model. The errors were 
+in the way of computation of a$_{1}$, b$_{1}$, a$_{2}$, and b$_{2}$.This is 
+also confirmed from Professor Peter P. Carr e-mail, but he didn't point out 
+where exactly. However, the below formula was implemented by Whitley (2009) 
+and I has been re-checked its solution with other Variance Gamma methods.
+
+Its closed-form is originated from the Classic Black-Scholes model and 
+adapted to the conditional normality of the process and the Variance Gamma 
+process as drift of Brownian motion with time span from a Gamma distribution 
+and the risk neutral dynamic of the stock price. As a result, it uses a high 
+computation process, due to the modified Bessel function of the second kind 
+and integration of the degenerate hyper-geometric function of two variables, 
+and is given as
+
+\begin{center}
+Call (s$_{0}$, k, t) $=$ s$_{0\, }e^{-rt}\psi $ (a$_{1}$, b$_{1}$, 
+$\gamma )$ -- k $e^{-rt} \quad \psi $ (a$_{2}$, b$_{2}$, $\gamma )$
+\end{center}
+
+where
+\[
+\gamma \quad =
+\, \frac{t}{\upsilon }
+\]
+\[
+\omega =\, \frac{1}{\upsilon }\, \mathrm{ln?}(1-\, \upsilon \theta -\, 
+\frac{1}{2}\sigma^{2}\upsilon )
+\]
+\[
+\zeta =\, \frac{(\ln \left( \frac{s_{t}}{k} \right)+\, \omega t)}{\sigma }
+\]
+\[
+\vartheta =1-\, \upsilon \, (\theta +\, \frac{1}{2}\sigma^{2})
+\]
+\[
+a_{1}\, =\, \zeta \sqrt \frac{\vartheta }{\upsilon } 
+\]
+\[
+b_{1}\, =\, \frac{1}{\sigma }(\theta +\, \sigma^{2})\, \sqrt \frac{\upsilon 
+}{\vartheta } 
+\]
+\[
+a_{2}=\zeta \, \sqrt \frac{1}{\upsilon } 
+\]
+\[
+b_{2}=\, \frac{1}{\sigma }\, \theta \sqrt \upsilon 
+\]
+The function $\psi $ is defined in terms of the modified Bessel function of 
+the second kind,${\, K}_{v}(z)$, and the degenerate hyper-geometric function 
+of two variables, $\Phi $ has the integral representation Humbert (1920), as
+\[
+\mathrm{\psi \, }\left( \mathrm{a,\, b,\, \gamma } \right)\mathrm{=\, 
+}\frac{c^{\gamma +\frac{1}{2}}e^{sign\left( a \right)c}\left( 1+u 
+\right)^{\gamma }}{\sqrt {2\pi } \, ?\left( \gamma \right)\gamma }K_{\gamma 
++\frac{1}{2}}(c)\Phi \left( \gamma ,\, 1-\gamma ,\, 1+\gamma ;\, 
+\frac{1+u}{2}\mathrm{,\, -sign}\left( \mathrm{a} \right)\mathrm{c}\, \left( 
+\mathrm{1+u} \right) \right)\mathrm{-sign(a)\, }\frac{c^{\gamma 
++\frac{1}{2}}e^{sign\left( a \right)c}\left( 1+u \right)^{1+\gamma }}{\sqrt 
+{2\pi } \, ?\left( \gamma \right)\left( 1+\gamma \right)}\mathrm{\, 
+}K_{\gamma -\frac{1}{2}}\left( c \right)\Phi \left( 1+\gamma ,\, 1-\gamma 
+,\, 2+\gamma ;\, \frac{1+u}{2},\, -sign\left( a \right)c\left( 1+u \right) 
+\right)+sign(a)\frac{c^{\gamma +\frac{1}{2}}e^{sign\left( a \right)c}\left( 
+1+u \right)^{1+\gamma }}{\sqrt {2\pi } ?\left( \gamma \right)\gamma 
+}K_{\gamma -\frac{1}{2}}(c)\Phi \left( \gamma ,\, 1-\gamma ,\, 1+\gamma ;\, 
+\frac{1+u}{2},\, -sign\left( a \right)c(1+u) \right),
+\]
+where c $= \quad \left| a \right|\sqrt {2+b^{2}} $, $u=\, \frac{b}{\sqrt 
+{2+b^{2}} }$ and
+\[
+\mathrm{\Phi }\, \left( \alpha ,\, \beta ,\, \gamma ,\, x,\, y \right)=\, 
+\frac{?(\gamma )}{?(\alpha )?(\gamma -\alpha )}\, \int_0^1 {u^{\alpha 
+-1}{(1-u)}^{\gamma -\alpha -1}{(1-ux)}^{-\beta }e^{uy}\, \partial u} 
+\]
+where $?(x)$ is the gamma function.
+
+
+However, the degenerate hyper geometric function of two variables, $\Phi $, 
+has a strong singularity. As a result, in Matlab the adaptive Simpson 
+quadrature integration will be the most effective method because at least 
+there will be solutions for any given parameters. On the other hands, in 
+C{\#}, regarding this problem, I adapted Humbert series expansion for 
+confluent Hypergeometric function of two variables and wrote a C{\#} for it. 
+The Confluent hypergeometric functions of two variables have the following 
+integral form:
+\[
+\Phi (\alpha ,\beta ,\gamma ,x,y)=\frac{\Gamma (\gamma )}{\Gamma (\alpha 
+)\Gamma (\gamma -\alpha )}\int\limits_0^1 {v^{\alpha -1}(1-v)^{\gamma 
+-\alpha -1}(1-vx)^{-\beta }e^{vy}dv} 
+\]
+and the series form:
+\[
+\Phi (\alpha ,\beta ,\gamma ,x,y)=\sum\limits_{m,n=0}^\infty {\frac{(\alpha 
+)_{m+n} (\beta )_{m} }{(\gamma )_{m+n} {\mkern 1mu}m!{\mkern 1mu}n!}} 
+{\mkern 1mu}x^{m}y^{n} ,\vert x\vert <1,\vert y\vert <1
+\]
+where the Pochhammer symbol (q)$_{n}$ denotes the rising factorial:
+\[
+(q)_{n} =\frac{\Gamma (q+n)}{\Gamma (q)}=q{\mkern 1mu}(q+1)\cdots (q+n-1) 
+\]
+
+This can imply the series is still convergent with \textbar x\textbar 
+\textless 1and without condition \textbar y\textbar \textless 1 because 
+\[
+x=\frac{1+u}{2}=\frac{1+\frac{b}{\sqrt {2+b^{2}} }}{2}\,\,\,\Rightarrow 
+\,\,\vert x\vert \,\le \frac{1}{2}+\frac{\vert b\vert }{2\sqrt {2+b^{2}} 
+}=\frac{1}{2}+\frac{\vert b\vert }{2\sqrt {2+b^{2}} }<1,\,\,\,\forall b
+\]
+means \textbar x\textbar \textless 1 in this model. Formula for my integral:
+\[
+I(\alpha ,x,y)=\frac{\Gamma (\alpha )}{\Gamma (1+\alpha )}\Phi (\alpha 
+,1-\alpha ,1+\alpha ,x,y)=\int\limits_0^1 {v^{\alpha -1}(1-vx)^{\alpha 
+-1}e^{vy}dv,\,\,\,0<\alpha ,x,y<1} 
+\]
+
+Another way around, it also can use an expansion related to Gauss 
+hyper-geometric function ($_{2} F_{1} (a,b;c;x)$ is Gauss hyper-geometric 
+function and can be calculated with Matlab function hypergeom), shown as 
+below. 
+\[
+\begin{array}{l}
+ \Phi (\alpha ,\beta ,\gamma ;x,y)=\frac{\Gamma (\gamma )}{\Gamma (\alpha 
+)\Gamma (\gamma -\alpha )}\int\limits_0^1 {v^{\alpha -1}(1-v)^{\gamma 
+-\alpha -1}(1-vx)^{-\beta }e^{vy}dv} \\ 
+ =\frac{\Gamma (\gamma )}{\Gamma (\alpha )\Gamma (\gamma -\alpha 
+)}\sum\limits_{n=0}^\infty {\frac{y^{n}}{n!}\int\limits_0^1 {v^{n+\alpha 
+-1}(1-v)^{\gamma -\alpha -1}(1-vx)^{-\beta }dv} } \\ 
+ =\sum\limits_{n=0}^\infty {\frac{\Gamma (\gamma )\Gamma (n+\alpha )}{\Gamma 
+(\alpha )\Gamma (n+\gamma )}} \,_{2} \frac{y^{n}}{n!}F_{1} (\beta ,n+\alpha 
+;n+\gamma ;x),\,\,\,\,\vert x\vert <1. \\ 
+ \end{array}
+\]
+In conclusion, these formulas should work in theory, but there is an extreme 
+result and rarely occurs wrong answers. Both forms produce the same answer.
+
+\section{Variance Gamma Monte Carlo Simulation for European 
+Call options}
+
+A Monte Carlo simulation is a procedure for sampling random outcomes for the 
+applying process, VG process. It helped to evaluate and analyze investments 
+by simulating the various sources if uncertainty affecting their value, and 
+then determining their average value of sampling outcomes. Its option 
+pricing way is straightforward: sample a sufficiently big number of stock 
+price paths of the VG process to obtain VG stock price paths under the risk 
+neutral measure between time 0 and t. The initial inputs are time at 
+maturity t, skewness $\theta $, volatility $\sigma $, variance rate of the 
+gamma process $\upsilon $, risk-free rate r, dividend q, 
+
+, and spot price s0. $\omega $ is the same equation as before,$\, 
+\frac{1}{\mathrm{\upsilon }}\ln \left( 1-\theta \mathrm{\upsilon 
+}-\frac{\sigma^{2}\mathrm{\upsilon }}{2} \right)$
+
+The sampling g values are generated by using gamma inverse cumulative 
+distribution function. The inverse of the gamma cumulative distribution 
+function with shape parameters in t / $\upsilon $ and scale parameters in 
+$\upsilon $ for the corresponding probabilities in random number from 
+uniform distribution of zero mean and unit variance between 0 and 1.
+\[
+g=gammainv(uniform\left( 0,1 \right)\mathrm{,\, t\, /\, \upsilon },\, 
+\mathrm{\upsilon }\, )
+\]
+Each value of g sample is normally distributed with mean $\theta $g and 
+standard deviation$\, \sigma \sqrt g $ with inverse standard normal 
+distribution function. Sometimes, g is referred to ``measuring economic time 
+or time adjusted for the flow of information'' as well as t is ``the usual 
+time measure''.
+\[
+h=\, \theta g+\, \sigma \sqrt {g\, } norminv(uniform\left( 0,1 \right))
+\]
+The stock price s$_{t}$ is given by
+\[
+s_{t}=s_{0}exp\left[ \left( r-q \right)t+\omega t+h \right]
+\]
+
+Then, the European call price is
+\[
+c\left( s_{0};k,t \right)=\, e^{-rt}E\left[ max\left( s_{t}-k,0 \right) 
+\right]
+\]
+Thus, the variance gamma call and put option VG Monte Caro simulations are
+\[
+c=\, e^{-rt}\frac{\sum\limits_{i=1}^n {max\left[ s_{t}\left( i \right)-k,0 
+\right]} }{n}
+\]
+\[
+p=\, e^{-rt}\frac{\sum\limits_{i=1}^n {max\left[ {k-s}_{t}\left( i \right),0 
+\right]} }{n}
+\]
+where n is number of simulation of stock price.
+
+Another way around of characterizing gamma distribution is that the arriving 
+rate of information during time t is defined by g. If g is large, large 
+arriving information and the sample of stock price is a normal distribution 
+in ``h'' from above equation which has a relatively large mean and variance. 
+Conversely, if g is small, a small deal of information arrives and the 
+sample of stock price has a relatively small mean and variance.
+
+If $\upsilon $ is getting closer to zero in the variance gamma model, the 
+value of g will be becoming T with certainty and can be illustrated by using 
+the gamma distribution function. In addition, $\omega $ is --$\theta $t from 
+using a series expansion for the stock price function; consequently, in the 
+limit the distribution of S$_{t}$ has a mean of $S_0 \exp[(r-q)t]$ and a 
+standard deviation of $\sigma \sqrt{t}$ then this model converts to 
+geometric Brownian motion.
+
+\subsection{Calculation of Variance Gamma Put for European options}
+
+The value of the European put is calculated from the value of the European 
+call option by put-call parity, as
+
+\begin{center}
+Put (s$_{t}$, k, t) $=$ Call (s$_{t}$, k, t) - s$_{t}$ e$^{-qt} \quad +$ k 
+e$^{-rt}$
+\end{center}
+
+\section{Calibration of VG parameters from its formula}
+
+Madan, Carr and Chang (The Variance Gamma Process and Option Pricing, 1998) 
+also introduced the tuned variance gamma process in the index options market 
+and statistical process to the level of the fourth moment. There are varying 
+numbers of option prices range and thus, it is typically impossible to 
+identify a single set of parameters that would fit right to all options 
+prices. As a result, maximum likelihood method is employed to estimate these 
+parameters. To be exact, the likelihood employed addresses expected 
+heteroskedasticity in option prices for various strikes point by adopting a 
+multiplicative error formulation. The maximum likelihood estimation is 
+asymptotically equivalent to the minimization of followed, with $\omega_{i}$ as 
+the observed market price on the i$^{th}$ and $\hat{\omega}_{i}$ as the 
+model price.
+\[
+k=\sqrt{\frac{1}{M}\sum{i=1}^M[\ln(\omega_i)-ln(\hat{\omega}_{i})]}
+\]
+These include the average estimated parameter values of the risk neutral 
+densities and its accompanying standard deviation throughout the 
+observation, and also the minimum and maximum estimated value. After the 
+research of model in Matlab, the variance gamma option pricing model, $\hat{\omega}_{i}$, in implementation will be used only two methods: variance 
+gamma Closed Form and Fast Fourier transform because they are given a 
+reasonable parameters and speed of evaluating computation. In contrast, VG 
+Monte Carlo takes a long time to calibrate the parameters.
+
+\section{Simulation of Variance Gamma Price Paths}
+
+Those calibrating three parameters and given parameters will be substituted 
+to find variance gamma price path. There are three main methods to simulate 
+VG. However, in this paper, two methods are only considered and implemented 
+and the third one for simulating VG is approximated by a compound Poisson 
+process. The two models based on two representations presented before and 
+have closely and correctly distribution. The only advantage of the third 
+method that the other two cannot do is that it can be used for any L\'{e}vy 
+process. 
+
+In the following figure, the two different algorithms for sequentially 
+generating VG sample paths between 0 and T starting from 0 (0 $=$ t$_{0}$ 
+\textless t$_{1}$ \textless \textellipsis \textless t$_{N} \quad =$ T) where the 
+time increments $\Delta t_i, i=1,...,N$ are given as input as well as VG 
+parameters.
+\textbf{Figure 1: Simulating VG stock price as Gamma Time-Changed Brownian 
+motion}
+
+Input: VG parameters ($\theta $, $\sigma $, $\upsilon )$; time spacing 
+$\Delta t_{1},\mathellipsis ,\Delta t_{N}$ subjected to $\sum\limits_{i=1}^N 
+{\Delta t_{i}=\, \, T} $
+
+Initialization: Set X$_{0} \quad =$ 0.
+
+Loop from i $=$ 1 to N:
+
+\begin{enumerate}
+\item Generate $\Delta G_{i}\, \sim \, ?\left( \frac{\Delta t_{i}}{\mathrm{\upsilon }},\mathrm{\upsilon } \right)\, and\, normal\, Z_{i}\sim N\left( 0,1 \right)$
+\end{enumerate}
+independent and independent of past random variates
+
+\begin{enumerate}
+\item Return $X\left( t_{i} \right)=X\left( t_{i-1} \right)+\, \theta \Delta G_{i}+\sigma \sqrt {\Delta G_{i}} Z_{i}$.
+\item Computing stock price: $S\left( t_{i} \right)=S\left( 0 \right)\mathrm{exp?}\left( \left( r+\omega \right)t+X\left( t_{i} \right) \right)$
+\end{enumerate}
+
+\textbf{Figure 2: Simulating VG stock price as Difference of Gamma}
+
+Input: VG parameters ($\theta $, $\sigma $, $\upsilon )$; time spacing 
+$\Delta t_{1},\mathellipsis ,\Delta t_{N}$ subjected to $\sum\limits_{i=1}^N 
+{\Delta t_{i}=\, \, T} $
+
+Initialization: Set X$_{0} \quad =$ 0.
+
+Loop from i $=$ 1 to N:
+
+\begin{enumerate}
+\item Generate independent gamma variates $\Delta \gamma_{i}^{-}\sim ?\left( \frac{\Delta t_{i}}{\mathrm{\upsilon }},\, \mathrm{\upsilon }\mu_{n} \right)$, $\Delta \gamma_{i}^{+}\sim ?\left( \frac{\Delta t_{i}}{\mathrm{\upsilon }},\, \mathrm{\upsilon }\mu_{p} \right)$, independently of past random variates
+\item Return $X\left( t_{i} \right)=X\left( t_{i-1} \right)+\Delta \gamma_{i}^{+}-\Delta \gamma_{i}^{-}$
+\item Computing stock price: $S\left( t_{i} \right)=S\left( 0 \right)\mathrm{exp?}\left( \left( r+\omega \right)t+X\left( t_{i} \right) \right)$
+\end{enumerate}
+
+\end{document}

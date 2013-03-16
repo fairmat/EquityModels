@@ -37,6 +37,10 @@
     <Reference Include="DVPLUtils">
       <HintPath>..\..\DVPLReferences\DVPLUtils.dll</HintPath>
     </Reference>
+    <Reference Include="Fairmat.Optimization, Version=1.0.0.0, Culture=neutral, PublicKeyToken=0c08731b4bb5a116, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\DVPLReferences\Fairmat.Optimization.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="nunit.framework">
       <HintPath>..\..\DVPLReferences\nunit.framework.dll</HintPath>
@@ -72,6 +76,8 @@
     <Compile Include="Dupire\DupireCalibration.cs" />
     <Compile Include="Dupire\DupireSimulation.cs" />
     <Compile Include="TestCommon.cs" />
+    <Compile Include="VarianceGamma\TestVarianceGamma.cs" />
+    <Compile Include="VarianceGamma\TestVarianceGammaCalibration.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup />
@@ -87,6 +93,10 @@
     <ProjectReference Include="..\Heston\Heston.csproj">
       <Project>{50B13FC9-5FEA-44D7-85E8-25B9B7B48BDE}</Project>
       <Name>Heston</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\VarianceGamma\VarianceGamma.csproj">
+      <Project>{1CF5F32A-530F-4CA5-BD23-25431EF3B9F5}</Project>
+      <Name>VarianceGamma</Name>
     </ProjectReference>
   </ItemGroup>
 </Project>

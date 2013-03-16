@@ -11,6 +11,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EquityModels.Tests", "Equit
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Heston", "Heston\Heston.csproj", "{50B13FC9-5FEA-44D7-85E8-25B9B7B48BDE}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VarianceGamma", "VarianceGamma\VarianceGamma.csproj", "{1CF5F32A-530F-4CA5-BD23-25431EF3B9F5}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -37,6 +39,10 @@ Global
 		{50B13FC9-5FEA-44D7-85E8-25B9B7B48BDE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{50B13FC9-5FEA-44D7-85E8-25B9B7B48BDE}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{50B13FC9-5FEA-44D7-85E8-25B9B7B48BDE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1CF5F32A-530F-4CA5-BD23-25431EF3B9F5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1CF5F32A-530F-4CA5-BD23-25431EF3B9F5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1CF5F32A-530F-4CA5-BD23-25431EF3B9F5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1CF5F32A-530F-4CA5-BD23-25431EF3B9F5}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
