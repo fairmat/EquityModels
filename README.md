@@ -8,3 +8,5 @@ Historical Simulator: A plugin which simulates future realizations of underlying
 Dupire: A plugin which implements the Dupire local volatility model.
 
 Heston: A plugin which uses the Heston model to simulate equity or index prices taking into account stochastic volatility effects.
+
+Variance Gamma: A plugin which implements the Variance Gamma equity model for calibration and simulation.
