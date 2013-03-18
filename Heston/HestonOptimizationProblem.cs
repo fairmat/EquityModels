@@ -97,7 +97,7 @@ namespace HestonEstimator
         private double s0;
 
         /// <summary>
-        /// Creates a new instance of the HestonCallOptimizationProblem using the
+        /// Initializes a new instance of the HestonCallOptimizationProblem class using the
         /// EquityCalibrationData data structure.
         /// </summary>
         /// <param name="equityCalData">
@@ -120,7 +120,7 @@ namespace HestonEstimator
         }
 
         /// <summary>
-        /// Creates a new instance of the HestonCallOptimizationProblem.
+        /// Initializes a new instance of the HestonCallOptimizationProblem class.
         /// </summary>
         /// <param name="callMarketPrice">A matrix containing call option market prices.</param>
         /// <param name="maturity">
@@ -133,7 +133,7 @@ namespace HestonEstimator
         /// Vector of zero coupon bond rates calculated relative to maturity vector maturities.
         /// </param>
         /// <param name="dividendYield">
-        /// Vector of zero coupon bond rates calculated relative to maturity vector maturities.
+        /// Vector of dividend yield rates calculated relative to maturity vector maturities.
         /// </param>
         /// <param name="s0">Index/Equity value at the time of calibration.</param>
         /// <param name="matBound">
@@ -164,7 +164,7 @@ namespace HestonEstimator
         /// Vector of zero coupon bond rates calculated relative to maturity vector maturities.
         /// </param>
         /// <param name="dividendYield">
-        /// Vector of zero coupon bond rates calculated relative to maturity vector maturities.
+        /// Vector of dividend yield rates calculated relative to maturity vector maturities.
         /// </param>
         /// <param name="s0">Index/Equity value at the time of calibration.</param>
         /// <param name="matBound">
@@ -188,8 +188,8 @@ namespace HestonEstimator
             Console.WriteLine("strike = " + strike);
             Console.WriteLine("S0_ = " + s0);
             Console.WriteLine("strikeBound = " + strikeBound);
-            matI = FindExtremes(maturity, matBound);
-            strikeI = FindExtremes(strike, s0 * strikeBound);
+            matI = this.FindExtremes(maturity, matBound);
+            strikeI = this.FindExtremes(strike, s0 * strikeBound);
 
             int numMat = matI[1] - matI[0] + 1;
             int numStrike = strikeI[1] - strikeI[0] + 1;
@@ -336,7 +336,7 @@ namespace HestonEstimator
                     hc.rate = this.rate[r];
                     hc.dividend = this.dividendYield[r];
                     hc.row = r;
-                    tl.Add(Task.Factory.StartNew(CalculateSingleRow, hc));
+                    tl.Add(Task.Factory.StartNew(this.CalculateSingleRow, hc));
                 }
 
                 tsScheduler.WaitTaskList(tl);
@@ -352,17 +352,17 @@ namespace HestonEstimator
                     hc.rate = this.rate[r];
                     hc.dividend = this.dividendYield[r];
                     hc.row = r;
-                    CalculateSingleRow(hc);
+                    this.CalculateSingleRow(hc);
                     sum += hc.sum;
                 }
             }
 
             sum = sum / ((double)this.numCall);
             if (this.useBoundPenalty)
-                sum = sum + BoundPenalty(x);
+                sum = sum + this.BoundPenalty(x);
 
             if (this.useFellerPenalty)
-                sum = sum + FellerPenalty(x);
+                sum = sum + this.FellerPenalty(x);
             return sum;
         }
 

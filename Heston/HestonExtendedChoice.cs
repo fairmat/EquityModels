@@ -40,7 +40,7 @@ namespace HestonExtended
         {
             get
             {
-                return "Equity/"+HestonExtendedProcess.extendedHestonDescription;
+                return "Equity/" + HestonExtendedProcess.extendedHestonDescription;
             }
         }
 

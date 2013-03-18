@@ -59,7 +59,7 @@ namespace VarianceGamma
         private Matrix cp;
 
         /// <summary>
-        /// Creates a new instance of the Variance Gamma Optimization Problem class.
+        /// Initializes a new instance of the VarianceGammaOptimizationProblem class.
         /// </summary>
         /// <param name="q">The dividend yield.</param>
         /// <param name="s0">The actual value of stock.</param>
@@ -162,6 +162,17 @@ namespace VarianceGamma
             throw new NotImplementedException();
         }
 
+        /// <summary>
+        /// Returns the root mean square error between market and model call prices
+        /// </summary>
+        /// <param name="x">Parameter vector</param>
+        /// <param name="q">Dividend yield</param>
+        /// <param name="s0">Index starting value</param>
+        /// <param name="k">Call strike vector</param>
+        /// <param name="r">Short rate</param>
+        /// <param name="cp">Call price matrix</param>
+        /// <param name="m">Call maturity vector</param>
+        /// <returns>Call price root mean square error</returns>
         public static double VGDiff(Vector x, double q, double s0, Vector k, double r, Matrix cp, Vector m)
         {
             double y = 0;
@@ -170,7 +181,7 @@ namespace VarianceGamma
                 for (int j = 0; j < k.Length; j++)
                 {
                     double residual = Math.Pow(cp[i, j] - VarianceGammaOptionsCalibration.VGCall(x[0], x[1], x[2], m[i], k[j], q, s0, r), 2);
-                    if (residual < Math.Pow(10, 10))
+                    if (residual > Math.Pow(10, 10))
                     {
                         y = y + 1000 * Math.Sqrt(x[0] * x[0] + x[1] * x[1] + x[2] * x[2]);
                     }

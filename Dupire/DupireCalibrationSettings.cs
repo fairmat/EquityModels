@@ -39,10 +39,10 @@ namespace Dupire
     [SettingsContainer("Calibration Settings for Heston")]
     [Mono.Addins.Extension("/Fairmat/UserSettings")]
     [Serializable]
-    public class DupireCalibrationSettings:IEstimationSettings
+    public class DupireCalibrationSettings : IEstimationSettings
     {
         [SettingDescription("Local volatility calculation method")]
-        public LocalVolatilityCalculation  LocalVolatilityCalculation= LocalVolatilityCalculation.Method1;
+        public LocalVolatilityCalculation  LocalVolatilityCalculation = LocalVolatilityCalculation.Method1;
     }
 }
 

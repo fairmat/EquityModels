@@ -185,10 +185,10 @@ namespace HistoricalSimulator
         {
             try
             {
-                if (File.Exists(FilePath))
+                if (File.Exists(this.FilePath))
                 {
                     // Store the lines of the file.
-                    string[] fileLines = File.ReadAllLines(FilePath)
+                    string[] fileLines = File.ReadAllLines(this.FilePath)
                                              .Where(s => s != string.Empty)
                                              .ToArray();
 
@@ -283,9 +283,9 @@ namespace HistoricalSimulator
                     // Use the number of columns of the first line of the file
                     // (At the moment don't check for an equal number of elements
                     // between each line).
-                    if (File.Exists(FilePath))
+                    if (File.Exists(this.FilePath))
                     {
-                        string[] lines = File.ReadLines(FilePath).ToArray();
+                        string[] lines = File.ReadLines(this.FilePath).ToArray();
                         string[] lineTokens = lines[0].Split(HistoricalSimulator.elementSeparators);
                         simulationInfo.StateSize = lineTokens.Length - 1;
                     }

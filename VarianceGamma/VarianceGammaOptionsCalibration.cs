@@ -47,8 +47,19 @@ namespace VarianceGamma
         /// </summary>
         private Matrix cp;
 
+        /// <summary>
+        /// Dividend yield
+        /// </summary>
         private double q;
+
+        /// <summary>
+        /// Process starting value
+        /// </summary>
         private double s0;
+
+        /// <summary>
+        /// Risk free rate
+        /// </summary>
         private double r;
 
         /// <summary>
@@ -123,7 +134,7 @@ namespace VarianceGamma
             optimizationSettings.epsilon = 10e-5;
             var solution = algorithm.Minimize(new VarianceGammaOptimizationProblem(this.q, this.s0, this.k,
                                                                           this.r, this.cp, this.m),
-                                              optimizationSettings, x0);
+                                                                          optimizationSettings, x0);
             var er = new EstimationResult();
             return er;
         }
@@ -131,15 +142,15 @@ namespace VarianceGamma
         /// <summary>
         /// Calculate the price of a call option.
         /// </summary>
-        /// <param name="theta"></param>
-        /// <param name="sigma"></param>
-        /// <param name="nu"></param>
-        /// <param name="t"></param>
-        /// <param name="k"></param>
-        /// <param name="q"></param>
-        /// <param name="s0"></param>
-        /// <param name="r"></param>
-        /// <returns></returns>
+        /// <param name="theta">VG theta parameter</param>
+        /// <param name="sigma">VG sigma parameter</param>
+        /// <param name="nu">VG nu parameter</param>
+        /// <param name="t">Call maturity</param>
+        /// <param name="k">Call strike</param>
+        /// <param name="q">Dividend yield</param>
+        /// <param name="s0">Process starting value</param>
+        /// <param name="r">Risk free rate</param>
+        /// <returns>Call price value</returns>
         public static double VGCall(double theta, double sigma, double nu, double t, double k, double q, double s0, double r)
         {
             double omega = Math.Log(1 - (sigma * sigma) * nu * 0.5 - theta * nu) / nu;
@@ -155,6 +166,13 @@ namespace VarianceGamma
             return s0 * p1 - k * Math.Exp(-r * t) * p2;
         }
 
+        /// <summary>
+        /// PsiBH function that enters in the pricing formula
+        /// </summary>
+        /// <param name="a">First variable</param>
+        /// <param name="b">Second variable</param>
+        /// <param name="ga">Third variable</param>
+        /// <returns>PsiBH value</returns>
         private static double PsiBH(double a, double b, double ga)
         {
             double mu = b / Math.Sqrt(2 + b * b);
@@ -170,17 +188,17 @@ namespace VarianceGamma
         }
 
         /// <summary>
-        /// Calculates the confluent Hyper geometric of 2 variables.
+        /// Calculates the degenerate hypergeometric function of two variables
         /// </summary>
-        /// <param name="l"></param>
-        /// <param name="h"></param>
-        /// <param name="n"></param>
-        /// <param name="o"></param>
-        /// <param name="p"></param>
-        /// <returns></returns>
-        private static double DH(double l, double h, double n, double o, double p)
+        /// <param name="alpha">First parameter</param>
+        /// <param name="beta">Second parameter</param>
+        /// <param name="gamma">Third parameter</param>
+        /// <param name="x">First variable</param>
+        /// <param name="y">Second variable</param>
+        /// <returns>Degenerate hypergeometric function of two variables value</returns>
+        private static double DH(double alpha, double beta, double gamma, double x, double y)
         {
-            return ConfluentHypergeometric2Var(l, h, n, o, p) / l;
+            return ConfluentHypergeometric2Var(alpha, beta, gamma, x, y) / alpha;
         }
 
         /// <summary>
@@ -212,6 +230,12 @@ namespace VarianceGamma
             }
         }
 
+        /// <summary>
+        /// Calculates the modified Bessel function of the first kind
+        /// </summary>
+        /// <param name="nu">Parameter</param>
+        /// <param name="z">Variable</param>
+        /// <returns>Bessel function of the first kind value</returns>
         private static double BesselI(double nu, double z)
         {
             double s = 0;
@@ -223,11 +247,26 @@ namespace VarianceGamma
             return s;
         }
 
+        /// <summary>
+        /// Calculates the modified Bessel function of the second kind
+        /// </summary>
+        /// <param name="nu">Parameter</param>
+        /// <param name="z">Variable</param>
+        /// <returns>Bessel function of the second kind value</returns>
         private static double BesselK(double nu, double z)
         {
-            return Math.PI / 2 * (BesselI(-nu, z) - BesselI(nu, z)) / (Math.Sin(nu * Math.PI));
+            return (Math.PI / 2.0) * (BesselI(-nu, z) - BesselI(nu, z)) / Math.Sin(nu * Math.PI);
         }
 
+        /// <summary>
+        /// Calculates the confluent hypergeometric function of two variables
+        /// </summary>
+        /// <param name="a">First parameter</param>
+        /// <param name="b">Second parameter</param>
+        /// <param name="c">Third parameter</param>
+        /// <param name="x">First variable</param>
+        /// <param name="y">Second variable</param>
+        /// <returns>Confluent hypergeometric function of two variables value</returns>
         private static double ConfluentHypergeometric2Var(double a, double b, double c, double x, double y)
         {
             // Throw exception if z is not greater than zero.
@@ -252,10 +291,8 @@ namespace VarianceGamma
                             s = snew;
                         }
                     }
-
                     numMax = numMax + 1;
                 }
-
                 return s;
             }
         }

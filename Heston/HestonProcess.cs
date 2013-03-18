@@ -96,8 +96,8 @@ namespace Heston
         }
 
         /// <summary>
-        /// The default constructor.
-        /// Sets all parameters to 0.0.
+        /// Initializes a new instance of the HestonProcess class.
+        /// This is the default constructor and sets all parameters to 0.0.
         /// </summary>
         public HestonProcess()
         {
@@ -209,7 +209,7 @@ namespace Heston
                 si.LatentSize = 1;
                 si.NoiseSize = 2;
                 si.StateSize = 2;
-                si.DefaultComponent = 0;//the equity is defined at component zero
+                si.DefaultComponent = 0; //the equity is defined at component zero
                 return si;
             }
         }
@@ -366,7 +366,7 @@ namespace Heston
         public bool Parse(IProject p_Context)
         {
             bool errors = false;
-            List<IExportable> list = ExportObjects(false);
+            List<IExportable> list = this.ExportObjects(false);
             foreach (IExportable parameter in list)
             {
                 if (parameter is IParsable)

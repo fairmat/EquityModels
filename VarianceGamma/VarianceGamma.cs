@@ -69,17 +69,10 @@ namespace VarianceGamma
         /// </summary>
         private IModelParameter dividend;
 
-        /// <summary>
-        /// Drift adjustment: can be used for adding risk premium or quanto adjustments.
-        /// TODO: check if needed.
-        /// </summary>
-        //[NonSerialized]
-        //private IModelParameter driftAdjustment;
-
         #endregion
 
         /// <summary>
-        /// Gamma variates generator.
+        /// Gamma distribution generator.
         /// </summary>
         [NonSerialized]
         private Fairmat.Statistics.Gamma gamma;
@@ -127,7 +120,14 @@ namespace VarianceGamma
         private const string dividendDescription = "q";
 
         /// <summary>
-        /// Default constructor.
+        /// variable needed to store gamma realization
+        /// </summary>
+        [NonSerialized]
+        private double dg;
+
+        /// <summary>
+        /// Initializes a new instance of the VarianceGamma class.
+        /// This is the default constructor.
         /// </summary>
         public VarianceGamma()
             : this(100, 0.1, 0.1, 0.1, 0.02, 0.01)
@@ -135,7 +135,8 @@ namespace VarianceGamma
         }
 
         /// <summary>
-        /// Constructor defining a new process with given parameter values.
+        /// Initializes a new instance of the VarianceGamma class.
+        /// Defines a new process with given parameter values.
         /// </summary>
         /// <param name="s0">Starting value.</param>
         /// <param name="theta">VG theta parameter.</param>
@@ -280,9 +281,6 @@ namespace VarianceGamma
 
         #region IMarkovSimulator Members
 
-        [NonSerialized]
-        private double dg;
-
         /// <summary>
         /// Gets details about the structure of the functions
         /// drift and diffusion of the Markov process.
@@ -416,6 +414,7 @@ namespace VarianceGamma
         #endregion
 
         /// <summary>
+        /// Initializes a new instance of the VarianceGamma class.
         /// Initializes the object based on the serialized data.
         /// </summary>
         /// <param name="info">The SerializationInfo that holds the serialized object data.</param>

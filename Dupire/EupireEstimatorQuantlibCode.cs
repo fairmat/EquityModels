@@ -7,7 +7,7 @@ using Fairmat.Statistics;
 
 namespace Dupire
 {
-    public partial class DupireEstimator: IEstimatorEx, IIntegrable
+    public partial class DupireEstimator : IEstimatorEx, IIntegrable
     {
         private EstimationResult QuantLibEstimate(InterestRateMarketData Mdataset, CallPriceMarketData Hdataset)
         {
@@ -38,7 +38,7 @@ namespace Dupire
             ProjectROV prj = new ProjectROV(doc);
             doc.Part.Add(prj);
             prj.Symbols.Add(impVol);
-            //doc.WriteToXMLFile("impVol.fair");
+            // doc.WriteToXMLFile("impVol.fair");
 
             // todo: spostare nei settings
             int nmat = 100;
@@ -77,7 +77,7 @@ namespace Dupire
                         dt = 0.0001;
                         strikept = strike * Math.Exp(integrate.AdaptLobatto(0.0, t + dt));
                         wpt = impVol.Evaluate(t + dt, strikept);
-                        //if (wpt < w)
+                        // if (wpt < w)
                         //    Console.WriteLine("Decreasing variance at strike {0} between time {1} and time {2}", strike, t, t + dt);
                         dwdt = (wpt - w) / dt;
                     }

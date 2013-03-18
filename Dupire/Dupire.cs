@@ -41,13 +41,13 @@ namespace Dupire
                                  IMarkovSimulator, IEstimationResultPopulable
     {
         [SettingDescription("S0")]
-        public IModelParameter s0;//scalar
+        public IModelParameter s0; // scalar
         [SettingDescription("Time Dependent Risk Free Rate (Zero Rate)")]
-        public IModelParameter r;//1d function
+        public IModelParameter r; // 1d function
         [SettingDescription("Time Dependent Continuous Dividend Yield")]
-        public IModelParameter q;//1d function
+        public IModelParameter q; // 1d function
         [SettingDescription("Local Volatility")]
-        public IModelParameter localVol;//2d function
+        public IModelParameter localVol; // 2d function
 
         [NonSerialized]
         private DupireContext context;
@@ -116,7 +116,7 @@ namespace Dupire
         /// </param>
         public void Setup(double[] simulationDates)
         {
-            //todo: creates context class
+            // todo: creates context class
             this.mu = new double[simulationDates.Length];
             Vector time = new Vector(1);
             for (int i = 0; i < simulationDates.Length; i++)

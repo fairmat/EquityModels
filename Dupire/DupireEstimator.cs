@@ -79,10 +79,10 @@ namespace Dupire
 
             //gets the settings
             DupireCalibrationSettings calibrationSettings = settings as DupireCalibrationSettings;
-            switch(calibrationSettings.LocalVolatilityCalculation)
+            switch (calibrationSettings.LocalVolatilityCalculation)
             {
                 case LocalVolatilityCalculation.Method1:
-                    return FairmatEstimate(Mdataset, Hdataset);
+                    return this.FairmatEstimate(Mdataset, Hdataset);
                 case LocalVolatilityCalculation.QuantLib:
                     return QuantLibEstimate(Mdataset, Hdataset);
                 default:

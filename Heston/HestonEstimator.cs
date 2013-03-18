@@ -60,20 +60,26 @@ namespace HestonEstimator
             return new Type[] { typeof(InterestRateMarketData), typeof(CallPriceMarketData) };
         }
 
+        /// <summary>
+        /// Calls this.Estimate(List<object>, IEstimationSettings, IController).
+        /// </summary>
+        /// <param name="marketData">Market data.</param>
+        /// <param name="settings">Settings.</param>
+        /// <returns>Estimation result</returns>
         public unsafe EstimationResult Estimate(List<object> marketData, IEstimationSettings settings)
         {
-            return Estimate(marketData, settings, null);
+            return this.Estimate(marketData, settings, null);
         }
+
         /// <summary>
         /// Attempts to solve the Heston optimization problem using
         /// <see cref="Heston.HestonOptimizationProblem"/>.
         /// </summary>
-        /// <param name="marketData">
-        /// The data to be used in order to perform the optimization.
-        /// </param>
+        /// <param name="marketData">Data to be used in order to perform the optimization.</param>
         /// <param name="settings">The parameter is not used.</param>
+        /// <param name="controller">IController.</param>
         /// <returns>The results of the optimization.</returns>
-        public unsafe EstimationResult Estimate(List<object> marketData, IEstimationSettings settings,IController controller)
+        public unsafe EstimationResult Estimate(List<object> marketData, IEstimationSettings settings, IController controller)
         {
             InterestRateMarketData interestDataSet = (InterestRateMarketData)marketData[0];
             CallPriceMarketData callDataSet = (CallPriceMarketData)marketData[1];

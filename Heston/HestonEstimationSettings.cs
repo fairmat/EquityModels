@@ -22,7 +22,7 @@ using DVPLI;
 namespace HestonEstimator
 {
     /// <summary>
-    /// Maintains some settings to be used by the heston calibrator.
+    /// Maintains some settings to be used by the Heston calibrator.
     /// These settings will be available from the plugin settings tab in Fairmat.
     /// </summary>
     [SettingsContainer("Calibration Settings for Heston")]

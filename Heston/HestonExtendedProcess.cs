@@ -36,7 +36,6 @@ namespace HestonExtended
         /// Previously referenced the zr,
         /// now it's just kept for compatibility.
         /// </summary>
-        
         public IModelParameter MuReference;
 
         /// <summary>
@@ -117,8 +116,8 @@ namespace HestonExtended
         }
 
         /// <summary>
-        /// The default constructor.
-        /// Sets all parameters to zero/empty.
+        /// Initializes a new instance of the HestonExtendedProcess class.
+        /// This is the default constructor setting all parameters to zero/empty.
         /// </summary>
         public HestonExtendedProcess()
         {
@@ -402,7 +401,7 @@ namespace HestonExtended
         public bool Parse(IProject p_Context)
         {
             bool errors = false;
-            List<IExportable> list = ExportObjects(false);
+            List<IExportable> list = this.ExportObjects(false);
             foreach (IExportable parameter in list)
             {
                 if (parameter is IParsable)

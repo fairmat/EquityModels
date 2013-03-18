@@ -203,9 +203,9 @@ namespace HestonEstimator
             Complex I = Complex.I;
             Complex Iu = Complex.I * u;
             Complex A = Complex.Exp(-Iu * Math.Log(this.K));
-            Complex complexVal1 = A * Phi(u - I, this.kappa, this.theta, this.sigma, this.rho, this.s0, this.v0, this.rate - this.dividend, this.T) / (Iu);
-            Complex complexVal2 = A * Phi(u, this.kappa, this.theta, this.sigma, this.rho, this.s0, this.v0, this.rate - this.dividend, this.T) / (Iu);
-            return (complexVal1.Re - this.K * complexVal2.Re);
+            Complex complexVal1 = A * Phi(u - I, this.kappa, this.theta, this.sigma, this.rho, this.s0, this.v0, this.rate - this.dividend, this.T) / Iu;
+            Complex complexVal2 = A * Phi(u, this.kappa, this.theta, this.sigma, this.rho, this.s0, this.v0, this.rate - this.dividend, this.T) / Iu;
+            return complexVal1.Re - this.K * complexVal2.Re;
         }
 
         /// <summary>
@@ -287,9 +287,9 @@ namespace HestonEstimator
             g = par / (tmp2 + d);
 
             Complex edT = Complex.Exp(-d * T);
-            Complex numArg = (1.0 - g * edT);
+            Complex numArg = 1.0 - g * edT;
             A = (theta * kappa) * (par * T - 2.0 * Complex.Log(numArg / (1.0 - g))) / (sigma * sigma);
-            B = v0 * (par * (1.0 - edT) / numArg) / (ss);
+            B = v0 * (par * (1.0 - edT) / numArg) / ss;
 
             val = Complex.Exp(I * u * (Math.Log(s0) + r * T) + A + B);
             return val;
