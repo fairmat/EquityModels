@@ -230,7 +230,7 @@ namespace VarianceGamma
             Console.WriteLine(new Vector() { theta, sigma, nu });
 
             Console.WriteLine("Call prices");
-            Console.WriteLine((Vector)cp);
+            Console.WriteLine(cp);
 
             // VGDiff at optimum.
             double fopt = VarianceGammaOptimizationProblem.VGDiff(new Vector() { theta, sigma, nu }, q, s0, k, r, cp, m);

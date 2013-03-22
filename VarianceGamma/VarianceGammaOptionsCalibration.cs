@@ -23,6 +23,7 @@ using DVPLI;
 using Fairmat.MarketData;
 using Fairmat.Optimization;
 using Mono.Addins;
+using Fairmat.Math;
 
 namespace VarianceGamma
 {
@@ -141,6 +142,9 @@ namespace VarianceGamma
 
         /// <summary>
         /// Calculate the price of a call option.
+        /// Notation and formulas follow Whitley A. "Pricing of European, Bermudan and American Options
+        /// under the Exponential Variance Gamma Process" (2009) apart from a correction in the last line
+        /// where we substituted q (dividend yield) in place of r (risk free rate).
         /// </summary>
         /// <param name="theta">VG theta parameter</param>
         /// <param name="sigma">VG sigma parameter</param>
@@ -153,52 +157,39 @@ namespace VarianceGamma
         /// <returns>Call price value</returns>
         public static double VGCall(double theta, double sigma, double nu, double t, double k, double q, double s0, double r)
         {
-            double omega = Math.Log(1 - (sigma * sigma) * nu * 0.5 - theta * nu) / nu;
+            double omega = Math.Log(1 - 0.5 * sigma * sigma * nu - theta * nu) / nu;
             double zeta = (Math.Log(s0 / k) + omega * t) / sigma;
-            double v = 1 - (nu * (theta + 0.5 * (sigma * sigma)));
+            double v = 1.0 - nu * (theta + 0.5 * sigma * sigma);
             double a1 = zeta * Math.Sqrt(v / nu);
-            double b1 = (1 / sigma) * (theta + sigma * sigma) * Math.Sqrt(nu / v);
-            double a2 = zeta * Math.Sqrt(1 / nu);
-            double b2 = (1 / sigma) * theta * Math.Sqrt(nu);
-            double gam = t / nu;
-            double p1 = PsiBH(a1, b1, gam);
-            double p2 = PsiBH(a2, b2, gam);
-            return s0 * p1 - k * Math.Exp(-r * t) * p2;
+            double b1 = (theta + sigma * sigma) * Math.Sqrt(nu / v) / sigma;
+            double a2 = zeta / Math.Sqrt(nu);
+            double b2 = theta * Math.Sqrt(nu) / sigma;
+            double c = t / nu;
+            double p1 = Psi(a1, b1, c);
+            double p2 = Psi(a2, b2, c);
+            return s0 * Math.Exp(-q * t) * p1 - k * Math.Exp(-r * t) * p2;
         }
 
         /// <summary>
-        /// PsiBH function that enters in the pricing formula
+        /// Psi function that enters in the call price formula
+        /// Notation and formulas follow Whitley A. "Pricing of European, Bermudan and American Options
+        /// under the Exponential Variance Gamma Process" (2009)
         /// </summary>
         /// <param name="a">First variable</param>
         /// <param name="b">Second variable</param>
-        /// <param name="ga">Third variable</param>
+        /// <param name="c">Third variable</param>
         /// <returns>PsiBH value</returns>
-        private static double PsiBH(double a, double b, double ga)
+        private static double Psi(double a, double b, double c)
         {
-            double mu = b / Math.Sqrt(2 + b * b);
-            double c = Math.Abs(a) * Math.Sqrt(2 + b * b);
-            double fi = ((Math.Pow(c, ga + 0.5) * Math.Exp(Math.Sign(a) * c) * Math.Pow(1 + mu, ga)) / (Math.Sqrt(2 * Math.PI) * Gamma(ga) * ga)) * BesselK(ga + 0.5, c);
-            double se = ((Math.Sign(a) * Math.Pow(c, ga + 0.5) * Math.Exp(Math.Sign(a) * c) * Math.Pow(1 + mu, 1 + ga)) / (Math.Sqrt(2 * Math.PI) * Gamma(ga) * (1 + ga))) * BesselK(ga - 0.5, c);
-            double th = ((Math.Sign(a) * Math.Pow(c, ga + 0.5) * Math.Exp(Math.Sign(a) * c) * Math.Pow(1 + mu, ga)) / (Math.Sqrt(2 * Math.PI) * Gamma(ga) * ga)) * BesselK(ga - 0.5, c);
-            double first = DH(ga, 1 - ga, 1 + ga, 0.5 * (1 + mu), -Math.Sign(a) * c * (1 + mu));
-            double second = DH(1 + ga, 1 - ga, 2 + ga, 0.5 * (1 + mu), -Math.Sign(a) * c * (1 + mu));
-            double third = DH(ga, 1 - ga, 1 + ga, 0.5 * (1 + mu), -Math.Sign(a) * c * (1 + mu));
-            double bh = fi * first - se * second + th * third;
-            return bh;
-        }
-
-        /// <summary>
-        /// Calculates the degenerate hypergeometric function of two variables
-        /// </summary>
-        /// <param name="alpha">First parameter</param>
-        /// <param name="beta">Second parameter</param>
-        /// <param name="gamma">Third parameter</param>
-        /// <param name="x">First variable</param>
-        /// <param name="y">Second variable</param>
-        /// <returns>Degenerate hypergeometric function of two variables value</returns>
-        private static double DH(double alpha, double beta, double gamma, double x, double y)
-        {
-            return ConfluentHypergeometric2Var(alpha, beta, gamma, x, y) / alpha;
+            double u = b / Math.Sqrt(2.0 + b * b);
+            double d = Math.Abs(a) * Math.Sqrt(2.0 + b * b);
+            double fi = Math.Pow(d, c + 0.5) * Math.Exp(Math.Sign(a) * d) * Math.Pow(1.0 + u, c) * BesselK(c + 0.5, d) / (Math.Sqrt(2.0 * Math.PI) * Gamma(c) * c);
+            double se = -Math.Sign(a) * Math.Pow(d, c + 0.5) * Math.Exp(Math.Sign(a) * d) * Math.Pow(1.0 + u, 1.0 + c) * BesselK(c - 0.5, d) / (Math.Sqrt(2.0 * Math.PI) * Gamma(c) * (1.0 + c));
+            double th = Math.Sign(a) * Math.Pow(d, c + 0.5) * Math.Exp(Math.Sign(a) * d) * Math.Pow(1 + u, c) * BesselK(c - 0.5, d) / (Math.Sqrt(2.0 * Math.PI) * Gamma(c) * c);
+            double first = CH(c, 1.0 - c, 1.0 + c, 0.5 * (1.0 + u), -Math.Sign(a) * d * (1.0 + u));
+            double second = CH(1.0 + c, 1.0 - c, 2.0 + c, 0.5 * (1.0 + u), -Math.Sign(a) * d * (1.0 + u));
+            double third = CH(c, 1.0 - c, 1.0 + c, 0.5 * (1.0 + u), -Math.Sign(a) * d * (1.0 + u));
+            return fi * first + se * second + th * third;
         }
 
         /// <summary>
@@ -241,9 +232,8 @@ namespace VarianceGamma
             double s = 0;
             for (int k = 0; k <= 20; k++)
             {
-                s = s + 1 / (Factorial(k) * Gamma(k + nu + 1)) * Math.Pow(z / 2, 2 * k + nu);
+                s = s + Math.Pow(z / 2.0, 2.0 * k + nu) / (Factorial(k) * Gamma(k + nu + 1.0));
             }
-
             return s;
         }
 
@@ -267,7 +257,7 @@ namespace VarianceGamma
         /// <param name="x">First variable</param>
         /// <param name="y">Second variable</param>
         /// <returns>Confluent hypergeometric function of two variables value</returns>
-        private static double ConfluentHypergeometric2Var(double a, double b, double c, double x, double y)
+        private static double CH(double a, double b, double c, double x, double y)
         {
             // Throw exception if z is not greater than zero.
             if (Math.Abs(x) > 1)

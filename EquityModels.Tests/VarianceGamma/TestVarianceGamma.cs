@@ -31,6 +31,7 @@ namespace VarianceGamma
         [SetUp]
         public void Init()
         {
+            GC.Collect();
             DVPLI.PluginsManager.Init();
             Mono.Addins.AddinManager.Registry.ResetConfiguration();
             Mono.Addins.AddinManager.Registry.Update(new Mono.Addins.ConsoleProgressStatus(0));
@@ -49,7 +50,6 @@ namespace VarianceGamma
             double strike = 1.2;
             Vector mat = new Vector(1) + maturity;
             Vector k = new Vector(1) + strike;
-            Matrix cp = new Matrix(1, 1) + 0.3;
 
             // Calculates the theoretical value of the call.
             double theoreticalPrice = VarianceGammaOptionsCalibration.VGCall(theta, sigma, nu,

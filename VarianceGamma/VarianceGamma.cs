@@ -29,7 +29,7 @@ namespace VarianceGamma
     /// Implementation of the Variance Gamma model simulation.
     /// </summary>
     [Serializable]
-    public class VarianceGamma : IExtensibleProcess, IMarkovSimulator, IParsable,
+    public class VarianceGamma : IExtensibleProcess, IFullSimulator, IParsable,
                                  IPopulable, IGreeksDerivativesInfo, ISerializable
     {
         #region SerializedFields
@@ -78,12 +78,6 @@ namespace VarianceGamma
         private Fairmat.Statistics.Gamma gamma;
 
         /// <summary>
-        /// Time step (needed to calculate gamma parameter).
-        /// </summary>
-        [NonSerialized]
-        private double dt;
-
-        /// <summary>
         /// Drift of the exponent composed by risk free rate, dividend yield and omega.
         /// </summary>
         [NonSerialized]
@@ -118,12 +112,6 @@ namespace VarianceGamma
         /// Defines the description of the dividend yield parameter.
         /// </summary>
         private const string dividendDescription = "q";
-
-        /// <summary>
-        /// variable needed to store gamma realization
-        /// </summary>
-        [NonSerialized]
-        private double dg;
 
         /// <summary>
         /// Initializes a new instance of the VarianceGamma class.
@@ -241,13 +229,10 @@ namespace VarianceGamma
         /// </param>
         public void Setup(double[] dates)
         {
-            this.dt = dates[1] - dates[0];
-
             // Note that gamma distribution in Fairmat has the parametrization with shape
             // alpha and rate beta (see "Gamma distribution" in wikipedia).
             // In some paper on variance gamma this formulas are different
             // due to different gamma parametrization.
-            this.gamma = new Fairmat.Statistics.Gamma(this.dt / this.nu.fV(), 1.0 / this.nu.fV());
             double omega = Math.Log(1.0 - this.nu.fV() * this.theta.fV() - 0.5 * this.sigma.fV() * this.sigma.fV() * this.nu.fV()) / this.nu.fV();
             this.drift = this.rate.fV() - this.dividend.fV() + omega;
         }
@@ -275,69 +260,6 @@ namespace VarianceGamma
             parameters.Add(this.rate);
             parameters.Add(this.dividend);
             return parameters;
-        }
-
-        #endregion
-
-        #region IMarkovSimulator Members
-
-        /// <summary>
-        /// Gets details about the structure of the functions
-        /// drift and diffusion of the Markov process.
-        /// </summary>
-        public DynamicInfo DynamicInfo
-        {
-            get
-            {
-                return new DynamicInfo(false, true, false, true);
-            }
-        }
-
-        /// <summary>
-        /// Gets the starting point for the process.
-        /// </summary>
-        public double[] x0
-        {
-            get
-            {
-                return new double[1] { this.s0.fV() };
-            }
-        }
-
-        /// <summary>
-        /// This function defines the drift term of the VG process.
-        /// </summary>
-        /// <param name="i">The time step of the simulation.</param>
-        /// <param name="x">The state vector at the previous state.</param>
-        /// <param name="a">The output of the function.</param>
-        public unsafe void a(int i, double* x, double* a)
-        {
-            this.dg = this.gamma.Draw(Engine.Generator);
-            a[0] = this.theta.fV() * this.dg / this.dt + this.drift;
-        }
-
-        /// <summary>
-        /// This function defines the diffusion term of the VG process.
-        /// </summary>
-        /// <param name="i">The parameter is not used.</param>
-        /// <param name="x">The parameter is not used.</param>
-        /// <param name="b">The output of the function.</param>
-        public unsafe void b(int i, double* x, double* b)
-        {
-            b[0] = Math.Sqrt(this.dg / this.dt) * this.sigma.fV();
-        }
-
-        /// <summary>
-        /// Sets the passed array with a Boolean defining
-        /// for each component if it has to be simulated
-        /// as a log-normal process.
-        /// </summary>
-        /// <param name="isLog">
-        /// A reference to the array to be set with the required information.
-        /// </param>
-        public void isLog(ref bool[] isLog)
-        {
-            isLog[0] = true;
         }
 
         #endregion
@@ -429,6 +351,30 @@ namespace VarianceGamma
             this.nu = (IModelParameter)ObjectSerialization.GetValue2(info, "nu", typeof(IModelParameter));
             this.rate = (IModelParameter)ObjectSerialization.GetValue2(info, "rate", typeof(IModelParameter));
             this.dividend = (IModelParameter)ObjectSerialization.GetValue2(info, "dividend", typeof(IModelParameter));
+        }
+
+        #endregion
+
+        #region IFullSimulator
+        /// <summary>
+        /// Manage the simulation of the variance gamma process
+        /// </summary>
+        /// <param name="Dates">Simulation dates</param>
+        /// <param name="Noise">Gaussian noise for a single path</param>
+        /// <param name="OutDynamic">Single path process realization</param>
+        public void Simulate(double[] Dates, IReadOnlyMatrixSlice Noise, IMatrixSlice OutDynamic)
+        { 
+            int steps = OutDynamic.R;
+            double GammaNoise, dt;
+            OutDynamic[0, 0] = this.s0.fV();
+            for (int i = 1; i < steps; i++)
+            {
+                dt = Dates[i] - Dates[i - 1];
+                this.gamma = new Fairmat.Statistics.Gamma(dt / this.nu.fV(), 1.0 / this.nu.fV());
+                GammaNoise = this.gamma.Draw(Engine.Generator);
+                OutDynamic[i, 0] = OutDynamic[i - 1, 0] * Math.Exp(this.drift * dt +
+                    this.theta.fV() * GammaNoise + this.sigma.fV() * Math.Sqrt(GammaNoise) * Noise[i - 1, 0]);
+            }
         }
 
         #endregion
