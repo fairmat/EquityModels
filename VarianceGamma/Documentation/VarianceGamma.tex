@@ -3,6 +3,9 @@
 
 \input{../../../DocumentationTemplate/TemplateL3}
 
+\begin{document}
+\PluginTitle{\pluginName}{\pluginVersion}
+
 \section{Preface}
 \emph{This plug-is has been developed starting from the University of Edinburgh MSC in finance and operation research dissertation of Safe Khampol. The aim of the dissertation was to implement a calibration and Monte Carlo simulation procedure for The Variance Gamma (VG) Model for Matlab and for the Fairmat plug-in system.} 
 
@@ -41,8 +44,8 @@ Finally, the VG simulation of stock price and comparison of BS and VG option
 are employed by calibrated parameters. These topics will be explained in the 
 following sections.
 
-\section{Variance Gamma Closed-form formulas for European Call 
-options}
+\section[Closed-form formulas for European Call options]
+        {Variance Gamma Closed-form formulas for European Call options}
 
 The first formula is closed-form for Variance Gamma European option pricing 
 model by Madan, Carr and Eric. The original equation contradicts with the 
@@ -102,12 +105,12 @@ of two variables, $\Phi $ has the integral representation Humbert (1920), as
 \right)^{\gamma }}{\sqrt {2\pi } \, ?\left( \gamma \right)\gamma }K_{\gamma 
 +\frac{1}{2}}(c)\Phi \left( \gamma ,\, 1-\gamma ,\, 1+\gamma ;\, 
 \frac{1+u}{2}\mathrm{,\, -sign}\left( \mathrm{a} \right)\mathrm{c}\, \left( 
-\mathrm{1+u} \right) \right)\mathrm{-sign(a)\, }\frac{c^{\gamma 
+\mathrm{1+u} \right) \right)\]\[\mathrm{-sign(a)\, }\frac{c^{\gamma 
 +\frac{1}{2}}e^{sign\left( a \right)c}\left( 1+u \right)^{1+\gamma }}{\sqrt 
 {2\pi } \, ?\left( \gamma \right)\left( 1+\gamma \right)}\mathrm{\, 
 }K_{\gamma -\frac{1}{2}}\left( c \right)\Phi \left( 1+\gamma ,\, 1-\gamma 
 ,\, 2+\gamma ;\, \frac{1+u}{2},\, -sign\left( a \right)c\left( 1+u \right) 
-\right)+sign(a)\frac{c^{\gamma +\frac{1}{2}}e^{sign\left( a \right)c}\left( 
+\right)\]\[+sign(a)\frac{c^{\gamma +\frac{1}{2}}e^{sign\left( a \right)c}\left( 
 1+u \right)^{1+\gamma }}{\sqrt {2\pi } ?\left( \gamma \right)\gamma 
 }K_{\gamma -\frac{1}{2}}(c)\Phi \left( \gamma ,\, 1-\gamma ,\, 1+\gamma ;\, 
 \frac{1+u}{2},\, -sign\left( a \right)c(1+u) \right),
@@ -180,8 +183,8 @@ below.
 In conclusion, these formulas should work in theory, but there is an extreme 
 result and rarely occurs wrong answers. Both forms produce the same answer.
 
-\section{Variance Gamma Monte Carlo Simulation for European 
-Call options}
+\section[Monte Carlo Simulation for European Call options]
+        {Variance Gamma Monte Carlo Simulation for European Call options}
 
 A Monte Carlo simulation is a procedure for sampling random outcomes for the 
 applying process, VG process. It helped to evaluate and analyze investments 
