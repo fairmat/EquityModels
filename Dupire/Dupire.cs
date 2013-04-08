@@ -69,6 +69,10 @@ namespace Dupire
 
         public DupireProcess()
         {
+            this.s0 = new ModelParameter(string.Empty);
+            this.r = new ModelParameter(string.Empty);
+            this.q = new ModelParameter(string.Empty);
+            this.localVol = new ModelParameter(string.Empty);
         }
 
         #region IExtensibleProcess implementation
