@@ -40,14 +40,29 @@ namespace Dupire
     public class DupireProcess : IExtensibleProcess, IParsable,
                                  IMarkovSimulator, IEstimationResultPopulable
     {
-        [SettingDescription("S0")]
+        #region Serialized Parameters
+
         public IModelParameter s0; // scalar
-        [SettingDescription("Time Dependent Risk Free Rate (Zero Rate)")]
-        public IModelParameter r; // 1d function
-        [SettingDescription("Time Dependent Continuous Dividend Yield")]
-        public IModelParameter q; // 1d function
-        [SettingDescription("Local Volatility")]
-        public IModelParameter localVol; // 2d function
+
+        /// <summary>
+        /// The time Dependent Risk Free Rate (Zero Rate) (1D Function).
+        /// </summary>
+        [ExternalSymbolReference("ZR", typeof(PFunction))]
+        public IModelParameter r;
+
+        /// <summary>
+        /// The time Dependent Continuous Dividend Yield (1D Function).
+        /// </summary>
+        [ExternalSymbolReference("DividendYield", typeof(PFunction))]
+        public IModelParameter q;
+
+        /// <summary>
+        /// The Local volatility (2D Function).
+        /// </summary>
+        [ExternalSymbolReference("LocalVolatility", typeof(PFunction2D.PFunction2D))]
+        public IModelParameter localVol;
+
+        #endregion Serialized Parameters
 
         [NonSerialized]
         private DupireContext context;
@@ -69,10 +84,10 @@ namespace Dupire
 
         public DupireProcess()
         {
-            this.s0 = new ModelParameter(string.Empty);
-            this.r = new ModelParameter(string.Empty);
-            this.q = new ModelParameter(string.Empty);
-            this.localVol = new ModelParameter(string.Empty);
+            this.s0 = new ModelParameter(string.Empty, "S0");
+            this.r = new ModelParameter(string.Empty, "Time Dependent Risk Free Rate (Zero Rate)");
+            this.q = new ModelParameter(string.Empty, "Time Dependent Continuous Dividend Yield");
+            this.localVol = new ModelParameter(string.Empty, "Local Volatility");
         }
 
         #region IExtensibleProcess implementation
@@ -156,8 +171,14 @@ namespace Dupire
         /// </returns>
         public List<IExportable> ExportObjects(bool recursive)
         {
-            return new List<IExportable>();
+            List<IExportable> parameters = new List<IExportable>();
+            parameters.Add(this.s0);
+            parameters.Add(this.r);
+            parameters.Add(this.q);
+            parameters.Add(this.localVol);
+            return parameters;
         }
+
         #endregion // IExtensibleProcess implementation
 
         #region IParsable implementation
@@ -279,7 +300,8 @@ namespace Dupire
         #endregion
 
         #region IEstimationResultPopulable implementation
-        void IEstimationResultPopulable.Populate(IStochasticProcess container, EstimationResult estimate)
+
+        public void Populate(IStochasticProcess container, EstimationResult estimate)
         {
             bool found;
             this.s0 = new ModelParameter(PopulateHelper.GetValue("S0", estimate.Names, estimate.Values, out found), this.s0.Description);
@@ -301,6 +323,7 @@ namespace Dupire
                 localVolDest.Interpolation = localVolSrc.Interpolation;
             }
         }
+
         #endregion
     }
 }
