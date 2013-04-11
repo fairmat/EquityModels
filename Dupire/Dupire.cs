@@ -42,23 +42,27 @@ namespace Dupire
     {
         #region Serialized Parameters
 
+        [SettingDescription("S0")]
         public IModelParameter s0; // scalar
 
         /// <summary>
         /// The time Dependent Risk Free Rate (Zero Rate) (1D Function).
         /// </summary>
+        [SettingDescription("Time Dependent Risk Free Rate (Zero Rate)")] 
         [ExternalSymbolReference("ZR", typeof(PFunction))]
         public IModelParameter r;
 
         /// <summary>
         /// The time Dependent Continuous Dividend Yield (1D Function).
         /// </summary>
+        [SettingDescription("Time Dependent Continuous Dividend Yield")]
         [ExternalSymbolReference("DividendYield", typeof(PFunction))]
         public IModelParameter q;
 
         /// <summary>
         /// The Local volatility (2D Function).
         /// </summary>
+        [SettingDescription("Local Volatility")] 
         [ExternalSymbolReference("LocalVolatility", typeof(PFunction2D.PFunction2D))]
         public IModelParameter localVol;
 
@@ -171,12 +175,7 @@ namespace Dupire
         /// </returns>
         public List<IExportable> ExportObjects(bool recursive)
         {
-            List<IExportable> parameters = new List<IExportable>();
-            parameters.Add(this.s0);
-            parameters.Add(this.r);
-            parameters.Add(this.q);
-            parameters.Add(this.localVol);
-            return parameters;
+            return new List<IExportable>();
         }
 
         #endregion // IExtensibleProcess implementation
