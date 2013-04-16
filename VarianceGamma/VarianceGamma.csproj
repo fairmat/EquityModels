@@ -42,34 +42,34 @@
     <Reference Include="CoreExtensions, Version=1.0.0.0, Culture=neutral, PublicKeyToken=0c08731b4bb5a116, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\DVPLReferences\CoreExtensions.dll</HintPath>
-      <Private>True</Private>
+      <Private>False</Private>
     </Reference>
     <Reference Include="DVPLDOM, Version=1.0.0.0, Culture=neutral, PublicKeyToken=0c08731b4bb5a116, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\DVPLReferences\DVPLDOM.dll</HintPath>
-      <Private>True</Private>
+      <Private>False</Private>
     </Reference>
     <Reference Include="DVPLDOME, Version=1.0.0.0, Culture=neutral, PublicKeyToken=0c08731b4bb5a116, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\DVPLReferences\DVPLDOME.dll</HintPath>
-      <Private>True</Private>
+      <Private>False</Private>
     </Reference>
     <Reference Include="DVPLI, Version=1.0.0.0, Culture=neutral, PublicKeyToken=0c08731b4bb5a116, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\DVPLReferences\DVPLI.dll</HintPath>
-      <Private>True</Private>
+      <Private>False</Private>
     </Reference>
     <Reference Include="DVPLInterfaces">
       <HintPath>..\..\DVPLReferences\DVPLInterfaces.dll</HintPath>
-      <Private>True</Private>
+      <Private>False</Private>
     </Reference>
     <Reference Include="Fairmat.Optimization">
       <HintPath>..\..\DVPLReferences\Fairmat.Optimization.dll</HintPath>
-      <Private>True</Private>
+      <Private>False</Private>
     </Reference>
     <Reference Include="Mono.Addins">
       <HintPath>..\..\DVPLReferences\Mono.Addins.dll</HintPath>
-      <Private>True</Private>
+      <Private>False</Private>
     </Reference>
     <Reference Include="System" />
   </ItemGroup>
