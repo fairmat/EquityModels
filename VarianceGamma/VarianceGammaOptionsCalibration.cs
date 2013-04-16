@@ -143,7 +143,13 @@ namespace VarianceGamma
             var solution = algorithm.Minimize(new VarianceGammaOptimizationProblem(this.q, this.s0, this.k,
                                                                           this.r, this.cp, this.m),
                                                                           optimizationSettings, x0);
+
+            if (solution.errors)
+                return new EstimationResult(solution.message);
+
             var er = new EstimationResult();
+            er.Names= new string[]{"S0","theta","sigma","nu","rate","dividend"};
+            er.Values = new double[] {this.s0,solution.x[0],solution.x[1],solution.x[2],this.r,this.q};
             return er;
         }
 
