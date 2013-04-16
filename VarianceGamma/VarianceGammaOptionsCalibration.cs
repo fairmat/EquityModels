@@ -98,7 +98,7 @@ namespace VarianceGamma
         /// </returns>
         public Type[] GetRequirements(IEstimationSettings settings, bool multivariateRequest)
         {
-            return new Type[] { typeof(EquitySpotMarketData), typeof(CallPriceMarketData) };
+            return new Type[] { typeof(EquitySpotMarketData), typeof(CallPriceMarketData), typeof(DiscountingCurveMarketData) };
         }
 
         /// <summary>
@@ -114,12 +114,19 @@ namespace VarianceGamma
         {
             EquitySpotMarketData espmd = data[0] as EquitySpotMarketData;
             CallPriceMarketData cpmd = data[1] as CallPriceMarketData;
+            DiscountingCurveMarketData dcmd = data[2] as DiscountingCurveMarketData;
+            EquityCalibrationData ecd = new EquityCalibrationData(cpmd, dcmd);
             this.s0 = espmd.Price;
             this.r = espmd.RiskFreeRate;
             this.q = espmd.DividendYield;
-            this.k = cpmd.Strike;
-            this.m = cpmd.Maturity;
-            this.cp = cpmd.CallPrice;
+
+            this.k = ecd.Hdata.Strike;
+            this.m = ecd.Hdata.Maturity;
+            this.cp = ecd.Hdata.CallPrice;
+
+            //this.k = cpmd.Strike;
+            //this.m = cpmd.Maturity;
+            //this.cp = cpmd.CallPrice;
 
             Vector x0 = (Vector)new double[] { 0.1, 0.1, 0.1 };
             IOptimizationAlgorithm algorithm = new QADE();
@@ -181,6 +188,8 @@ namespace VarianceGamma
         /// <returns>PsiBH value</returns>
         private static double Psi(double a, double b, double c)
         {
+            if (c <= 0 && (c - Math.Floor(c)) == 0)
+                throw new Exception("Psi function is not defined on negative integers");
             double u = b / Math.Sqrt(2.0 + b * b);
             double d = Math.Abs(a) * Math.Sqrt(2.0 + b * b);
             double fi = Math.Pow(d, c + 0.5) * Math.Exp(Math.Sign(a) * d) * Math.Pow(1.0 + u, c) * BesselK(c + 0.5, d) / (Math.Sqrt(2.0 * Math.PI) * Gamma(c) * c);
@@ -245,6 +254,8 @@ namespace VarianceGamma
         /// <returns>Bessel function of the second kind value</returns>
         private static double BesselK(double nu, double z)
         {
+            if ((nu - Math.Floor(nu)) == 0.0)
+                throw new Exception("BesselK function is not defined on integers");
             return (Math.PI / 2.0) * (BesselI(-nu, z) - BesselI(nu, z)) / Math.Sin(nu * Math.PI);
         }
 
@@ -263,6 +274,10 @@ namespace VarianceGamma
             if (Math.Abs(x) > 1)
             {
                 throw new ArgumentException("Value |x| must be smaller than 1");
+            }
+            else if (((a - Math.Floor(a)) == 0.0 && a <= 0) || ((b - Math.Floor(b)) == 0.0 && b <= 0) || ((c - Math.Floor(c)) == 0.0 && c <= 0))
+            {
+                throw new ArgumentException("a, b, c cannot be negative integers");
             }
             else
             {

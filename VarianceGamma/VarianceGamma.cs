@@ -363,7 +363,7 @@ namespace VarianceGamma
         /// <param name="Noise">Gaussian noise for a single path</param>
         /// <param name="OutDynamic">Single path process realization</param>
         public void Simulate(double[] Dates, IReadOnlyMatrixSlice Noise, IMatrixSlice OutDynamic)
-        { 
+        {
             int steps = OutDynamic.R;
             double GammaNoise, dt;
             OutDynamic[0, 0] = this.s0.fV();

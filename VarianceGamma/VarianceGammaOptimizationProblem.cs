@@ -176,18 +176,24 @@ namespace VarianceGamma
         public static double VGDiff(Vector x, double q, double s0, Vector k, double r, Matrix cp, Vector m)
         {
             double y = 0;
+            double residual;
             for (int i = 0; i < m.Length; i++)
             {
                 for (int j = 0; j < k.Length; j++)
                 {
-                    double residual = Math.Pow(cp[i, j] - VarianceGammaOptionsCalibration.VGCall(x[0], x[1], x[2], m[i], k[j], q, s0, r), 2);
-                    if (residual > Math.Pow(10, 10))
+                    double par = m[i] / x[2];
+                    double rest = par - Math.Floor(par);
+                    if (rest != 0.5 && rest != 0.0)
                     {
-                        y = y + 1000 * Math.Sqrt(x[0] * x[0] + x[1] * x[1] + x[2] * x[2]);
-                    }
-                    else
-                    {
-                        y = y + residual;
+                        residual = Math.Pow(cp[i, j] - VarianceGammaOptionsCalibration.VGCall(x[0], x[1], x[2], m[i], k[j], q, s0, r), 2);
+                        if (residual > Math.Pow(10, 10))
+                        {
+                            y = y + 1000 * Math.Sqrt(x[0] * x[0] + x[1] * x[1] + x[2] * x[2]);
+                        }
+                        else
+                        {
+                            y = y + residual;
+                        }
                     }
                 }
             }
