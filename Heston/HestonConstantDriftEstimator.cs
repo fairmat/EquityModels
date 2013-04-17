@@ -97,9 +97,10 @@ namespace HestonEstimator
         /// <returns>
         /// An array containing the type InterestRateMarketData and CallPriceMarketData.
         /// </returns>
-        public Type[] GetRequirements(IEstimationSettings settings, bool multivariateRequest)
+        public EstimateRequirement[] GetRequirements(IEstimationSettings settings, EstimateQuery query)
         {
-            return new Type[] { typeof(InterestRateMarketData), typeof(CallPriceMarketData) };
+            return new EstimateRequirement[] { new EstimateRequirement(typeof(InterestRateMarketData)), 
+                                               new EstimateRequirement(typeof(CallPriceMarketData)) };
         }
 
         /// <summary>
@@ -111,7 +112,7 @@ namespace HestonEstimator
         /// </param>
         /// <param name="settings">The settings to be used for the optimization.</param>
         /// <returns>The results of the optimization.</returns>
-        public unsafe EstimationResult Estimate(List<object> marketData, IEstimationSettings settings)
+        public unsafe EstimationResult Estimate(List<object> marketData, IEstimationSettings settings = null, IController controller = null, Dictionary<string, object> properties = null)
         {
             InterestRateMarketData interestDataSet = (InterestRateMarketData)marketData[0];
             CallPriceMarketData callDataSet = (CallPriceMarketData)marketData[1];

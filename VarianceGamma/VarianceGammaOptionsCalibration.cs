@@ -96,9 +96,11 @@ namespace VarianceGamma
         /// <returns>
         /// An array containing the type EquitySpotMarketData and CallPriceMarketData.
         /// </returns>
-        public Type[] GetRequirements(IEstimationSettings settings, bool multivariateRequest)
+        public EstimateRequirement[] GetRequirements(IEstimationSettings settings, EstimateQuery query)
         {
-            return new Type[] { typeof(EquitySpotMarketData), typeof(CallPriceMarketData), typeof(DiscountingCurveMarketData) };
+            return new EstimateRequirement[] { new EstimateRequirement(typeof(EquitySpotMarketData)), 
+                                               new EstimateRequirement(typeof(CallPriceMarketData)), 
+                                               new EstimateRequirement(typeof(DiscountingCurveMarketData)) };
         }
 
         /// <summary>
@@ -110,7 +112,7 @@ namespace VarianceGamma
         /// </param>
         /// <param name="settings">The parameter is not used.</param>
         /// <returns>The results of the optimization.</returns>
-        public EstimationResult Estimate(List<object> data, IEstimationSettings settings)
+        public EstimationResult Estimate(List<object> data, IEstimationSettings settings = null, IController controller = null, Dictionary<string, object> properties = null)
         {
             EquitySpotMarketData espmd = data[0] as EquitySpotMarketData;
             CallPriceMarketData cpmd = data[1] as CallPriceMarketData;

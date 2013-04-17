@@ -51,13 +51,14 @@ namespace Dupire
         /// required types for this estimator.
         /// </summary>
         /// <param name="settings">The parameter is not used.</param>
-        /// <param name="multivariateRequest">The parameter is not used.</param>
+        /// <param name="query">The parameter is not used.</param>
         /// <returns>
         /// An array containing the types InterestRateMarketData and CallPriceMarketData.
         /// </returns>
-        public Type[] GetRequirements(IEstimationSettings settings, bool multivariateRequest)
+        public EstimateRequirement[] GetRequirements(IEstimationSettings settings, EstimateQuery query)
         {
-            return new Type[] { typeof(InterestRateMarketData), typeof(CallPriceMarketData) };
+            return new EstimateRequirement[] { new EstimateRequirement(typeof(InterestRateMarketData)), 
+                                               new EstimateRequirement(typeof(CallPriceMarketData)) };
         }
 
         /// <summary>
@@ -72,7 +73,7 @@ namespace Dupire
             }
         }
 
-        public EstimationResult Estimate(System.Collections.Generic.List<object> marketData, IEstimationSettings settings)
+        public EstimationResult Estimate(System.Collections.Generic.List<object> marketData, IEstimationSettings settings = null, IController controller = null, System.Collections.Generic.Dictionary<string, object> properties = null)
         {
             InterestRateMarketData Mdataset = (InterestRateMarketData)marketData[0];
             CallPriceMarketData Hdataset = (CallPriceMarketData)marketData[1];
