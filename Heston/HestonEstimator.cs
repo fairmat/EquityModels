@@ -29,7 +29,7 @@ namespace HestonEstimator
     /// Implements and resolves the Heston optimization problem.
     /// </summary>
     [Mono.Addins.Extension("/Fairmat/Estimator")]
-    public class CallEstimator : IEstimator, IEstimatorEx2
+    public class CallEstimator : IEstimator
     {
         #region IEstimator Members
 
@@ -55,20 +55,10 @@ namespace HestonEstimator
         /// <returns>
         /// An array containing the type InterestRateMarketData and CallPriceMarketData.
         /// </returns>
-        public Type[] GetRequirements(IEstimationSettings settings, bool multivariateRequest)
+        public EstimateRequirement[] GetRequirements(IEstimationSettings settings, EstimateQuery query)
         {
-            return new Type[] { typeof(InterestRateMarketData), typeof(CallPriceMarketData) };
-        }
-
-        /// <summary>
-        /// Calls this.Estimate(List<object>, IEstimationSettings, IController).
-        /// </summary>
-        /// <param name="marketData">Market data.</param>
-        /// <param name="settings">Settings.</param>
-        /// <returns>Estimation result</returns>
-        public unsafe EstimationResult Estimate(List<object> marketData, IEstimationSettings settings)
-        {
-            return this.Estimate(marketData, settings, null);
+            return new EstimateRequirement[] { new EstimateRequirement(typeof(InterestRateMarketData)), 
+                                               new EstimateRequirement(typeof(CallPriceMarketData)) };
         }
 
         /// <summary>
@@ -79,7 +69,7 @@ namespace HestonEstimator
         /// <param name="settings">The parameter is not used.</param>
         /// <param name="controller">IController.</param>
         /// <returns>The results of the optimization.</returns>
-        public unsafe EstimationResult Estimate(List<object> marketData, IEstimationSettings settings, IController controller)
+        public unsafe EstimationResult Estimate(List<object> marketData, IEstimationSettings settings = null, IController controller = null, Dictionary<string, object> properties = null)
         {
             InterestRateMarketData interestDataSet = (InterestRateMarketData)marketData[0];
             CallPriceMarketData callDataSet = (CallPriceMarketData)marketData[1];
