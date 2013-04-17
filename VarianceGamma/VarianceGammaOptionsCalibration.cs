@@ -124,10 +124,6 @@ namespace VarianceGamma
             this.m = ecd.Hdata.Maturity;
             this.cp = ecd.Hdata.CallPrice;
 
-            //this.k = cpmd.Strike;
-            //this.m = cpmd.Maturity;
-            //this.cp = cpmd.CallPrice;
-
             Vector x0 = (Vector)new double[] { 0.1, 0.1, 0.1 };
             IOptimizationAlgorithm algorithm = new QADE();
             OptimizationSettings optimizationSettings = new DESettings();
