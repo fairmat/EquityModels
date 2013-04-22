@@ -53,7 +53,7 @@ using Mono.Addins;
 [assembly: AssemblyFileVersion("1.0.0.0")]
 
 // The following lines tell that the assembly is an addin.
-[assembly: Addin("Dupire", "1.0.0", Category = "Stochastic Process")]
+[assembly: Addin("Dupire", "1.0.1", Category = "Stochastic Process")]
 [assembly: AddinDependency("Fairmat", "1.0")]
 [assembly: AddinAuthor("Fairmat SRL")]
 [assembly: AddinDescription("Implements Dupire local volatility model.")]
