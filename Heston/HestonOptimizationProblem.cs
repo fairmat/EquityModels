@@ -321,7 +321,7 @@ namespace HestonEstimator
         {
             double sum = 0;
 
-            HestonCall hc = new HestonCall(this, x, this.s0);
+            
             if (Engine.MultiThread)
             {
                 // Instantiate parallel computation if enabled.
@@ -331,6 +331,7 @@ namespace HestonEstimator
                 List<HestonCall> context = new List<HestonCall>();
                 for (int r = 0; r < this.callMarketPrice.R; r++)
                 {
+                    HestonCall hc = new HestonCall(this, x, this.s0);
                     context.Add(hc);
                     hc.T = this.maturity[r];
                     hc.rate = this.rate[r];
@@ -348,6 +349,7 @@ namespace HestonEstimator
                 // Sequential version of the code, used when parallel computation is disabled.
                 for (int r = 0; r < this.callMarketPrice.R; r++)
                 {
+                    HestonCall hc = new HestonCall(this, x, this.s0);
                     hc.T = this.maturity[r];
                     hc.rate = this.rate[r];
                     hc.dividend = this.dividendYield[r];

@@ -55,7 +55,7 @@ using Mono.Addins;
 [assembly: AssemblyFileVersion("1.0.0.0")]
 
 // The following lines tell that the assembly is an addin.
-[assembly: Addin("Variance Gamma", "1.0.0", Category = "Stochastic Process")]
+[assembly: Addin("Variance Gamma", "1.0.1", Category = "Stochastic Process")]
 [assembly: AddinDependency("Fairmat", "1.0")]
 [assembly: AddinAuthor("Fairmat SRL / Safe Khampol")]
 [assembly: AddinDescription("Variance Gamma equity model calibration and simulation.")]
