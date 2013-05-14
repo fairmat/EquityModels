@@ -197,7 +197,7 @@ namespace VarianceGamma
                     }
                 }
             }
-            
+
             return Math.Sqrt(y / (m.Length * k.Length));
         }
     }
