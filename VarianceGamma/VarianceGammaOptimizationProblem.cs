@@ -186,7 +186,7 @@ namespace VarianceGamma
                     if (rest != 0.5 && rest != 0.0)
                     {
                         residual = Math.Pow(cp[i, j] - VarianceGammaOptionsCalibration.VGCall(x[0], x[1], x[2], m[i], k[j], q, s0, r), 2);
-                        if (residual > Math.Pow(10, 10))
+                        if (residual > Math.Pow(10, 10) || double.IsNaN(residual))
                         {
                             y = y + 1000 * Math.Sqrt(x[0] * x[0] + x[1] * x[1] + x[2] * x[2]);
                         }
@@ -197,7 +197,7 @@ namespace VarianceGamma
                     }
                 }
             }
-
+            
             return Math.Sqrt(y / (m.Length * k.Length));
         }
     }
