@@ -126,12 +126,11 @@ namespace VarianceGamma
             this.m = ecd.Hdata.Maturity;
             this.cp = ecd.Hdata.CallPrice;
 
-            Vector x0 = (Vector)new double[] { 0.1, 0.1, 0.1 };
+            Vector x0 = (Vector)new double[] { -0.1, 0.2, 0.1 };
             IOptimizationAlgorithm algorithm = new QADE();
             OptimizationSettings optimizationSettings = new DESettings();
 
             // Maximum number of iteration allowed.
-            optimizationSettings.MaxIter = 50;
 
             // Positive integer values print debug info.
             optimizationSettings.Verbosity = 1;

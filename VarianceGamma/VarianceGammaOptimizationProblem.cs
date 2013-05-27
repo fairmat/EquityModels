@@ -112,8 +112,8 @@ namespace VarianceGamma
             get
             {
                 Bounds b = new Bounds();
-                b.Lb = new Vector() { -0.2, 0.01, 0.01 };
-                b.Ub = new Vector() { 0.2, 0.2, 1 };
+                b.Lb = new Vector() { -0.5, 0.001, 0.001 };
+                b.Ub = new Vector() { 0.5, 0.5, 10 };
                 return b;
             }
         }
@@ -132,20 +132,12 @@ namespace VarianceGamma
 
         /// <summary>
         /// Gets The linear constrains for Variance Gamma.
-        /// Being A: [0 0 0] and b: [0].
         /// </summary>
         public LinearConstraints LinearIneqConstraints
         {
             get
             {
-                LinearConstraints linearInq = new LinearConstraints();
-                linearInq.A = new Matrix(1, 3);
-                linearInq.b = new Vector(1);
-                linearInq.A[0, 0] = 0;
-                linearInq.A[0, 1] = 0;
-                linearInq.A[0, 2] = 0;
-                linearInq.b[0] = 0;
-                return linearInq;
+                return null;
             }
         }
 
@@ -183,7 +175,7 @@ namespace VarianceGamma
                 {
                     double par = m[i] / x[2];
                     double rest = par - Math.Floor(par);
-                    if (rest != 0.5 && rest != 0.0)
+                    if (rest != 0.5 && rest != 0.0 && cp[i,j] != 0.0)
                     {
                         residual = Math.Pow(cp[i, j] - VarianceGammaOptionsCalibration.VGCall(x[0], x[1], x[2], m[i], k[j], q, s0, r), 2);
                         if (residual > Math.Pow(10, 10) || double.IsNaN(residual))

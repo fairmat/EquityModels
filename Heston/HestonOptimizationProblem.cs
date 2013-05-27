@@ -176,18 +176,12 @@ namespace HestonEstimator
         /// for strikes to be used in calibration.</param>
         private void SetVariables(Matrix callMarketPrice, Vector maturity, Vector strike, Vector rate, Vector dividendYield, double s0, Vector matBound, Vector strikeBound)
         {
-            Console.WriteLine("SetVariables");
             this.s0 = s0;
             this.rate = rate;
             this.dividendYield = dividendYield;
             Vector drift = this.rate - this.dividendYield;
             int[] matI = new int[2];
             int[] strikeI = new int[2];
-            Console.WriteLine("maturity = " + maturity);
-            Console.WriteLine("matBound = " + matBound);
-            Console.WriteLine("strike = " + strike);
-            Console.WriteLine("S0_ = " + s0);
-            Console.WriteLine("strikeBound = " + strikeBound);
             matI = this.FindExtremes(maturity, matBound);
             strikeI = this.FindExtremes(strike, s0 * strikeBound);
 
@@ -196,11 +190,8 @@ namespace HestonEstimator
             this.maturity = new Vector(numMat);
             this.drift = new Vector(numMat);
             this.strike = new Vector(numStrike);
-            this.callMarketPrice = new Matrix(numMat, numStrike) - 1;
+            this.callMarketPrice = new Matrix(numMat, numStrike);
             this.numCall = 0;
-            Console.WriteLine("Call = " + callMarketPrice);
-            Console.WriteLine("Mat = " + maturity);
-            Console.WriteLine("drift = " + drift);
             for (int i = 0; (i < numMat) && ((matI[0] + i) < callMarketPrice.R); i++)
             {
                 this.maturity[i] = maturity[matI[0] + i];
@@ -208,7 +199,7 @@ namespace HestonEstimator
                 for (int j = 0; (j < numStrike) && ((strikeI[0] + j) < callMarketPrice.C); j++)
                 {
                     this.callMarketPrice[i, j] = callMarketPrice[matI[0] + i, strikeI[0] + j];
-                    if (this.callMarketPrice[i, j] != -1)
+                    if (this.callMarketPrice[i, j] != 0)
                         this.numCall++;
                 }
             }
@@ -320,8 +311,6 @@ namespace HestonEstimator
         public double Obj(DVPLI.Vector x)
         {
             double sum = 0;
-
-            
             if (Engine.MultiThread)
             {
                 // Instantiate parallel computation if enabled.
@@ -380,7 +369,7 @@ namespace HestonEstimator
             int r = hc.row;
             for (int c = 0; c < this.callMarketPrice.C; c++)
             {
-                if (this.callMarketPrice[r, c] != -1)
+                if (this.callMarketPrice[r, c] != 0)
                 {
                     hc.K = this.strike[c];
                     hc.hestonCallPrice[r, c] = hc.HestonCallPrice();

@@ -101,7 +101,7 @@ namespace HestonEstimator
             o.Verbosity = 1;
 
             // If true the optimization algorithm will operate in parallel.
-            o.Parallel = true&Engine.MultiThread;
+            o.Parallel = Engine.MultiThread;
 
             // If true the objective function will be calculated in parallel.
             Engine.MultiThread = true;
