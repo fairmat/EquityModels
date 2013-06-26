@@ -392,5 +392,14 @@ namespace HistoricalSimulator
 
             return retVal;
         }
+
+        #region IAssetSet Members
+
+        public AssetComponentInfo[] AssetComponentInfo
+        {
+            get { throw new NotImplementedException(); }
+        }
+
+        #endregion
     }
 }
