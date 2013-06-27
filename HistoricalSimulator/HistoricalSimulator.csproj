@@ -60,6 +60,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="HistoricalSimulator.cs" />
+    <Compile Include="HistoricalSimulatorCalibrator.cs" />
     <Compile Include="HistoricalSimulatorSymbolChoice.cs" />
     <Compile Include="OperatingMode.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

@@ -34,7 +34,7 @@ namespace HistoricalSimulator
     /// to simulate future realizations using bootstrapping techniques.
     /// </remarks>
     [Serializable]
-    public class HistoricalSimulator : IFullSimulator, IExtensibleProcess, IParsable, IAssetSet
+    public class HistoricalSimulator : IFullSimulator, IExtensibleProcess, IParsable
     {
         #region Fields
         /// <summary>
@@ -324,31 +324,7 @@ namespace HistoricalSimulator
         }
         #endregion // IParsable implementation
 
-        #region IAssetSet implementation
-        /// <summary>
-        /// Gets the list of Process indices belonging to the asset set.
-        /// </summary>
-        public int[] ProcessIndices
-        {
-            get
-            {
-                int[] indices = new int[SimulationInfo.StateSize];
-                return indices;
-            }
-        }
-
-        /// <summary>
-        /// Gets the list of the indices in the state variables.
-        /// </summary>
-        public int[] StateIndices
-        {
-            get
-            {
-                int[] indices = new int[SimulationInfo.StateSize];
-                return indices;
-            }
-        }
-        #endregion // IAssetSet implementation
+        
 
         /// <summary>
         /// Gets the nearest date to the reference date between the given dates.
@@ -393,13 +369,6 @@ namespace HistoricalSimulator
             return retVal;
         }
 
-        #region IAssetSet Members
-
-        public AssetComponentInfo[] AssetComponentInfo
-        {
-            get { throw new NotImplementedException(); }
-        }
-
-        #endregion
+      
     }
 }
