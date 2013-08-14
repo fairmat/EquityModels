@@ -29,7 +29,7 @@ namespace HestonEstimator
     /// Implements and resolves the Heston optimization problem.
     /// </summary>
     [Mono.Addins.Extension("/Fairmat/Estimator")]
-    public class CallEstimator : IEstimator
+    public class CallEstimator : IEstimator, IDescription
     {
         #region IEstimator Members
 
@@ -57,7 +57,7 @@ namespace HestonEstimator
         /// </returns>
         public EstimateRequirement[] GetRequirements(IEstimationSettings settings, EstimateQuery query)
         {
-            return new EstimateRequirement[] { new EstimateRequirement(typeof(InterestRateMarketData)), 
+            return new EstimateRequirement[] { new EstimateRequirement(typeof(DiscountingCurveMarketData)), 
                                                new EstimateRequirement(typeof(CallPriceMarketData)) };
         }
 
@@ -71,7 +71,7 @@ namespace HestonEstimator
         /// <returns>The results of the optimization.</returns>
         public unsafe EstimationResult Estimate(List<object> marketData, IEstimationSettings settings = null, IController controller = null, Dictionary<string, object> properties = null)
         {
-            InterestRateMarketData interestDataSet = (InterestRateMarketData)marketData[0];
+            DiscountingCurveMarketData interestDataSet = (DiscountingCurveMarketData)marketData[0];
             CallPriceMarketData callDataSet = (CallPriceMarketData)marketData[1];
             EquityCalibrationData equityCalData = new EquityCalibrationData(callDataSet, interestDataSet);
 
@@ -135,9 +135,9 @@ namespace HestonEstimator
             EstimationResult result = new EstimationResult(names, param);
 
             // In the following the two function describing the ZR and dividend yields are created
-            Matrix zerorate = new Matrix(interestDataSet.ZRMarketDates.Length, 2);
-            zerorate[Range.All, 0] = interestDataSet.ZRMarketDates;
-            zerorate[Range.All, 1] = interestDataSet.ZRMarket;
+            Matrix zerorate = new Matrix(interestDataSet.Durations.Length, 2);
+            zerorate[Range.All, 0] = interestDataSet.Durations;
+            zerorate[Range.All, 1] = interestDataSet.Values;
 
             Matrix dividendYield = new Matrix(equityCalData.MaturityDY.Length, 2);
             dividendYield[Range.All, 0] = equityCalData.MaturityDY;
@@ -150,5 +150,10 @@ namespace HestonEstimator
         }
 
         #endregion
+
+        public string Description
+        {
+            get { return "Calibrate against call options"; }
+        }
     }
 }
