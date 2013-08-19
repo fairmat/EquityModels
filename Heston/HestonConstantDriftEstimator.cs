@@ -99,7 +99,7 @@ namespace HestonEstimator
         /// </returns>
         public EstimateRequirement[] GetRequirements(IEstimationSettings settings, EstimateQuery query)
         {
-            return new EstimateRequirement[] { new EstimateRequirement(typeof(InterestRateMarketData)), 
+            return new EstimateRequirement[] { new EstimateRequirement(typeof(DiscountingCurveMarketData)), 
                                                new EstimateRequirement(typeof(CallPriceMarketData)) };
         }
 
@@ -114,7 +114,7 @@ namespace HestonEstimator
         /// <returns>The results of the optimization.</returns>
         public unsafe EstimationResult Estimate(List<object> marketData, IEstimationSettings settings = null, IController controller = null, Dictionary<string, object> properties = null)
         {
-            InterestRateMarketData interestDataSet = (InterestRateMarketData)marketData[0];
+            DiscountingCurveMarketData interestDataSet = (DiscountingCurveMarketData)marketData[0];
             CallPriceMarketData callDataSet = (CallPriceMarketData)marketData[1];
             EquityCalibrationData equityCalData = new EquityCalibrationData(callDataSet, interestDataSet);
             HestonEstimationSettings localSettings = (HestonEstimationSettings)settings;
