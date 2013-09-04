@@ -179,17 +179,16 @@ namespace Dupire
         private Matrix LocVolMatrixFromCallPrices(CallPriceMarketData Hdataset, IFunction CallPrice, out Vector locVolMat, out Vector locVolStr)
         {
             int nmat = 100;
-            int nstrike = 100;
+            int nstrike = 40;
             double firstMat = Hdataset.Maturity[0];
             double firstStr = Hdataset.Strike[0];
             double lastMat = Hdataset.Maturity[Range.End];
             double lastStr = Hdataset.Strike[Range.End];
-            //locVolMat = Vector.Linspace(0.0, lastMat, nmat);
-            //locVolStr = Vector.Linspace(lastStr/nstrike, lastStr, nstrike);
-            double delta = (lastStr - firstStr) / nmat;
+            double delta = (lastStr - firstStr) / nstrike;
             locVolMat = Vector.Linspace(firstMat, lastMat, nmat);
             locVolStr = Vector.Linspace(firstStr + delta, lastStr - delta, nstrike);
             Matrix locVolMatrix = new Matrix(nmat, nstrike);
+
             // this next matrix is created only for debugging pourpose
             Matrix squaredLocVolMatrix = new Matrix(nmat, nstrike);
             double num, den, call, dCdt, dCdk, d2Cdk2;
