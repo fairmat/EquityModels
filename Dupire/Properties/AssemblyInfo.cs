@@ -1,4 +1,4 @@
-/* Copyright (C) 2012 Fairmat SRL (info@fairmat.com, http://www.fairmat.com/)
+/* Copyright (C) 2012-2013 Fairmat SRL (info@fairmat.com, http://www.fairmat.com/)
  * Author(s): Matteo Tesser (matteo.tesser@fairmat.com)
  *
  * This program is free software: you can redistribute it and/or modify
@@ -27,7 +27,7 @@ using Mono.Addins;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Fairmat SRL")]
 [assembly: AssemblyProduct("Dupire")]
-[assembly: AssemblyCopyright("Copyright © Fairmat SRL 2012")]
+[assembly: AssemblyCopyright("Copyright © Fairmat SRL 2012-2013")]
 [assembly: AssemblyTrademark("Fairmat")]
 [assembly: AssemblyCulture("")]
 
@@ -49,11 +49,11 @@ using Mono.Addins;
 // You can specify all the values or you can default the Build and Revision Numbers
 // by using the '*' as shown below:
 // [assembly: AssemblyVersion("1.0.*")]
-[assembly: AssemblyVersion("1.0.0.0")]
-[assembly: AssemblyFileVersion("1.0.0.0")]
+[assembly: AssemblyVersion("1.0.2")]
+[assembly: AssemblyFileVersion("1.0.2")]
 
 // The following lines tell that the assembly is an addin.
-[assembly: Addin("Dupire", "1.0.1", Category = "Stochastic Process")]
+[assembly: Addin("Dupire", "1.0.2", Category = "Stochastic Process")]
 [assembly: AddinDependency("Fairmat", "1.0")]
 [assembly: AddinAuthor("Fairmat SRL")]
 [assembly: AddinDescription("Implements Dupire local volatility model.")]
