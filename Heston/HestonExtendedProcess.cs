@@ -498,6 +498,8 @@ namespace HestonExtended
             {
                 this.zrCurve.Expr = (estimate.Objects[0] as Matrix).ToArray();
                 this.dyCurve.Expr = (estimate.Objects[1] as Matrix).ToArray();
+                //Calibrator assumes dividend yield is a step constant function, the simulation model must be coherent with that assumption. 
+                (this.dyCurve as PFunction).m_Function.iType = DVPLUtils.EInterpolationType.ZERO_ORDER_LEFT;
             }
         }
     }
