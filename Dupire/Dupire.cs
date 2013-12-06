@@ -315,6 +315,9 @@ namespace Dupire
                 PFunction qFunc = estimate.Objects[1] as PFunction;
                 PFunction qFuncDest = this.q.fVRef() as PFunction;
                 qFuncDest.Expr = qFunc.Expr;
+                //Calibrator assumes dividend yield is a step constant function, the simulation model must be coherent with that assumption. 
+                qFuncDest.m_Function.iType = DVPLUtils.EInterpolationType.ZERO_ORDER_LEFT;
+
 
                 PFunction2D.PFunction2D localVolSrc = estimate.Objects[2] as PFunction2D.PFunction2D;
                 PFunction2D.PFunction2D localVolDest = this.localVol.fVRef() as PFunction2D.PFunction2D;

@@ -178,8 +178,9 @@ namespace Dupire
 
         private Matrix LocVolMatrixFromCallPrices(CallPriceMarketData Hdataset, IFunction CallPrice, out Vector locVolMat, out Vector locVolStr)
         {
-            int nmat = 100;
-            int nstrike = 40;
+            int nmat = 10;// 20;
+            int nstrike = 15;// 30;
+            
             double firstMat = Hdataset.Maturity[0];
             double firstStr = Hdataset.Strike[0];
             double lastMat = Hdataset.Maturity[Range.End];
@@ -193,6 +194,9 @@ namespace Dupire
             Matrix squaredLocVolMatrix = new Matrix(nmat, nstrike);
             double num, den, call, dCdt, dCdk, d2Cdk2;
             Vector x = new Vector(2);
+            double hs = 0.01*Hdataset.S0;//increment for numerical derivatives (stock)
+            double ht = 0.25*(lastMat-firstMat)/nmat;//increment for numerical derivatives (maturities)
+            double d2Threshold=10e-8;
             for (int i = 0; i < nmat; i++)
             {
                 x[0] = locVolMat[i];
@@ -200,9 +204,18 @@ namespace Dupire
                 {
                     x[1] = locVolStr[j];
                     call = CallPrice.Evaluate(x);
-                    dCdt = CallPrice.Partial(x, 0);
-                    dCdk = CallPrice.Partial(x, 1);
-                    d2Cdk2 = CallPrice.Partial2(x, 1);
+                    dCdt = CallPrice.Partial(x, 0, ht);
+                    do
+                    {
+                        
+                        dCdk = CallPrice.Partial(x, 1, hs);
+                        d2Cdk2 = CallPrice.Partial2(x, 1, hs);
+                        if (Math.Abs(d2Cdk2) > d2Threshold || hs > 1)
+                           break;
+                        hs *= 2;
+                    } while (true);
+
+
                     num = dCdt + (this.r.Evaluate(x[0]) - this.q.Evaluate(x[0])) * x[1] * dCdk + this.q.Evaluate(x[0]) * call;
                     den = x[1] * x[1] * d2Cdk2;
                     squaredLocVolMatrix[i, j] = 2.0 * num / den;
