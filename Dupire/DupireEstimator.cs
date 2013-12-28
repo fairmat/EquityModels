@@ -57,7 +57,7 @@ namespace Dupire
         /// </returns>
         public EstimateRequirement[] GetRequirements(IEstimationSettings settings, EstimateQuery query)
         {
-            return new EstimateRequirement[] { new EstimateRequirement(typeof(InterestRateMarketData)), 
+            return new EstimateRequirement[] { new EstimateRequirement(typeof(DiscountingCurveMarketData)), 
                                                new EstimateRequirement(typeof(CallPriceMarketData)) };
         }
 
@@ -75,7 +75,7 @@ namespace Dupire
 
         public EstimationResult Estimate(System.Collections.Generic.List<object> marketData, IEstimationSettings settings = null, IController controller = null, System.Collections.Generic.Dictionary<string, object> properties = null)
         {
-            InterestRateMarketData Mdataset = (InterestRateMarketData)marketData[0];
+            CurveMarketData discountingCurve = (CurveMarketData)marketData[0];
             CallPriceMarketData Hdataset = (CallPriceMarketData)marketData[1];
 
             //gets the settings
@@ -83,9 +83,9 @@ namespace Dupire
             switch (calibrationSettings.LocalVolatilityCalculation)
             {
                 case LocalVolatilityCalculation.Method1:
-                    return this.FairmatEstimate(Mdataset, Hdataset);
+                    return this.FairmatEstimate(discountingCurve, Hdataset);
                 case LocalVolatilityCalculation.QuantLib:
-                    return QuantLibEstimate(Mdataset, Hdataset);
+                    return QuantLibEstimate(discountingCurve, Hdataset);
                 default:
                     throw new NotImplementedException("Method not implemented");
             }
@@ -93,9 +93,9 @@ namespace Dupire
 
         #endregion
 
-        private EstimationResult FairmatEstimate(InterestRateMarketData Mdataset, CallPriceMarketData Hdataset)
+        private EstimationResult FairmatEstimate(CurveMarketData discountingCurve, CallPriceMarketData Hdataset)
         {
-            EquityCalibrationData HCalData = new EquityCalibrationData(Hdataset, Mdataset);
+            EquityCalibrationData HCalData = new EquityCalibrationData(Hdataset, discountingCurve);
 
             bool hasArbitrage = HCalData.HasArbitrageOpportunity();
             if (hasArbitrage)
@@ -103,7 +103,7 @@ namespace Dupire
 
             this.r = new DVPLDOM.PFunction(null);
             this.q = new DVPLDOM.PFunction(null);
-            this.r.Expr = (double[,])ArrayHelper.Concat(Mdataset.ZRMarketDates.ToArray(), Mdataset.ZRMarket.ToArray());
+            this.r.Expr = (double[,])ArrayHelper.Concat(discountingCurve.Durations.ToArray(), discountingCurve.Values.ToArray());
             this.q.Expr = (double[,])ArrayHelper.Concat(HCalData.MaturityDY.ToArray(), HCalData.DividendYield.ToArray());
             this.r.Parse(null);
             this.q.Parse(null);

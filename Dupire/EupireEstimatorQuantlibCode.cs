@@ -9,9 +9,9 @@ namespace Dupire
 {
     public partial class DupireEstimator : IEstimatorEx, IIntegrable
     {
-        private EstimationResult QuantLibEstimate(InterestRateMarketData Mdataset, CallPriceMarketData Hdataset)
+        private EstimationResult QuantLibEstimate(CurveMarketData discoutingCurve, CallPriceMarketData Hdataset)
         {
-            EquityCalibrationData HCalData = new EquityCalibrationData(Hdataset, Mdataset);
+            EquityCalibrationData HCalData = new EquityCalibrationData(Hdataset, discoutingCurve);
 
             bool hasArbitrage = HCalData.HasArbitrageOpportunity();
             if (hasArbitrage)
@@ -19,7 +19,7 @@ namespace Dupire
 
             this.r = new DVPLDOM.PFunction(null);
             this.q = new DVPLDOM.PFunction(null);
-            this.r.Expr = (double[,])ArrayHelper.Concat(Mdataset.ZRMarketDates.ToArray(), Mdataset.ZRMarket.ToArray());
+            this.r.Expr = (double[,])ArrayHelper.Concat(discoutingCurve.Durations.ToArray(),discoutingCurve.Values.ToArray());
             this.q.Expr = (double[,])ArrayHelper.Concat(HCalData.MaturityDY.ToArray(), HCalData.DividendYield.ToArray());
             this.r.Parse(null);
             this.q.Parse(null);
