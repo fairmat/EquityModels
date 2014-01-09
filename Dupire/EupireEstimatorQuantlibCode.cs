@@ -15,7 +15,7 @@ namespace Dupire
 
             bool hasArbitrage = HCalData.HasArbitrageOpportunity();
             if (hasArbitrage)
-                Console.WriteLine("Market data contain arbitrage opportunity");
+                Console.WriteLine("Market data contains arbitrage opportunity");
 
             this.r = new DVPLDOM.PFunction(null);
             this.q = new DVPLDOM.PFunction(null);

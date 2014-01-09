@@ -97,9 +97,9 @@ namespace Dupire
         {
             EquityCalibrationData HCalData = new EquityCalibrationData(Hdataset, discountingCurve);
 
-            bool hasArbitrage = HCalData.HasArbitrageOpportunity();
+            bool hasArbitrage = HCalData.HasArbitrageOpportunity(10e-2);
             if (hasArbitrage)
-                Console.WriteLine("Market data contain arbitrage opportunity");
+                Console.WriteLine("Market data contains arbitrage opportunity");
 
             this.r = new DVPLDOM.PFunction(null);
             this.q = new DVPLDOM.PFunction(null);
