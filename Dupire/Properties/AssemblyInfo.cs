@@ -27,7 +27,7 @@ using Mono.Addins;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Fairmat SRL")]
 [assembly: AssemblyProduct("Dupire")]
-[assembly: AssemblyCopyright("Copyright © Fairmat SRL 2012-2013")]
+[assembly: AssemblyCopyright("Copyright © Fairmat SRL 2012-2014")]
 [assembly: AssemblyTrademark("Fairmat")]
 [assembly: AssemblyCulture("")]
 
@@ -49,11 +49,11 @@ using Mono.Addins;
 // You can specify all the values or you can default the Build and Revision Numbers
 // by using the '*' as shown below:
 // [assembly: AssemblyVersion("1.0.*")]
-[assembly: AssemblyVersion("1.0.2")]
-[assembly: AssemblyFileVersion("1.0.2")]
+[assembly: AssemblyVersion("1.0.3")]
+[assembly: AssemblyFileVersion("1.0.3")]
 
 // The following lines tell that the assembly is an addin.
-[assembly: Addin("Dupire", "1.0.2", Category = "Stochastic Process")]
+[assembly: Addin("Dupire", "1.0.3", Category = "Stochastic Process")]
 [assembly: AddinDependency("Fairmat", "1.0")]
 [assembly: AddinAuthor("Fairmat SRL")]
 [assembly: AddinDescription("Implements Dupire local volatility model.")]

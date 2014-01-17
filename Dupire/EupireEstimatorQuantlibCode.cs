@@ -13,7 +13,7 @@ namespace Dupire
         {
             EquityCalibrationData HCalData = new EquityCalibrationData(Hdataset, discoutingCurve);
 
-            bool hasArbitrage = HCalData.HasArbitrageOpportunity();
+            bool hasArbitrage = HCalData.HasArbitrageOpportunity(10e-2);
             if (hasArbitrage)
                 Console.WriteLine("Market data contains arbitrage opportunity");
 
@@ -40,13 +40,12 @@ namespace Dupire
             prj.Symbols.Add(impVol);
             // doc.WriteToXMLFile("impVol.fair");
 
-            // todo: spostare nei settings
-            int nmat = 100;
-            int nstrike = 100;
-            double lastMat = Hdataset.Maturity[Hdataset.Maturity.Length - 1];
-            double lastStr = Hdataset.Strike[Hdataset.Strike.Length - 1];
-            Vector locVolMat = Vector.Linspace(0.0, lastMat, nmat);
-            Vector locVolStr = Vector.Linspace(0.0, lastStr, nstrike);
+            int nmat = calibrationSettings.LocalVolatilityMaturities;
+            int nstrike = calibrationSettings.LocalVolatilityStrikes;
+            double lastMat = Hdataset.Maturity[SymbolicIntervalExtremes.End];
+            double lastStr = Hdataset.Strike[SymbolicIntervalExtremes.End];
+            Vector locVolMat = Vector.Linspace(Hdataset.Maturity[0], lastMat, nmat);
+            Vector locVolStr = Vector.Linspace(Hdataset.Strike[0], lastStr, nstrike);
             Matrix locVolMatrix = new Matrix(nmat, nstrike);
             double t, dt, forwardValue, y, dy, strike, strikep, strikem, w, wp, wm, dwdy;
             double d2wdy2, den1, den2, den3, strikept, strikemt, wpt, wmt, dwdt;

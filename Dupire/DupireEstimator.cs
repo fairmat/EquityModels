@@ -30,6 +30,7 @@ namespace Dupire
     {
         private PFunction r;
         private PFunction q;
+        private DupireCalibrationSettings calibrationSettings;
 
         public DupireEstimator()
         {
@@ -79,7 +80,7 @@ namespace Dupire
             CallPriceMarketData Hdataset = (CallPriceMarketData)marketData[1];
 
             //gets the settings
-            DupireCalibrationSettings calibrationSettings = settings as DupireCalibrationSettings;
+            calibrationSettings = settings as DupireCalibrationSettings;
             switch (calibrationSettings.LocalVolatilityCalculation)
             {
                 case LocalVolatilityCalculation.Method1:
@@ -135,14 +136,15 @@ namespace Dupire
 
         private Matrix LocVolMatrixFromImpliedVol(CallPriceMarketData Hdataset, IFunction impVol, out Vector locVolMat, out Vector locVolStr)
         {
-            int nmat = 100;
-            int nstrike = 100;
+
+            int nmat = calibrationSettings.LocalVolatilityMaturities;
+            int nstrike = calibrationSettings.LocalVolatilityStrikes;
             double lastMat = Hdataset.Maturity[Range.End];
             double lastStr = Hdataset.Strike[Range.End];
-            locVolMat = Vector.Linspace(0.0, lastMat, nmat);
-            locVolStr = Vector.Linspace(0.0, lastStr, nstrike);
+            locVolMat = Vector.Linspace(Hdataset.Maturity[0], lastMat, nmat);
+            locVolStr = Vector.Linspace(Hdataset.Strike[0], lastStr, nstrike);
             Matrix locVolMatrix = new Matrix(nmat, nstrike);
-
+           
             Integrate integrate = new Integrate(this);
             double sigma, dSigmadk, num, y, den, integral;
             Vector x = new Vector(2);
@@ -178,8 +180,8 @@ namespace Dupire
 
         private Matrix LocVolMatrixFromCallPrices(CallPriceMarketData Hdataset, IFunction CallPrice, out Vector locVolMat, out Vector locVolStr)
         {
-            int nmat = 10;// 20;
-            int nstrike = 15;// 30;
+            int nmat = calibrationSettings.LocalVolatilityMaturities;
+            int nstrike = calibrationSettings.LocalVolatilityStrikes;
             
             double firstMat = Hdataset.Maturity[0];
             double firstStr = Hdataset.Strike[0];
