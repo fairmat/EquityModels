@@ -41,14 +41,15 @@ namespace Dupire
         [Test]
         public void TestCalibration()
         {
-            //InterestRateMarketData IData = InterestRateMarketData.FromFile("../../TestData/IRMD-sample.xml");
-            //CallPriceMarketData HData = CallPriceMarketData.FromFile("../../TestData/CallData-sample.xml");
-            InterestRateMarketData IData = InterestRateMarketData.FromFile("../../TestData/IRMD-EU-30102012-close.xml");
-            CallPriceMarketData HData = CallPriceMarketData.FromFile("../../TestData/30102012-SX5E_Index-HestonData.xml");
+            InterestRateMarketData IData = InterestRateMarketData.FromFile("../../TestData/IRMD-sample.xml");
+            CallPriceMarketData HData = CallPriceMarketData.FromFile("../../TestData/CallData-sample.xml");
+            //InterestRateMarketData IData = InterestRateMarketData.FromFile("../../../EquityModels.Tests/TestData/IRMD-EU-30102012-close.xml");
+            //CallPriceMarketData HData = CallPriceMarketData.FromFile("../../../EquityModels.Tests/TestData/30102012-SX5E_Index-HestonData.xml");
+            //CallPriceMarketData HData = ObjectSerialization.ReadFromXMLFile("../../../EquityModels.Tests/TestData/FTSE.xml") as CallPriceMarketData;
 
 
             List<object> l = new List<object>();
-            l.Add(IData);
+            l.Add(IData.DiscountingCurve);
             l.Add(HData);
 
             DupireEstimator DE = new DupireEstimator();
