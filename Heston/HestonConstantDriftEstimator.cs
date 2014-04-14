@@ -29,14 +29,14 @@ namespace HestonEstimator
     /// Implements and resolves the Heston optimization problem with a constant drift.
     /// </summary>
     [Mono.Addins.Extension("/Fairmat/Estimator")]
-    public class HestonConstantDriftEstimator : IEstimatorEx, IMenuItemDescription
+    public class HestonConstantDriftEstimator : CallEstimator, IEstimatorEx, IMenuItemDescription
     {
         #region IMenuItemDescription Members
 
         /// <summary>
         /// Gets the description of the implemented calibration function.
         /// </summary>
-        public string Description
+        public override string Description
         {
             get
             {
@@ -44,17 +44,7 @@ namespace HestonEstimator
             }
         }
 
-        /// <summary>
-        /// Gets the tooltip for the implemented calibration function.
-        /// </summary>
-        public string ToolTipText
-        {
-            get
-            {
-                return "Calibrates Heston fixing risk free rate and " +
-                       "dividend yield given by the specified maturity";
-            }
-        }
+       
 
         #endregion IMenuItemDescription Members
 
@@ -79,7 +69,7 @@ namespace HestonEstimator
         /// Gets the value requested by the interface ProvidesTo,
         /// returning HestonProcess as the type.
         /// </summary>
-        public Type ProvidesTo
+        public override Type ProvidesTo
         {
             get
             {
@@ -87,91 +77,18 @@ namespace HestonEstimator
             }
         }
 
-        /// <summary>
-        /// Gets the types required by the estimator in order to work:
-        /// InterestRateMarketData and CallPriceMarketData are
-        /// the required type for this estimator.
-        /// </summary>
-        /// <param name="settings">The parameter is not used.</param>
-        /// <param name="multivariateRequest">The parameter is not used.</param>
-        /// <returns>
-        /// An array containing the type InterestRateMarketData and CallPriceMarketData.
-        /// </returns>
-        public EstimateRequirement[] GetRequirements(IEstimationSettings settings, EstimateQuery query)
-        {
-            return new EstimateRequirement[] { new EstimateRequirement(typeof(DiscountingCurveMarketData)), 
-                                               new EstimateRequirement(typeof(CallPriceMarketData)) };
-        }
 
-        /// <summary>
-        /// Attempts to solve the Heston optimization problem using
-        /// <see cref="Heston.HestonOptimizationProblem"/> with a constant drift.
-        /// </summary>
-        /// <param name="marketData">
-        /// The data to be used in order to perform the optimization.
-        /// </param>
-        /// <param name="settings">The settings to be used for the optimization.</param>
-        /// <returns>The results of the optimization.</returns>
-        public unsafe EstimationResult Estimate(List<object> marketData, IEstimationSettings settings = null, IController controller = null, Dictionary<string, object> properties = null)
+        protected override void Setup(EquityCalibrationData equityCalData, IEstimationSettings  settings)
         {
-            DiscountingCurveMarketData interestDataSet = (DiscountingCurveMarketData)marketData[0];
-            CallPriceMarketData callDataSet = (CallPriceMarketData)marketData[1];
-            EquityCalibrationData equityCalData = new EquityCalibrationData(callDataSet, interestDataSet);
-            HestonEstimationSettings localSettings = (HestonEstimationSettings)settings;
+            var localSettings = (HestonEstimationSettings)settings;
 
             equityCalData.SetToSpecificMaturity(localSettings.Maturity);
+        }
 
-            // Creates the context.
-            Document doc = new Document();
-            ProjectROV prj = new ProjectROV(doc);
-            doc.Part.Add(prj);
 
-            // Optimization problem instance.
-            Vector matBound = new Vector(2);
-            Vector strikeBound = new Vector(2);
-            matBound[0] = 0.0;
-            matBound[1] = 2.0;
-            strikeBound[0] = 0.79;
-            strikeBound[1] = 1.21;
-
-            HestonCallOptimizationProblem problem = new HestonCallOptimizationProblem(equityCalData, matBound, strikeBound);
-            Console.WriteLine("Optimization based on " + problem.numCall + " call options");
-
-            IOptimizationAlgorithm solver = new QADE();
-            IOptimizationAlgorithm solver2 = new SteepestDescent();
-
-            DESettings o = new DESettings();
-
-            o.NP = 40;
-            o.MaxIter = 40;
-            o.Verbosity = 1;
-
-            // If true the optimization algorithm will operate in parallel.
-            o.Parallel = true;
-
-            // If true the objective function will be calculated in parallel.
-            Engine.MultiThread = true;
-            SolutionInfo solution = null;
-
-            Vector x0 = new Vector(new double[] { 5.0, 0.1, 0.8, -0.7, 0.05 });
-
+        protected override EstimationResult BuildEstimate(DiscountingCurveMarketData interestDataSet,CallPriceMarketData callDataSet, EquityCalibrationData equityCalData, SolutionInfo solution)
+        {
             EstimationResult result = new EstimationResult();
-
-            // GA
-            solution = solver.Minimize(problem, o, x0);
-
-            o.epsilon = 10e-8;
-            o.options = "qn";
-            o.h = 10e-8;
-
-            o.MaxIter = 2000;
-            if (solution != null)
-                solution = solver2.Minimize(problem, o, solution.x);
-            else
-            {
-                solution = solver2.Minimize(problem, o, x0);
-            }
-
             string[] names = new string[] { "S0", "kappa", "theta", "sigma",
                                             "rho", "V0", "r", "q" };
             Vector param = new Vector(8);

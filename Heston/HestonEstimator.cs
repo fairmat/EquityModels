@@ -37,11 +37,23 @@ namespace HestonEstimator
         /// Gets the value requested by the interface ProvidesTo,
         /// returning HestonExtendedProcess as the type.
         /// </summary>
-        public Type ProvidesTo
+        public virtual Type ProvidesTo
         {
             get
             {
                 return typeof(HestonExtended.HestonExtendedProcess);
+            }
+        }
+
+        /// <summary>
+        /// Gets the tooltip for the implemented calibration function.
+        /// </summary>
+        public string ToolTipText
+        {
+            get
+            {
+                return "Calibrates Heston fixing risk free rate and " +
+                       "dividend yield given by the specified maturity";
             }
         }
 
@@ -61,6 +73,11 @@ namespace HestonEstimator
                                                new EstimateRequirement(typeof(CallPriceMarketData)) };
         }
 
+        protected virtual void Setup(EquityCalibrationData equityCalData, IEstimationSettings settings)
+        {
+           
+        }
+
         /// <summary>
         /// Attempts to solve the Heston optimization problem using
         /// <see cref="Heston.HestonOptimizationProblem"/>.
@@ -69,11 +86,14 @@ namespace HestonEstimator
         /// <param name="settings">The parameter is not used.</param>
         /// <param name="controller">IController.</param>
         /// <returns>The results of the optimization.</returns>
-        public unsafe EstimationResult Estimate(List<object> marketData, IEstimationSettings settings = null, IController controller = null, Dictionary<string, object> properties = null)
+        public EstimationResult Estimate(List<object> marketData, IEstimationSettings settings = null, IController controller = null, Dictionary<string, object> properties = null)
         {
             DiscountingCurveMarketData interestDataSet = (DiscountingCurveMarketData)marketData[0];
             CallPriceMarketData callDataSet = (CallPriceMarketData)marketData[1];
             EquityCalibrationData equityCalData = new EquityCalibrationData(callDataSet, interestDataSet);
+            
+
+            Setup(equityCalData, settings);
 
             // Creates the context.
             Document doc = new Document();
@@ -84,9 +104,9 @@ namespace HestonEstimator
             Vector matBound = new Vector(2);
             Vector strikeBound = new Vector(2);
             matBound[0] = 0.0;
-            matBound[1] = 2.0;
-            strikeBound[0] = 0.79;
-            strikeBound[1] = 1.21;
+            matBound[1] = 6.0; //Up to 6Y maturities
+            strikeBound[0] = 0.7;//0.79;
+            strikeBound[1] = 1.3;// 1.21;
 
             HestonCallOptimizationProblem problem = new HestonCallOptimizationProblem(equityCalData, matBound, strikeBound);
             Console.WriteLine("Optimization based on " + problem.numCall + " call options");
@@ -97,14 +117,14 @@ namespace HestonEstimator
             DESettings o = new DESettings();
             o.controller = controller;
             o.NP = 40;
-            o.MaxIter = 40;
+            o.MaxIter = 20;
             o.Verbosity = 1;
 
             // If true the optimization algorithm will operate in parallel.
             o.Parallel = Engine.MultiThread;
-
-            // If true the objective function will be calculated in parallel.
-            Engine.MultiThread = true;
+            o.h = 10e-9;
+            o.epsilon = 10e-9;
+          
             SolutionInfo solution = null;
 
             Vector x0 = new Vector(new double[] { 5.0, 0.1, 0.8, -0.7, 0.05 });
@@ -113,10 +133,8 @@ namespace HestonEstimator
             solution = solver.Minimize(problem, o, x0);
             if (solution.errors)
                 return null;
-            o.epsilon = 10e-8;
+            
             o.options = "qn";
-            o.h = 10e-8;
-
             o.MaxIter = 2000;
 
             if (solution != null)
@@ -128,6 +146,16 @@ namespace HestonEstimator
             if (solution.errors)
                 return null;
 
+            //Displays pricing error structure
+            HestonCallOptimizationProblem.displayPricingError = true;
+            problem.Obj(solution.x);
+
+
+            return BuildEstimate(interestDataSet, callDataSet, equityCalData, solution);
+        }
+
+        protected virtual EstimationResult BuildEstimate(DiscountingCurveMarketData interestDataSet, CallPriceMarketData callDataSet, EquityCalibrationData equityCalData, SolutionInfo solution)
+        {
             string[] names = new string[] { "S0", "kappa", "theta", "sigma", "rho", "V0" };
             Vector param = new Vector(6);
             param[0] = callDataSet.S0;
@@ -151,7 +179,7 @@ namespace HestonEstimator
 
         #endregion
 
-        public string Description
+        public virtual string Description
         {
             get { return "Calibrate against call options"; }
         }

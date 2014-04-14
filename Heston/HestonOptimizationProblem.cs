@@ -20,6 +20,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using DVPLI;
+using DVPLDOM;
 using DVPLI.TaskScheduler;
 using Fairmat.MarketData;
 using Fairmat.Optimization;
@@ -47,12 +48,12 @@ namespace HestonEstimator
         private Vector strike;
 
         /// <summary>
-        /// The rate vector.
+        /// The average rate vector up to a given maturity 
         /// </summary>
         private Vector rate;
 
         /// <summary>
-        /// The dividend yield vector.
+        /// The avereage dividend yield vector up to a given maturity
         /// </summary>
         private Vector dividendYield;
 
@@ -71,6 +72,14 @@ namespace HestonEstimator
         /// </summary>
         public bool useFellerPenalty = false;
 
+
+        /// <summary>
+        /// Builds objective function on relative pricing error.
+        /// </summary>
+        static bool optimizeRelativeError = true;
+        static double pricingMin = 0.01;
+        static internal bool displayPricingError = false;
+        static internal double optionThreshold = 1.0 / 1000;
         /// <summary>
         /// Small value used in the boundary penalty function.
         /// </summary>
@@ -117,6 +126,7 @@ namespace HestonEstimator
                          equityCalData.Hdata.Strike, equityCalData.CallMatrixRiskFreeRate,
                          equityCalData.CallMatrixDividendYield, equityCalData.Hdata.S0,
                          matBound, strikeBound);
+            displayPricingError = false;
         }
 
         /// <summary>
@@ -177,8 +187,10 @@ namespace HestonEstimator
         private void SetVariables(Matrix callMarketPrice, Vector maturity, Vector strike, Vector rate, Vector dividendYield, double s0, Vector matBound, Vector strikeBound)
         {
             this.s0 = s0;
+           
             this.rate = rate;
             this.dividendYield = dividendYield;
+            
             Vector drift = this.rate - this.dividendYield;
             int[] matI = new int[2];
             int[] strikeI = new int[2];
@@ -199,13 +211,24 @@ namespace HestonEstimator
                 for (int j = 0; (j < numStrike) && ((strikeI[0] + j) < callMarketPrice.C); j++)
                 {
                     this.callMarketPrice[i, j] = callMarketPrice[matI[0] + i, strikeI[0] + j];
-                    if (this.callMarketPrice[i, j] != 0)
+                    if (this.callMarketPrice[i, j] >s0*optionThreshold)
                         this.numCall++;
                 }
             }
 
             for (int j = 0; j < numStrike; j++)
                 this.strike[j] = strike[strikeI[0] + j];
+
+            if(Engine.Verbose>=1)
+            {
+                Console.WriteLine("Black-Sholes Calls Market Prices");
+                Console.WriteLine(this.callMarketPrice);
+                Console.WriteLine("Strikes");
+                Console.WriteLine(this.strike);
+                Console.WriteLine("Maturities");
+                Console.WriteLine(this.maturity);
+
+            }
         }
 
         /// <summary>
@@ -311,7 +334,7 @@ namespace HestonEstimator
         public double Obj(DVPLI.Vector x)
         {
             double sum = 0;
-            if (Engine.MultiThread)
+            if (Engine.MultiThread && !displayPricingError)
             {
                 // Instantiate parallel computation if enabled.
                 List<Task> tl = new List<Task>();
@@ -322,6 +345,7 @@ namespace HestonEstimator
                 {
                     HestonCall hc = new HestonCall(this, x, this.s0);
                     context.Add(hc);
+                    
                     hc.T = this.maturity[r];
                     hc.rate = this.rate[r];
                     hc.dividend = this.dividendYield[r];
@@ -336,16 +360,30 @@ namespace HestonEstimator
             else
             {
                 // Sequential version of the code, used when parallel computation is disabled.
+                HestonCall hc = new HestonCall(this, x, this.s0);
                 for (int r = 0; r < this.callMarketPrice.R; r++)
                 {
-                    HestonCall hc = new HestonCall(this, x, this.s0);
+                    
                     hc.T = this.maturity[r];
                     hc.rate = this.rate[r];
                     hc.dividend = this.dividendYield[r];
                     hc.row = r;
+                    hc.sum = 0;
                     this.CalculateSingleRow(hc);
                     sum += hc.sum;
                 }
+
+                var pricingErrors = hc.hestonCallPrice - this.callMarketPrice;
+                if (objCount % 40 == 0 || displayPricingError)
+                {
+                    int RR = Math.Min(10, this.callMarketPrice.R - 1);
+                    int CC = Math.Min(10, this.callMarketPrice.C - 1);
+                    Console.WriteLine("Mkt Price");
+                    Console.WriteLine(this.callMarketPrice[Range.New(0,RR),Range.New(0,CC)]);
+                    Console.WriteLine("Pricing Errors");
+                    Console.WriteLine(pricingErrors[Range.New(0, RR), Range.New(0, CC)]);
+                }   
+                objCount++;
             }
 
             sum = sum / ((double)this.numCall);
@@ -354,8 +392,13 @@ namespace HestonEstimator
 
             if (this.useFellerPenalty)
                 sum = sum + this.FellerPenalty(x);
+            
+            
+            
+            
             return sum;
         }
+        static int objCount = 0;
 
         /// <summary>
         /// Calculates a single row of quadratic difference matrix.
@@ -369,11 +412,20 @@ namespace HestonEstimator
             int r = hc.row;
             for (int c = 0; c < this.callMarketPrice.C; c++)
             {
-                if (this.callMarketPrice[r, c] != 0)
+                if (this.callMarketPrice[r, c] > s0*optionThreshold)
                 {
                     hc.K = this.strike[c];
                     hc.hestonCallPrice[r, c] = hc.HestonCallPrice();
-                    hc.sum += Math.Pow(hc.hestonCallPrice[r, c] - this.callMarketPrice[r, c], 2);
+                    if (HestonCallOptimizationProblem.optimizeRelativeError)
+                    {
+                        double mkt=pricingMin+this.callMarketPrice[r, c];
+                        double model = pricingMin + hc.hestonCallPrice[r, c];
+                        hc.sum += Math.Pow((model - mkt)/mkt, 2);
+                    }
+                    else
+                    {
+                        hc.sum += Math.Pow(hc.hestonCallPrice[r, c] - this.callMarketPrice[r, c], 2);
+                    }
                 }
             }
 
