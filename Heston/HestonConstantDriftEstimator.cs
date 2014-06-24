@@ -80,9 +80,12 @@ namespace HestonEstimator
 
         protected override void Setup(EquityCalibrationData equityCalData, IEstimationSettings  settings)
         {
-            var localSettings = (HestonEstimationSettings)settings;
+            if (settings != null) //uses settings if provided.
+            {
+                var localSettings = (HestonEstimationSettings)settings;
 
-            equityCalData.SetToSpecificMaturity(localSettings.Maturity);
+                equityCalData.SetToSpecificMaturity(localSettings.Maturity);
+            }
         }
 
 
@@ -94,8 +97,8 @@ namespace HestonEstimator
             Vector param = new Vector(8);
             param[0] = callDataSet.S0;
             param[Range.New(1, 5)] = solution.x;
-            param[6] = equityCalData.ShortRate;
-            param[7] = equityCalData.DividendYield[0];
+            param[6] = equityCalData.zrFunc.Evaluate(TheoreticalModelsSettings.ConstantDYRFMaturity);
+            param[7] = equityCalData.dyFunc.Evaluate(TheoreticalModelsSettings.ConstantDYRFMaturity); 
             result = new EstimationResult(names, param);
             return result;
         }

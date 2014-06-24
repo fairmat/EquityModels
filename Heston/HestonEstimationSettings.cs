@@ -25,7 +25,7 @@ namespace HestonEstimator
     /// Maintains some settings to be used by the Heston calibrator.
     /// These settings will be available from the plugin settings tab in Fairmat.
     /// </summary>
-    [SettingsContainer("Calibration Settings for Heston")]
+    [SettingsContainer("Calibration Settings for Heston",SettingType= SettingType.Calibration)]
     [Mono.Addins.Extension("/Fairmat/UserSettings")]
     [Serializable]
     public class HestonEstimationSettings : IEstimationSettings
@@ -35,6 +35,6 @@ namespace HestonEstimator
         /// this is used by <see cref="HestonConstantDriftEstimator"/>.
         /// </summary>
         [RangeSettingDescription("Maturity to fix risk free rate and dividend yield", 0.0, 10)]
-        public double Maturity;
+        public double Maturity=1;
     }
 }
