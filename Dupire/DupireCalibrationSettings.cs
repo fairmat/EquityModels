@@ -41,13 +41,13 @@ namespace Dupire
     [Serializable]
     public class DupireCalibrationSettings : IEstimationSettings
     {
-        [SettingDescription("Local volatility calculation method")]
-        public LocalVolatilityCalculation  LocalVolatilityCalculation = LocalVolatilityCalculation.Method1;
+        //[SettingDescription("Local volatility calculation method")]
+        //public LocalVolatilityCalculation  LocalVolatilityCalculation = LocalVolatilityCalculation.Method1;
 
         [RangeSettingDescription("Number of Local volatility Strikes",2,20)]
-        public int LocalVolatilityStrikes = 10;
+        public int LocalVolatilityStrikes = 8;
         [RangeSettingDescription("Number of Local volatility Maturities", 2, 20)]
-        public int LocalVolatilityMaturities = 10;
+        public int LocalVolatilityMaturities = 8;
 
     }
 }

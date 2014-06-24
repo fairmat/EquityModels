@@ -81,6 +81,10 @@ namespace Dupire
 
             //gets the settings
             calibrationSettings = settings as DupireCalibrationSettings;
+
+            
+            return this.FairmatEstimate(discountingCurve, Hdataset);
+            /* Removed quantlib estimate, it does not work correctly
             switch (calibrationSettings.LocalVolatilityCalculation)
             {
                 case LocalVolatilityCalculation.Method1:
@@ -90,6 +94,7 @@ namespace Dupire
                 default:
                     throw new NotImplementedException("Method not implemented");
             }
+             */
         }
 
         #endregion
