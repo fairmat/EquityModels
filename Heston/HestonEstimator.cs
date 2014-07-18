@@ -149,6 +149,7 @@ namespace HestonEstimator
             //Displays pricing error structure
             HestonCallOptimizationProblem.displayPricingError = true;
             problem.Obj(solution.x);
+            HestonCallOptimizationProblem.displayPricingError = false;
 
 
             return BuildEstimate(interestDataSet, callDataSet, equityCalData, solution);

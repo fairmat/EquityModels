@@ -32,6 +32,7 @@ namespace HestonEstimator
     /// </summary>
     public class HestonCallOptimizationProblem : IOptimizationProblem
     {
+        CallPriceMarketData cpmd;
         /// <summary>
         /// The call market price matrix.
         /// </summary>
@@ -76,7 +77,7 @@ namespace HestonEstimator
         /// <summary>
         /// Builds objective function on relative pricing error.
         /// </summary>
-        static bool optimizeRelativeError = true;
+        static bool optimizeRelativeError = false;
         static double pricingMin = 0.01;
         static internal bool displayPricingError = false;
         static internal double optionThreshold = 1.0 / 1000;
@@ -122,6 +123,7 @@ namespace HestonEstimator
         /// </param>
         public HestonCallOptimizationProblem(EquityCalibrationData equityCalData, Vector matBound, Vector strikeBound)
         {
+            this.cpmd = equityCalData.Hdata;
             SetVariables(equityCalData.Hdata.CallPrice, equityCalData.Hdata.Maturity,
                          equityCalData.Hdata.Strike, equityCalData.CallMatrixRiskFreeRate,
                          equityCalData.CallMatrixDividendYield, equityCalData.Hdata.S0,
@@ -154,7 +156,8 @@ namespace HestonEstimator
         /// A vector containing the minimum and maximum values
         /// for strikes to be used in calibration.
         /// </param>
-        public HestonCallOptimizationProblem(Matrix callMarketPrice, Vector maturity, Vector strike, Vector rate, Vector dividendYield, double s0, Vector matBound, Vector strikeBound)
+        [Obsolete]
+        HestonCallOptimizationProblem(Matrix callMarketPrice, Vector maturity, Vector strike, Vector rate, Vector dividendYield, double s0, Vector matBound, Vector strikeBound)
         {
             SetVariables(callMarketPrice, maturity, strike, rate,
                          dividendYield, s0, matBound, strikeBound);
@@ -374,7 +377,7 @@ namespace HestonEstimator
                 }
 
                 var pricingErrors = hc.hestonCallPrice - this.callMarketPrice;
-                if (objCount % 40 == 0 || displayPricingError)
+                if (displayPricingError)
                 {
                     int RR = Math.Min(10, this.callMarketPrice.R - 1);
                     int CC = Math.Min(10, this.callMarketPrice.C - 1);
@@ -412,7 +415,7 @@ namespace HestonEstimator
             int r = hc.row;
             for (int c = 0; c < this.callMarketPrice.C; c++)
             {
-                if (this.callMarketPrice[r, c] > s0*optionThreshold)
+                if (this.cpmd.CallVolume[r,c]>0 && this.callMarketPrice[r, c] > s0*optionThreshold)
                 {
                     hc.K = this.strike[c];
                     hc.hestonCallPrice[r, c] = hc.HestonCallPrice();
@@ -420,11 +423,11 @@ namespace HestonEstimator
                     {
                         double mkt=pricingMin+this.callMarketPrice[r, c];
                         double model = pricingMin + hc.hestonCallPrice[r, c];
-                        hc.sum += Math.Pow((model - mkt)/mkt, 2);
+                        hc.sum += cpmd.CallVolume[r, c] * Math.Pow((model - mkt) / mkt, 2);
                     }
                     else
                     {
-                        hc.sum += Math.Pow(hc.hestonCallPrice[r, c] - this.callMarketPrice[r, c], 2);
+                        hc.sum += cpmd.CallVolume[r,c]* Math.Pow(hc.hestonCallPrice[r, c] - this.callMarketPrice[r, c], 2);
                     }
                 }
             }
