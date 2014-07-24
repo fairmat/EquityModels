@@ -21,9 +21,9 @@ using System.Runtime.InteropServices;
 using Mono.Addins;
 
 // The following lines tell that the assembly is an addin
-[assembly: AssemblyVersion("1.0.14.0")]
-[assembly: AssemblyFileVersion("1.0.14.0")]
-[assembly: Mono.Addins.Addin("Heston model", "1.0.14", Category = "Stochastic Process")]
+[assembly: AssemblyVersion("1.0.15.0")]
+[assembly: AssemblyFileVersion("1.0.15.0")]
+[assembly: Mono.Addins.Addin("Heston model", "1.0.15", Category = "Stochastic Process")]
 [assembly: Mono.Addins.AddinDependency("Fairmat", "1.0")]
 [assembly: Mono.Addins.AddinAuthor("Fairmat SRL")]
 [assembly: AddinDescription("The Heston model simulates equity or index prices taking into " +

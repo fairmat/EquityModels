@@ -214,7 +214,7 @@ namespace HestonEstimator
                 for (int j = 0; (j < numStrike) && ((strikeI[0] + j) < callMarketPrice.C); j++)
                 {
                     this.callMarketPrice[i, j] = callMarketPrice[matI[0] + i, strikeI[0] + j];
-                    if (this.callMarketPrice[i, j] >s0*optionThreshold)
+                    if (this.callMarketPrice[i, j] >s0*optionThreshold && this.cpmd.CallVolume[i,j]>0)
                         this.numCall++;
                 }
             }
@@ -379,8 +379,17 @@ namespace HestonEstimator
                 var pricingErrors = hc.hestonCallPrice - this.callMarketPrice;
                 if (displayPricingError)
                 {
-                    int RR = Math.Min(10, this.callMarketPrice.R - 1);
-                    int CC = Math.Min(10, this.callMarketPrice.C - 1);
+                    avgPricingError = 0;
+                    for (int r = 0; r < this.callMarketPrice.R; r++)
+                        for (int c = 0; c < this.callMarketPrice.C; c++)
+                        {
+                            if(this.callMarketPrice[r, c] >s0*optionThreshold && this.cpmd.CallVolume[r,c]>0)
+                                avgPricingError += Math.Abs(pricingErrors[r, c]);
+                        }
+                        avgPricingError /= numCall;
+
+                    int RR = Math.Min(12, this.callMarketPrice.R - 1);
+                    int CC = Math.Min(12, this.callMarketPrice.C - 1);
                     Console.WriteLine("Mkt Price");
                     Console.WriteLine(this.callMarketPrice[Range.New(0,RR),Range.New(0,CC)]);
                     Console.WriteLine("Pricing Errors");
@@ -402,6 +411,9 @@ namespace HestonEstimator
             return sum;
         }
         static int objCount = 0;
+        
+        //Average pricing error
+        internal static double avgPricingError = 0;
 
         /// <summary>
         /// Calculates a single row of quadratic difference matrix.

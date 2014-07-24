@@ -151,11 +151,26 @@ namespace HestonEstimator
             double firstTerm = 0.5 * (F - this.K);
             double a = 1E-8;
             double b = 1000.0;
-            Integrate integrate = new Integrate(this);
+            var integrate = new Integrate(this);
 
+            integrate.Tolerance = 10e-8;
+            integrate.MaxRecursionLevel = 3;
+          
             // The second term of this expressions approximates the integral in the interval [0,a].
-            double integral = integrate.AdaptLobatto(a, b) + a * IntegrandFunc(a / 2.0);
+            double part1 = integrate.AdaptLobatto(a, b);
+
+            //integrate.Tolerance = 10e-10;
+            //integrate.MaxRecursionLevel = 3;
+            //double part1b = integrate.AdaptLobatto(a, b);
+           
+            //double part1b = integrate.Romberg(a, b);
+            //double part1b = integrate.Trapezoid(a, b,300);
+            //if (Math.Abs(part1b - part1) / Math.Abs(part1 + 0.000001) > 0.1)
+            //    Console.WriteLine(part1 + "\t" + part1b);
+
+            double integral = part1 + a * IntegrandFunc(a / 2.0);
             double call = Math.Exp(-this.rate * this.T) * (firstTerm + integral / Math.PI);
+           
             return call;
         }
 

@@ -86,12 +86,13 @@ namespace HestonEstimator
 
                 equityCalData.SetToSpecificMaturity(localSettings.Maturity);
             }
+            else
+                equityCalData.SetToSpecificMaturity(1.0);
         }
 
 
         protected override EstimationResult BuildEstimate(DiscountingCurveMarketData interestDataSet,CallPriceMarketData callDataSet, EquityCalibrationData equityCalData, SolutionInfo solution)
         {
-            EstimationResult result = new EstimationResult();
             string[] names = new string[] { "S0", "kappa", "theta", "sigma",
                                             "rho", "V0", "r", "q" };
             Vector param = new Vector(8);
@@ -99,7 +100,9 @@ namespace HestonEstimator
             param[Range.New(1, 5)] = solution.x;
             param[6] = equityCalData.zrFunc.Evaluate(TheoreticalModelsSettings.ConstantDYRFMaturity);
             param[7] = equityCalData.dyFunc.Evaluate(TheoreticalModelsSettings.ConstantDYRFMaturity); 
-            result = new EstimationResult(names, param);
+            var result = new EstimationResult(names, param);
+            result.Fit = HestonCallOptimizationProblem.avgPricingError;
+            Console.WriteLine(result);
             return result;
         }
 
