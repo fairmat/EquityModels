@@ -97,6 +97,12 @@ namespace HestonEstimator
         internal Matrix hestonCallPrice;
 
         /// <summary>
+        /// Heston model put price matrix.
+        /// </summary>
+        internal Matrix hestonPutPrice;
+
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="HestonEstimator.HestonCall"/> class.
         /// </summary>
         public HestonCall()
@@ -112,6 +118,7 @@ namespace HestonEstimator
         internal HestonCall(HestonCallOptimizationProblem problem)
         {
             hestonCallPrice = new Matrix(problem.callMarketPrice.R, problem.callMarketPrice.C);
+            hestonPutPrice = new Matrix(problem.callMarketPrice.R, problem.callMarketPrice.C);
         }
 
         /// <summary>
@@ -134,9 +141,11 @@ namespace HestonEstimator
             this.sigma = x[2];
             this.rho = x[3];
             this.v0 = x[4];
+            if(x.Length>=6)
+                this.dividend = x[5];
             this.s0 = s0;
         }
-
+        
         /// <summary>
         /// Calculates the Heston model call price by using local variables.
         /// </summary>
@@ -151,27 +160,101 @@ namespace HestonEstimator
             double firstTerm = 0.5 * (F - this.K);
             double a = 1E-8;
             double b = 1000.0;
-            var integrate = new Integrate(this);
 
-            integrate.Tolerance = 10e-8;
-            integrate.MaxRecursionLevel = 3;
+            
           
-            // The second term of this expressions approximates the integral in the interval [0,a].
-            double part1 = integrate.AdaptLobatto(a, b);
 
-            //integrate.Tolerance = 10e-10;
-            //integrate.MaxRecursionLevel = 3;
-            //double part1b = integrate.AdaptLobatto(a, b);
            
-            //double part1b = integrate.Romberg(a, b);
-            //double part1b = integrate.Trapezoid(a, b,300);
-            //if (Math.Abs(part1b - part1) / Math.Abs(part1 + 0.000001) > 0.1)
-            //    Console.WriteLine(part1 + "\t" + part1b);
+            // The second term of this expressions approximates the integral in the interval [0,a].
+
+            //Uses PerformIntegral instead of AdaptLobatto in order to keep time constant
+            //var integrate = new Integrate(this);
+            //integrate.Tolerance = 10e-8;
+            //integrate.MaxRecursionLevel = 4;// 4;
+            //double part1 = integrate.AdaptLobatto(a, b);
+            double part1 = PerformIntegral(a, b, IntegrandFunc);
+           
+            
 
             double integral = part1 + a * IntegrandFunc(a / 2.0);
             double call = Math.Exp(-this.rate * this.T) * (firstTerm + integral / Math.PI);
            
             return call;
+        }
+        /// <summary>
+        /// Calculates a put price using the Heston model
+        /// </summary>
+        /// <returns></returns>
+        internal double HestonPutPrice()
+        {
+            double F = this.s0 * Math.Exp((this.rate - this.dividend) * this.T);
+            double firstTerm = 0.5 * (this.K-F);
+            double a = 1E-8;
+            double b = 1000.0;
+
+            // The second term of this expressions approximates the integral in the interval [0,a].
+            double part1 = PerformIntegral(a, b, IntegrandFunc);
+            double integral = part1 + a * IntegrandFunc(a / 2.0);
+            double put = Math.Exp(-this.rate * this.T) * (firstTerm + integral / Math.PI);
+
+            return put;
+        }
+
+        /// <summary>
+        /// Jointly calculate a call and a put price.
+        /// </summary>
+        /// <returns></returns>
+        internal Vector HestonCallPutPrice()
+        {
+            double F = this.s0 * Math.Exp((this.rate - this.dividend) * this.T);
+            double firstTerm = 0.5 * (F - this.K);
+            double a = 1E-12;
+            double b = 1000.0;
+
+            // The second term of this expressions approximates the integral in the interval [0,a].
+            var integrate = new Integrate(this);
+            integrate.Tolerance = 10e-8;
+            integrate.MaxRecursionLevel = 4;// 4;
+
+
+         
+            double part1 = PerformIntegral(a, b, IntegrandFunc);
+            double integral = part1 + a * IntegrandFunc(a / 2.0);
+            Vector callPut= new Vector(2);
+            callPut[0] = Math.Exp(-this.rate * this.T) * (firstTerm + integral / Math.PI);
+            callPut[1] = Math.Exp(-this.rate * this.T) * (-firstTerm + integral / Math.PI);
+            return callPut;
+        }
+
+
+
+        /// <summary>
+        /// Numerical integral in R+ assuming the integrand
+        /// is exponential decaying.
+        /// </summary>
+        /// <param name="a">The left bound.</param>
+        /// <param name="b">The right bound.</param>
+        /// <returns>The integral.</returns>
+        double PerformIntegral(double a, double b,TAEDelegateFunction1D f)
+        {
+            double sum = 0;
+            double dt = a/10;
+            double x=a;
+            double y0 = f(a);
+            double s0 = 1.05;
+            do 
+            {
+                if (x + dt > b)//fix for the last step
+                  dt = b - x;
+
+                x += dt;
+                double y1 = f(x);
+                sum += 0.5 * (y0 + y1) * dt;
+                y0 = y1;
+                dt *= s0;
+                //s0 *= 1.0005;
+            } while (x < b);
+            return sum;
         }
 
         /// <summary>
@@ -222,6 +305,18 @@ namespace HestonEstimator
             Complex complexVal2 = A * Phi(u, this.kappa, this.theta, this.sigma, this.rho, this.s0, this.v0, this.rate - this.dividend, this.T) / Iu;
             return complexVal1.Re - this.K * complexVal2.Re;
         }
+
+        public double PutIntegrandFunc(double u)
+        {
+            Complex I = Complex.I;
+            Complex Iu = Complex.I * u;
+            Complex A = Complex.Exp(-Iu * Math.Log(this.K));
+            Complex complexVal1 = A * Phi(u - I, this.kappa, this.theta, this.sigma, this.rho, this.s0, this.v0, this.rate - this.dividend, this.T) / Iu;
+            Complex complexVal2 = A * Phi(u, this.kappa, this.theta, this.sigma, this.rho, this.s0, this.v0, this.rate - this.dividend, this.T) / Iu;
+            return complexVal2.Re - this.K * complexVal1.Re;
+        }
+
+
 
         /// <summary>
         /// Calculates value of the integrand function that appears
@@ -292,18 +387,18 @@ namespace HestonEstimator
         /// <returns>The value of the characteristic function.</returns>
         public Complex Phi(Complex u, double kappa, double theta, double sigma, double rho, double s0, double v0, double r, double T)
         {
-            Complex d, par, g, A, B, val;
+            Complex d, g, A, B, val;
             Complex I = Complex.I;
             double ss = sigma * sigma;
             Complex tmp1 = I * rho * sigma * u;
             d = Complex.Sqrt(Complex.Pow(tmp1 - kappa, 2.0) + ss * (I * u + u * u));
             Complex tmp2 = kappa - tmp1;
-            par = tmp2 - d;
+            Complex par = tmp2 - d;
             g = par / (tmp2 + d);
 
             Complex edT = Complex.Exp(-d * T);
             Complex numArg = 1.0 - g * edT;
-            A = (theta * kappa) * (par * T - 2.0 * Complex.Log(numArg / (1.0 - g))) / (sigma * sigma);
+            A = (theta * kappa) * (par * T - 2.0 * Complex.Log(numArg / (1.0 - g))) / (ss);
             B = v0 * (par * (1.0 - edT) / numArg) / ss;
 
             val = Complex.Exp(I * u * (Math.Log(s0) + r * T) + A + B);
