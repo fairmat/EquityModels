@@ -104,31 +104,33 @@ namespace HestonEstimator
             // Optimization problem instance.
             Vector matBound = new Vector(2);
             Vector strikeBound = new Vector(2);
-            matBound[0] = 0.0;
-            matBound[1] = 6.0; //Up to 6Y maturities
-            strikeBound[0] = 0.1;// 0.7;//0.79;
-            strikeBound[1] = 10;// 1.3;// 1.21;
+            matBound[0] = 0;
+            matBound[1] = 3; //Up to 6Y maturities
+            strikeBound[0] = 0.7;
+            strikeBound[1] = 1.3;
 
             HestonCallOptimizationProblem problem = new HestonCallOptimizationProblem(equityCalData, matBound, strikeBound);
-            Console.WriteLine("Optimization based on " + problem.numCall + " call options");
+            Console.WriteLine("Optimization based on " + problem.numCall + " call options and "+problem.numPut+" put options");
 
             IOptimizationAlgorithm solver = new QADE();
             IOptimizationAlgorithm solver2 = new SteepestDescent();
 
             DESettings o = new DESettings();
             o.controller = controller;
-            o.NP = 40;
-            o.MaxIter = 10;// 20;
+            o.NP =50;
+            o.MaxIter =  25;
             o.Verbosity = 1;
 
+
+            
             // If true the optimization algorithm will operate in parallel.
             o.Parallel = Engine.MultiThread;
-            o.h = 10e-9;
-            o.epsilon = 10e-9;
+            o.h = 10e-8;
+            o.epsilon = 10e-8;
           
             SolutionInfo solution = null;
 
-            Vector x0 = new Vector(new double[] { 5.0, 0.1, 0.8, -0.7, 0.05 });
+            Vector x0 = null;// new Vector(new double[] { 0.5, 0.5, 0.8, -0.5, 0.05 });
 
             // GA
             solution = solver.Minimize(problem, o, x0);

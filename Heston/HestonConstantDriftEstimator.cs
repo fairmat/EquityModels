@@ -31,6 +31,11 @@ namespace HestonEstimator
     [Mono.Addins.Extension("/Fairmat/Estimator")]
     public class HestonConstantDriftEstimator : CallEstimator, IEstimatorEx, IMenuItemDescription
     {
+        /// <summary>
+        /// If set to True, dividends are calibrated during the optimization process.
+        /// </summary>
+        static internal bool impliedDividends = false;
+
         #region IMenuItemDescription Members
 
         /// <summary>
@@ -78,8 +83,29 @@ namespace HestonEstimator
         }
 
 
+
+        static double Mean(IFunction f, double a, double b)
+        {
+            double sum = 0;
+            int N = 20;
+            double h = b - a;
+            double dt = h / N;
+            for (int z = 0; z < N; z++)
+                sum += f.Evaluate(a + (dt * z)) * dt;
+            return sum / h;
+        }
+
+
+
         protected override void Setup(EquityCalibrationData equityCalData, IEstimationSettings  settings)
         {
+            //No need to used constant values. In the optimization procedure we can use the term structure
+            //as it is.
+
+
+            /*
+             //equityCalData.dyFunc= LeastSquaresDividendCalibration(equityCalData.Hdata, equityCalData.zrFunc);
+
             if (settings != null) //uses settings if provided.
             {
                 var localSettings = (HestonEstimationSettings)settings;
@@ -87,9 +113,17 @@ namespace HestonEstimator
                 equityCalData.SetToSpecificMaturity(localSettings.Maturity);
             }
             else
-                equityCalData.SetToSpecificMaturity(1.0);
+                equityCalData.SetToSpecificMaturity(1);
+            */
+            return;
         }
 
+        double DY(EquityCalibrationData equityCalData)
+        {
+            double dy= 0.5*(equityCalData.dyFunc.Evaluate(1) + equityCalData.dyFunc.Evaluate(2));
+            Console.WriteLine("Call/Put Parity Dividend\t" + dy);
+            return dy;
+        }
 
         protected override EstimationResult BuildEstimate(DiscountingCurveMarketData interestDataSet,CallPriceMarketData callDataSet, EquityCalibrationData equityCalData, SolutionInfo solution)
         {
@@ -97,9 +131,13 @@ namespace HestonEstimator
                                             "rho", "V0", "r", "q" };
             Vector param = new Vector(8);
             param[0] = callDataSet.S0;
-            param[Range.New(1, 5)] = solution.x;
+            param[Range.New(1, 5)] = solution.x[Range.New(0, 4)];
             param[6] = equityCalData.zrFunc.Evaluate(TheoreticalModelsSettings.ConstantDYRFMaturity);
-            param[7] = equityCalData.dyFunc.Evaluate(TheoreticalModelsSettings.ConstantDYRFMaturity); 
+            if (impliedDividends)
+                param[7] = solution.x[Range.End];// equityCalData.dyFunc.Evaluate(TheoreticalModelsSettings.ConstantDYRFMaturity); 
+            else
+                param[7] = DY(equityCalData);
+            
             var result = new EstimationResult(names, param);
             result.Fit = HestonCallOptimizationProblem.avgPricingError;
             Console.WriteLine(result);

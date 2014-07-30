@@ -16,6 +16,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/*
+ * Notes
+ * http://www.zeliade.com/whitepapers/zwp-0004.pdf
+ */
+
+
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -71,16 +77,26 @@ namespace HestonEstimator
         /// <summary>
         /// Establish whether to use the Feller penalty function or not.
         /// </summary>
-        public bool useFellerPenalty = false;
+        public bool useFellerPenalty = true;
+
+        /// <summary>
+        /// Weights to be used in the calibration.
+        /// </summary>
+        Matrix callWeight;
+        /// <summary>
+        /// Weights to be used in the calibration.
+        /// </summary>
+        Matrix putWeight;
+
 
 
         /// <summary>
         /// Builds objective function on relative pricing error.
         /// </summary>
         static bool optimizeRelativeError = false;
-        static double pricingMin = 0.01;
+        static double pricingMin = 0.001;
         static internal bool displayPricingError = false;
-        static internal double optionThreshold = 1.0 / 1000;
+        static internal double optionThreshold = 0;
         /// <summary>
         /// Small value used in the boundary penalty function.
         /// </summary>
@@ -100,11 +116,16 @@ namespace HestonEstimator
         /// The number of call option on which calibration is performed.
         /// </summary>
         internal int numCall;
+        internal int numPut;
 
         /// <summary>
         /// Process starting value.
         /// </summary>
         private double s0;
+
+
+        Vector matBound;
+        Vector strikeBound;
 
         /// <summary>
         /// Initializes a new instance of the HestonCallOptimizationProblem class using the
@@ -124,10 +145,11 @@ namespace HestonEstimator
         public HestonCallOptimizationProblem(EquityCalibrationData equityCalData, Vector matBound, Vector strikeBound)
         {
             this.cpmd = equityCalData.Hdata;
+            this.matBound = matBound;
+            this.strikeBound = strikeBound;
             SetVariables(equityCalData.Hdata.CallPrice, equityCalData.Hdata.Maturity,
                          equityCalData.Hdata.Strike, equityCalData.CallMatrixRiskFreeRate,
-                         equityCalData.CallMatrixDividendYield, equityCalData.Hdata.S0,
-                         matBound, strikeBound);
+                         equityCalData.CallMatrixDividendYield, equityCalData.Hdata.S0);
             displayPricingError = false;
         }
 
@@ -159,8 +181,10 @@ namespace HestonEstimator
         [Obsolete]
         HestonCallOptimizationProblem(Matrix callMarketPrice, Vector maturity, Vector strike, Vector rate, Vector dividendYield, double s0, Vector matBound, Vector strikeBound)
         {
+            this.matBound=matBound;
+            this.strikeBound = strikeBound;
             SetVariables(callMarketPrice, maturity, strike, rate,
-                         dividendYield, s0, matBound, strikeBound);
+                         dividendYield, s0);
         }
 
         /// <summary>
@@ -187,52 +211,48 @@ namespace HestonEstimator
         /// <param name="strikeBound">
         /// A vector containing the minimum and maximum values
         /// for strikes to be used in calibration.</param>
-        private void SetVariables(Matrix callMarketPrice, Vector maturity, Vector strike, Vector rate, Vector dividendYield, double s0, Vector matBound, Vector strikeBound)
+        private void SetVariables(Matrix callMarketPrice, Vector maturity, Vector strike, Vector rate, Vector dividendYield, double s0)
         {
             this.s0 = s0;
-           
+
             this.rate = rate;
             this.dividendYield = dividendYield;
-            
             Vector drift = this.rate - this.dividendYield;
-            int[] matI = new int[2];
-            int[] strikeI = new int[2];
-            matI = this.FindExtremes(maturity, matBound);
-            strikeI = this.FindExtremes(strike, s0 * strikeBound);
 
-            int numMat = matI[1] - matI[0] + 1;
-            int numStrike = strikeI[1] - strikeI[0] + 1;
-            this.maturity = new Vector(numMat);
-            this.drift = new Vector(numMat);
-            this.strike = new Vector(numStrike);
-            this.callMarketPrice = new Matrix(numMat, numStrike);
+            this.maturity = maturity;
+            this.drift = drift;
+            this.strike = strike;
+            this.callMarketPrice = callMarketPrice;
             this.numCall = 0;
-            for (int i = 0; (i < numMat) && ((matI[0] + i) < callMarketPrice.R); i++)
+
+            callWeight = new Matrix(this.callMarketPrice.R, this.callMarketPrice.C);
+            putWeight = new Matrix(this.callMarketPrice.R, this.callMarketPrice.C);
+
+            for (int r = 0; r < this.callMarketPrice.R; r++)
             {
-                this.maturity[i] = maturity[matI[0] + i];
-                this.drift[i] = drift[matI[0] + i];
-                for (int j = 0; (j < numStrike) && ((strikeI[0] + j) < callMarketPrice.C); j++)
+                if (this.maturity[r] >= matBound[0])
                 {
-                    this.callMarketPrice[i, j] = callMarketPrice[matI[0] + i, strikeI[0] + j];
-                    if (this.callMarketPrice[i, j] >s0*optionThreshold && this.cpmd.CallVolume[i,j]>0)
-                        this.numCall++;
+                    for (int c = 0; c < this.callMarketPrice.C; c++)
+                    {
+                        if (this.callMarketPrice[r, c] > s0 * optionThreshold && this.cpmd.CallVolume[r, c] > 0)
+                        {
+                            this.callWeight[r, c] = Math.Log(this.cpmd.CallVolume[r, c]) + 1;
+                            this.numCall++;
+                        }
+                        if (this.cpmd.PutPrice[r, c] > s0 * optionThreshold && this.cpmd.PutVolume[r, c] > 0)
+                        {
+                            this.putWeight[r, c] = Math.Log(this.cpmd.PutVolume[r, c]) + 1;
+                            this.numPut++;
+                        }
+                    }
                 }
             }
 
-            for (int j = 0; j < numStrike; j++)
-                this.strike[j] = strike[strikeI[0] + j];
-
-            if(Engine.Verbose>=1)
-            {
-                Console.WriteLine("Black-Sholes Calls Market Prices");
-                Console.WriteLine(this.callMarketPrice);
-                Console.WriteLine("Strikes");
-                Console.WriteLine(this.strike);
-                Console.WriteLine("Maturities");
-                Console.WriteLine(this.maturity);
-
-            }
+         
+            if(Engine.Verbose>=2)
+                PutCallTest();
         }
+
 
         /// <summary>
         /// Finds the couple of integer {i,j} so that the values
@@ -275,9 +295,17 @@ namespace HestonEstimator
             {
                 Bounds bounds = new Bounds();
 
-                // The order of parameters is k, theta, sigma, rho, S0, V0.
-                bounds.Lb = (Vector)new double[] { 0, 0, 0.01, -1, 0 };
-                bounds.Ub = (Vector)new double[] { 10, 1, 5, 1, 1 };
+                // The order of parameters is k, theta, sigma, rho,  V0 (and optionally div.y)
+                if (HestonConstantDriftEstimator.impliedDividends)
+                {
+                    bounds.Lb = (Vector)new double[] { 0, 0, 0.001, -1, 0, 0 };
+                    bounds.Ub = (Vector)new double[] { 40, 10, 1, 1, 1, 0.1 };
+                }
+                else
+                {
+                    bounds.Lb = (Vector)new double[] { 0, 0, 0.001, -1, 0};
+                    bounds.Ub = (Vector)new double[] { 40, 10, 1, 1, 1, 0 };
+                }
                 return bounds;
             }
         }
@@ -337,7 +365,7 @@ namespace HestonEstimator
         public double Obj(DVPLI.Vector x)
         {
             double sum = 0;
-            if (Engine.MultiThread && !displayPricingError)
+            if(Engine.MultiThread && !displayPricingError)
             {
                 // Instantiate parallel computation if enabled.
                 List<Task> tl = new List<Task>();
@@ -346,19 +374,25 @@ namespace HestonEstimator
                 List<HestonCall> context = new List<HestonCall>();
                 for (int r = 0; r < this.callMarketPrice.R; r++)
                 {
-                    HestonCall hc = new HestonCall(this, x, this.s0);
-                    context.Add(hc);
-                    
-                    hc.T = this.maturity[r];
-                    hc.rate = this.rate[r];
-                    hc.dividend = this.dividendYield[r];
-                    hc.row = r;
-                    tl.Add(Task.Factory.StartNew(this.CalculateSingleRow, hc));
+                    if (this.maturity[r] >= this.matBound[0])
+                    {
+                        HestonCall hc = new HestonCall(this, x, this.s0);
+                        context.Add(hc);
+
+                        hc.T = this.maturity[r];
+                        hc.rate = this.rate[r];
+                        if (HestonConstantDriftEstimator.impliedDividends)
+                            hc.dividend = x[Range.End];
+                        else
+                            hc.dividend = this.dividendYield[r];
+                        hc.row = r;
+                        tl.Add(Task.Factory.StartNew(this.CalculateSingleRow, hc));
+                    }
                 }
 
                 tsScheduler.WaitTaskList(tl);
-                for (int r = 0; r < this.callMarketPrice.R; r++)
-                    sum += context[r].sum;
+                for (int r = 0; r < tl.Count; r++)
+                        sum += context[r].sum;
             }
             else
             {
@@ -366,14 +400,19 @@ namespace HestonEstimator
                 HestonCall hc = new HestonCall(this, x, this.s0);
                 for (int r = 0; r < this.callMarketPrice.R; r++)
                 {
-                    
-                    hc.T = this.maturity[r];
-                    hc.rate = this.rate[r];
-                    hc.dividend = this.dividendYield[r];
-                    hc.row = r;
-                    hc.sum = 0;
-                    this.CalculateSingleRow(hc);
-                    sum += hc.sum;
+                    if (this.maturity[r] >= this.matBound[0])
+                    {
+                        hc.T = this.maturity[r];
+                        hc.rate = this.rate[r];
+                        if (HestonConstantDriftEstimator.impliedDividends)
+                            hc.dividend = x[Range.End];
+                        else
+                            hc.dividend = this.dividendYield[r];
+                        hc.row = r;
+                        hc.sum = 0;
+                        this.CalculateSingleRow(hc);
+                        sum += hc.sum;
+                    }
                 }
 
                 var pricingErrors = hc.hestonCallPrice - this.callMarketPrice;
@@ -381,10 +420,15 @@ namespace HestonEstimator
                 {
                     avgPricingError = 0;
                     for (int r = 0; r < this.callMarketPrice.R; r++)
-                        for (int c = 0; c < this.callMarketPrice.C; c++)
+                        if (this.maturity[r] >= this.matBound[0])
                         {
-                            if(this.callMarketPrice[r, c] >s0*optionThreshold && this.cpmd.CallVolume[r,c]>0)
-                                avgPricingError += Math.Abs(pricingErrors[r, c]);
+                            for (int c = 0; c < this.callMarketPrice.C; c++)
+                            {
+                                if (this.callMarketPrice[r, c] > s0 * optionThreshold && this.cpmd.CallVolume[r, c] > 0)
+                                    avgPricingError += Math.Abs(pricingErrors[r, c]);
+                                //if (this.cpmd.PutPrice[r, c] > s0 * optionThreshold && this.cpmd.PutVolume[r, c] > 0)
+                                //    avgPricingError += Math.Abs(pricingErrors[r, c]);
+                            }
                         }
                         avgPricingError /= numCall;
 
@@ -398,12 +442,12 @@ namespace HestonEstimator
                 objCount++;
             }
 
-            sum = sum / ((double)this.numCall);
+            sum = sum / (this.numCall+this.numPut);
             if (this.useBoundPenalty)
-                sum = sum + this.BoundPenalty(x);
+                sum += this.BoundPenalty(x);
 
             if (this.useFellerPenalty)
-                sum = sum + this.FellerPenalty(x);
+                sum += this.FellerPenalty(x);
             
             
             
@@ -416,36 +460,167 @@ namespace HestonEstimator
         internal static double avgPricingError = 0;
 
         /// <summary>
-        /// Calculates a single row of quadratic difference matrix.
+        /// Calculates a single row of the objective function. Basically
+        /// options with the same maturity and different strikes.
         /// </summary>
         /// <param name='context'>
         /// An object of type <see cref="HestonCall"/> containing the context.
         /// </param>
         private void CalculateSingleRow(object context)
         {
+            CalculateSingleRowWithInterpolation(context);
+            return;
+
             HestonCall hc = context as HestonCall;
+          
             int r = hc.row;
             for (int c = 0; c < this.callMarketPrice.C; c++)
             {
-                if (this.cpmd.CallVolume[r,c]>0 && this.callMarketPrice[r, c] > s0*optionThreshold)
+                bool callCondition=this.callMarketPrice[r, c] > s0*optionThreshold && this.cpmd.CallVolume[r,c]>0;
+                bool putCondition=this.cpmd.PutPrice[r, c] > s0*optionThreshold && this.cpmd.PutVolume[r,c]>0;
+                if (callCondition)//||putCondition)
                 {
                     hc.K = this.strike[c];
-                    hc.hestonCallPrice[r, c] = hc.HestonCallPrice();
+                    var callPut=hc.HestonCallPutPrice();
+                    hc.hestonCallPrice[r, c] = callPut[0];
+                    hc.hestonPutPrice[r, c] = callPut[1];
+
+                    if (callCondition)
+                    {
+                        if (HestonCallOptimizationProblem.optimizeRelativeError)
+                        {
+                            double mkt = pricingMin + this.callMarketPrice[r, c];
+                            double model = pricingMin + hc.hestonCallPrice[r, c];
+                            hc.sum += callWeight[r,c] * Math.Pow((model - mkt) / mkt, 2);
+                        }
+                        else
+                        {
+                            hc.sum += callWeight[r,c] * Math.Pow(hc.hestonCallPrice[r, c] - this.callMarketPrice[r, c], 2);
+                        }
+                    }
+                    /*
+                    if (putCondition)
+                    {
+                        if (HestonCallOptimizationProblem.optimizeRelativeError)
+                        {
+                            double mkt = pricingMin + this.cpmd.PutPrice[r, c];
+                            double model = pricingMin + hc.hestonPutPrice[r, c];
+                            hc.sum += putWeight[r,c] * Math.Pow((model - mkt) / mkt, 2);
+                        }
+                        else
+                        {
+                            hc.sum += putWeight[r,c]* Math.Pow(hc.hestonPutPrice[r, c] - this.cpmd.PutPrice[r, c], 2);
+                        }
+                    }
+                     */
+                }
+
+            }
+            return;
+        }
+
+
+        /// <summary>
+        /// Calculates call put prices for several strikes using controlled interpolation.
+        /// </summary>
+        /// <param name="context"></param>
+        private void CalculateSingleRowWithInterpolation(object context)
+        {
+            HestonCall hc = context as HestonCall;
+            int r = hc.row;
+            hc.sum = 0;
+
+            // Finds upper extreme for call and put
+            int max_c =0;
+            for (int c = this.callMarketPrice.C-1; c > 0; c--)
+            {
+                bool callCondition = this.callMarketPrice[r, c] > s0 * optionThreshold && this.cpmd.CallVolume[r, c] > 0;
+                bool putCondition = this.cpmd.PutPrice[r, c] > s0 * optionThreshold && this.cpmd.PutVolume[r, c] > 0;
+                if (callCondition || putCondition)
+                {
+                    max_c = c;
+                    break;
+                }
+            }
+
+
+             var strikes = new List<double>();
+             var calls = new List<double>();
+             var puts = new List<double>();
+
+            //Evaluates in strategic points
+            for (int c = 0; c < this.callMarketPrice.C; c++)
+            {
+                bool callCondition = this.callMarketPrice[r, c] > s0 * optionThreshold && this.cpmd.CallVolume[r, c] > 0;
+                bool putCondition = this.cpmd.PutPrice[r, c] > s0 * optionThreshold && this.cpmd.PutVolume[r, c] > 0;
+                if (callCondition || putCondition)
+                {
+                    hc.K = this.strike[c];
+                    var callPut = hc.HestonCallPutPrice();
+                    strikes.Add(hc.K);
+                    calls.Add(callPut[0]);
+                    puts.Add(callPut[1]);
+                    if (c == max_c)
+                        break;
+
+                    c += 1;//skip the subsequent strikes
+                    
+                    if (c > max_c)
+                        c = max_c;
+                }
+            }
+            
+            // Builds interpolated call and put values.
+
+            var callFun = new PFunction((Vector)strikes.ToArray(), (Vector)calls.ToArray());
+            callFun.m_Function.iType = DVPLUtils.EInterpolationType.SPLINE;
+           
+            var putFun = new PFunction((Vector)strikes.ToArray(), (Vector)puts.ToArray());
+            putFun.m_Function.iType = DVPLUtils.EInterpolationType.SPLINE;
+            
+            // Evaluates at the requested strikes
+
+            for (int c = 0; c < this.callMarketPrice.C; c++)
+            {
+                bool callCondition = this.callMarketPrice[r, c] > s0 * optionThreshold && this.cpmd.CallVolume[r, c] > 0;
+                bool putCondition = this.cpmd.PutPrice[r, c] > s0 * optionThreshold && this.cpmd.PutVolume[r, c] > 0;
+                  
+
+                if (callCondition)
+                {
+                    hc.hestonCallPrice[r, c] = callFun.Evaluate(this.strike[c]);
                     if (HestonCallOptimizationProblem.optimizeRelativeError)
                     {
-                        double mkt=pricingMin+this.callMarketPrice[r, c];
+                        double mkt = pricingMin + this.callMarketPrice[r, c];
                         double model = pricingMin + hc.hestonCallPrice[r, c];
-                        hc.sum += cpmd.CallVolume[r, c] * Math.Pow((model - mkt) / mkt, 2);
+                        hc.sum += callWeight[r,c] * Math.Pow((model - mkt) / mkt, 2);
                     }
                     else
                     {
-                        hc.sum += cpmd.CallVolume[r,c]* Math.Pow(hc.hestonCallPrice[r, c] - this.callMarketPrice[r, c], 2);
+                        hc.sum += callWeight[r, c] * Math.Pow(hc.hestonCallPrice[r, c] - this.callMarketPrice[r, c], 2);
                     }
                 }
+                
+                if (putCondition)
+                {
+                    hc.hestonPutPrice[r, c] = putFun.Evaluate(this.strike[c]);
+                    if (HestonCallOptimizationProblem.optimizeRelativeError)
+                    {
+                        double mkt = pricingMin + this.cpmd.PutPrice[r, c];
+                        double model = pricingMin + hc.hestonPutPrice[r, c];
+                        hc.sum +=  putWeight[r, c] * Math.Pow((model - mkt) / mkt, 2);
+                    }
+                    else
+                    {
+                        hc.sum += putWeight[r, c] * Math.Pow(hc.hestonPutPrice[r, c] - this.cpmd.PutPrice[r, c], 2);
+                    }
+                }
+
             }
 
             return;
         }
+
 
         #endregion
 
@@ -469,10 +644,11 @@ namespace HestonEstimator
         }
 
         /// <summary>
-        /// Penalty function relative to Feller condition.
+        /// Penalty function in order to satisfy Feller condition:
+        /// 2k theta >= sigma^2
         /// </summary>
         /// <param name='x'>
-        /// Vector of parameters.
+        /// Vector of parameters: x=[k, theta, sigma,...]
         /// </param>
         /// <returns>
         /// Penalty value.
@@ -483,5 +659,41 @@ namespace HestonEstimator
             result = Math.Max(0, x[2] * x[2] - 2 * x[0] * x[1]);
             return this.k2 * result * result;
         }
+
+        /// <summary>
+        /// Test method, displays a sensitivity on heston call and put prices.
+        /// </summary>
+        private void PutCallTest()
+        {
+            Console.WriteLine("Black-Sholes Calls Market Prices");
+            Console.WriteLine(this.callMarketPrice);
+            Console.WriteLine("Strikes");
+            Console.WriteLine(this.strike);
+            Console.WriteLine("Maturities");
+            Console.WriteLine(this.maturity);
+
+            var x = new Vector() {3.18344026504981,
+                0.0427882999286046,
+                0.644527074840708,
+                -0.659960749691282,
+                0.0150455464938991,
+                0.0211747510984717};
+
+            HestonCall hc = new HestonCall(this, x, this.s0);
+            hc.T = .1;
+            hc.rate = this.rate[0];
+            Console.WriteLine("Strike\tCall\tPut");
+            for (int z = 200; z < 6500; z += 1000)
+            {
+                hc.K = z;
+
+                var call = hc.HestonCallPrice();
+                var put = hc.HestonPutPrice();
+                var callPut = hc.HestonCallPutPrice();
+                Console.WriteLine(z + "\t" + callPut[0] + "\t" + callPut[1]);
+            }
+        }
+
+
     }
 }
