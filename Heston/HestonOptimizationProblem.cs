@@ -239,7 +239,7 @@ namespace HestonEstimator
                             this.callWeight[r, c] = Math.Log(this.cpmd.CallVolume[r, c]) + 1;
                             this.numCall++;
                         }
-                        if (this.cpmd.PutPrice[r, c] > s0 * optionThreshold && this.cpmd.PutVolume[r, c] > 0)
+                        if (this.cpmd.PutPrice!=null && this.cpmd.PutPrice[r, c] > s0 * optionThreshold && this.cpmd.PutVolume[r, c] > 0)
                         {
                             this.putWeight[r, c] = Math.Log(this.cpmd.PutVolume[r, c]) + 1;
                             this.numPut++;
@@ -535,7 +535,7 @@ namespace HestonEstimator
             for (int c = this.callMarketPrice.C-1; c > 0; c--)
             {
                 bool callCondition = this.callMarketPrice[r, c] > s0 * optionThreshold && this.cpmd.CallVolume[r, c] > 0;
-                bool putCondition = this.cpmd.PutPrice[r, c] > s0 * optionThreshold && this.cpmd.PutVolume[r, c] > 0;
+                bool putCondition = this.cpmd.PutPrice!=null &&  this.cpmd.PutPrice[r, c] > s0 * optionThreshold && this.cpmd.PutVolume[r, c] > 0;
                 if (callCondition || putCondition)
                 {
                     max_c = c;
@@ -552,7 +552,7 @@ namespace HestonEstimator
             for (int c = 0; c < this.callMarketPrice.C; c++)
             {
                 bool callCondition = this.callMarketPrice[r, c] > s0 * optionThreshold && this.cpmd.CallVolume[r, c] > 0;
-                bool putCondition = this.cpmd.PutPrice[r, c] > s0 * optionThreshold && this.cpmd.PutVolume[r, c] > 0;
+                bool putCondition = this.cpmd.PutPrice!=null&& this.cpmd.PutPrice[r, c] > s0 * optionThreshold && this.cpmd.PutVolume[r, c] > 0;
                 if (callCondition || putCondition)
                 {
                     hc.K = this.strike[c];
@@ -583,7 +583,7 @@ namespace HestonEstimator
             for (int c = 0; c < this.callMarketPrice.C; c++)
             {
                 bool callCondition = this.callMarketPrice[r, c] > s0 * optionThreshold && this.cpmd.CallVolume[r, c] > 0;
-                bool putCondition = this.cpmd.PutPrice[r, c] > s0 * optionThreshold && this.cpmd.PutVolume[r, c] > 0;
+                bool putCondition = this.cpmd.PutPrice!=null && this.cpmd.PutPrice[r, c] > s0 * optionThreshold && this.cpmd.PutVolume[r, c] > 0;
                   
 
                 if (callCondition)
