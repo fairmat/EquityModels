@@ -115,12 +115,13 @@ namespace HestonEstimator
             else
                 equityCalData.SetToSpecificMaturity(1);
             */
+            DY(equityCalData);
             return;
         }
 
         double DY(EquityCalibrationData equityCalData)
         {
-            double dy= 0.5*(equityCalData.dyFunc.Evaluate(1) + equityCalData.dyFunc.Evaluate(2));
+           double dy= 0.5*(equityCalData.dyFunc.Evaluate(1) + equityCalData.dyFunc.Evaluate(2));
             Console.WriteLine("Call/Put Parity Dividend\t" + dy);
             return dy;
         }
