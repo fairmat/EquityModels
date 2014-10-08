@@ -126,7 +126,7 @@ namespace HestonEstimator
             return dy;
         }
 
-        protected override EstimationResult BuildEstimate(DiscountingCurveMarketData interestDataSet,CallPriceMarketData callDataSet, EquityCalibrationData equityCalData, SolutionInfo solution)
+        protected override EstimationResult BuildEstimate(CurveMarketData interestDataSet,CallPriceMarketData callDataSet, EquityCalibrationData equityCalData, SolutionInfo solution)
         {
             string[] names = new string[] { "S0", "kappa", "theta", "sigma",
                                             "rho", "V0", "r", "q" };

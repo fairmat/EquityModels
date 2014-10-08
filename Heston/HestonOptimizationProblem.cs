@@ -34,7 +34,7 @@ using Fairmat.Optimization;
 namespace HestonEstimator
 {
     /// <summary>
-    /// Describes the Heston optimization problem.
+    /// Describes the time-dependent Heston optimization problem.
     /// </summary>
     public class HestonCallOptimizationProblem : IOptimizationProblem
     {
@@ -65,9 +65,9 @@ namespace HestonEstimator
         private Vector dividendYield;
 
         /// <summary>
-        /// The drift vector.
+        /// Averegate drift up to a given maturity
         /// </summary>
-        private Vector drift;
+        //private Vector drift;
 
         /// <summary>
         /// Establish whether to use the boundary penalty function or not.
@@ -96,7 +96,7 @@ namespace HestonEstimator
         static bool optimizeRelativeError = false;
         static double pricingMin = 0.001;
         static internal bool displayPricingError = false;
-        static internal double optionThreshold = 0;
+        static internal double optionThreshold = 0.00;
         /// <summary>
         /// Small value used in the boundary penalty function.
         /// </summary>
@@ -215,12 +215,22 @@ namespace HestonEstimator
         {
             this.s0 = s0;
 
+            //var rf = new PFunction(maturity, rate);
+            var dy = new PFunction(maturity, dividendYield);
+            //var rfF = new Fairmat.Math.Integrate(x => rf.Evaluate(x));
+            var dyF = new Fairmat.Math.Integrate(x => dy.Evaluate(x));
+
+            this.rate = new Vector(maturity.Length);
+            this.dividendYield = new Vector(maturity.Length);
+            for (int z = 0; z < maturity.Length; z++)
+            {
+                //this.rate[z] = rfF.AdaptLobatto(0, maturity[z]) / maturity[z];
+                this.dividendYield[z] = dyF.AdaptLobatto(0, maturity[z]) / maturity[z];
+            }
             this.rate = rate;
-            this.dividendYield = dividendYield;
-            Vector drift = this.rate - this.dividendYield;
 
             this.maturity = maturity;
-            this.drift = drift;
+            //this.drift = this.rate - this.dividendYield;
             this.strike = strike;
             this.callMarketPrice = callMarketPrice;
             this.numCall = 0;
@@ -234,20 +244,24 @@ namespace HestonEstimator
                 {
                     for (int c = 0; c < this.callMarketPrice.C; c++)
                     {
-                        if (this.callMarketPrice[r, c] > s0 * optionThreshold && this.cpmd.CallVolume[r, c] > 0)
+                        if (this.strike[c] >= s0 * strikeBound[0] && this.strike[c] <= s0 * strikeBound[1])
                         {
-                            this.callWeight[r, c] = Math.Log(this.cpmd.CallVolume[r, c]) + 1;
-                            this.numCall++;
-                        }
-                        if (this.cpmd.PutPrice!=null && this.cpmd.PutPrice[r, c] > s0 * optionThreshold && this.cpmd.PutVolume[r, c] > 0)
-                        {
-                            this.putWeight[r, c] = Math.Log(this.cpmd.PutVolume[r, c]) + 1;
-                            this.numPut++;
+                            if (this.callMarketPrice[r, c] > s0 * optionThreshold && this.cpmd.CallVolume[r, c] > 0)
+                            {
+                                this.callWeight[r, c] = Math.Log(this.cpmd.CallVolume[r, c]) + 1;
+                                this.numCall++;
+                            }
+                            if (this.cpmd.PutPrice != null && this.cpmd.PutPrice[r, c] > s0 * optionThreshold && this.cpmd.PutVolume[r, c] > 0)
+                            {
+                                this.putWeight[r, c] = Math.Log(this.cpmd.PutVolume[r, c]) + 1;
+                                this.numPut++;
+                            }
                         }
                     }
                 }
             }
-
+            Console.WriteLine("OptionThreshold:\t" + optionThreshold);
+            Console.WriteLine("Strike Bounds:\t" + strikeBound);         
          
             if(Engine.Verbose>=2)
                 PutCallTest();
@@ -442,7 +456,8 @@ namespace HestonEstimator
                 objCount++;
             }
 
-            sum = sum / (this.numCall+this.numPut);
+            //Calculate average distance...
+            sum = Math.Sqrt( sum / (this.numCall+this.numPut));
             if (this.useBoundPenalty)
                 sum += this.BoundPenalty(x);
 

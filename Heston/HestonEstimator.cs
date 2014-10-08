@@ -89,7 +89,7 @@ namespace HestonEstimator
         public EstimationResult Estimate(List<object> marketData, IEstimationSettings settings = null, IController controller = null, Dictionary<string, object> properties = null)
         {
             DateTime t0 = DateTime.Now;
-            DiscountingCurveMarketData interestDataSet = (DiscountingCurveMarketData)marketData[0];
+            var interestDataSet = (CurveMarketData)marketData[0];
             CallPriceMarketData callDataSet = (CallPriceMarketData)marketData[1];
             EquityCalibrationData equityCalData = new EquityCalibrationData(callDataSet, interestDataSet);
             
@@ -105,9 +105,9 @@ namespace HestonEstimator
             Vector matBound = new Vector(2);
             Vector strikeBound = new Vector(2);
             matBound[0] = 0;
-            matBound[1] = 3; //Up to 6Y maturities
-            strikeBound[0] = 0.7;
-            strikeBound[1] = 1.3;
+            matBound[1] = 6; //Up to 6Y maturities
+            strikeBound[0] = 0.5;
+            strikeBound[1] = 2;
 
             HestonCallOptimizationProblem problem = new HestonCallOptimizationProblem(equityCalData, matBound, strikeBound);
             Console.WriteLine("Optimization based on " + problem.numCall + " call options and "+problem.numPut+" put options");
@@ -117,8 +117,8 @@ namespace HestonEstimator
 
             DESettings o = new DESettings();
             o.controller = controller;
-            o.NP =50;
-            o.MaxIter =  25;
+            o.NP = 50;
+            o.MaxIter = 25;
             o.Verbosity = 1;
 
 
@@ -138,7 +138,7 @@ namespace HestonEstimator
                 return null;
             
             o.options = "qn";
-            o.MaxIter = 1000;
+            o.MaxIter = 500;// 1000;
 
             if (solution != null)
                 solution = solver2.Minimize(problem, o, solution.x);
@@ -158,7 +158,7 @@ namespace HestonEstimator
             return BuildEstimate(interestDataSet, callDataSet, equityCalData, solution);
         }
 
-        protected virtual EstimationResult BuildEstimate(DiscountingCurveMarketData interestDataSet, CallPriceMarketData callDataSet, EquityCalibrationData equityCalData, SolutionInfo solution)
+        protected virtual EstimationResult BuildEstimate(CurveMarketData interestDataSet, CallPriceMarketData callDataSet, EquityCalibrationData equityCalData, SolutionInfo solution)
         {
             string[] names = new string[] { "S0", "kappa", "theta", "sigma", "rho", "V0" };
             Vector param = new Vector(6);
@@ -167,14 +167,16 @@ namespace HestonEstimator
             var result = new EstimationResult(names, param);
 
             // In the following the two function describing the ZR and dividend yields are created
-            Matrix zerorate = new Matrix(interestDataSet.Durations.Length, 2);
-            zerorate[Range.All, 0] = interestDataSet.Durations;
-            zerorate[Range.All, 1] = interestDataSet.Values;
+            //Matrix zerorate = new Matrix(interestDataSet.Durations.Length, 2);
+            //zerorate[Range.All, 0] = interestDataSet.Durations;
+            //zerorate[Range.All, 1] = interestDataSet.Values;
 
-            Matrix dividendYield = new Matrix(equityCalData.MaturityDY.Length, 2);
-            dividendYield[Range.All, 0] = equityCalData.MaturityDY;
-            dividendYield[Range.All, 1] = equityCalData.DividendYield;
+            //Matrix dividendYield = new Matrix(equityCalData.MaturityDY.Length, 2);
+            //dividendYield[Range.All, 0] = equityCalData.MaturityDY;
+            //dividendYield[Range.All, 1] = equityCalData.DividendYield;
 
+            Matrix zerorate = new Matrix((equityCalData.zrFunc as PFunction).Expr);
+            Matrix dividendYield = new Matrix((equityCalData.dyFunc as PFunction).Expr);
             result.Objects = new object[2];
             result.Objects[0] = zerorate;
             result.Objects[1] = dividendYield;
