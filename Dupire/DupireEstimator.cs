@@ -58,7 +58,7 @@ namespace Dupire
         /// </returns>
         public EstimateRequirement[] GetRequirements(IEstimationSettings settings, EstimateQuery query)
         {
-            return new EstimateRequirement[] { new EstimateRequirement(typeof(DiscountingCurveMarketData)), 
+            return new EstimateRequirement[] { new EstimateRequirement(typeof(DiscountingCurveMarketData),MarketRequirement.TickerMarket), 
                                                new EstimateRequirement(typeof(CallPriceMarketData)) };
         }
 
