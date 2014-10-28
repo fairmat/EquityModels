@@ -13,6 +13,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Heston", "Heston\Heston.csp
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VarianceGamma", "VarianceGamma\VarianceGamma.csproj", "{1CF5F32A-530F-4CA5-BD23-25431EF3B9F5}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RUN", "RUN\RUN.csproj", "{79D84A9F-DAF3-4745-BF47-5C8EF45A44B4}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -43,6 +45,10 @@ Global
 		{1CF5F32A-530F-4CA5-BD23-25431EF3B9F5}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1CF5F32A-530F-4CA5-BD23-25431EF3B9F5}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1CF5F32A-530F-4CA5-BD23-25431EF3B9F5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{79D84A9F-DAF3-4745-BF47-5C8EF45A44B4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{79D84A9F-DAF3-4745-BF47-5C8EF45A44B4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{79D84A9F-DAF3-4745-BF47-5C8EF45A44B4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{79D84A9F-DAF3-4745-BF47-5C8EF45A44B4}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

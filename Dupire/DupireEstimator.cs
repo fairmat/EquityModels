@@ -83,8 +83,8 @@ namespace Dupire
             calibrationSettings = settings as DupireCalibrationSettings;
 
             
-            return this.FairmatEstimate(discountingCurve, Hdataset);
-            /* Removed quantlib estimate, it does not work correctly
+            //return this.FairmatEstimate(discountingCurve, Hdataset);
+            // Removed quantlib estimate, it does not work correctly
             switch (calibrationSettings.LocalVolatilityCalculation)
             {
                 case LocalVolatilityCalculation.Method1:
@@ -94,7 +94,7 @@ namespace Dupire
                 default:
                     throw new NotImplementedException("Method not implemented");
             }
-             */
+             
         }
 
         #endregion
@@ -102,15 +102,16 @@ namespace Dupire
         private EstimationResult FairmatEstimate(CurveMarketData discountingCurve, CallPriceMarketData Hdataset)
         {
             EquityCalibrationData HCalData = new EquityCalibrationData(Hdataset, discountingCurve);
-
+            //HCalData.Setup(Hdataset, discountingCurve);
+          
             bool hasArbitrage = HCalData.HasArbitrageOpportunity(10e-2);
             if (hasArbitrage)
                 Console.WriteLine("Market data contains arbitrage opportunity");
-
-            this.r = new DVPLDOM.PFunction(null);
-            this.q = new DVPLDOM.PFunction(null);
-            this.r.Expr = (double[,])ArrayHelper.Concat(discountingCurve.Durations.ToArray(), discountingCurve.Values.ToArray());
-            this.q.Expr = (double[,])ArrayHelper.Concat(HCalData.MaturityDY.ToArray(), HCalData.DividendYield.ToArray());
+            
+            this.r = new DVPLDOM.PFunction(discountingCurve.Durations,discountingCurve.Values);
+            this.q = HCalData.dyFunc as PFunction;
+            
+            //this.q.Expr = (double[,])ArrayHelper.Concat(HCalData.MaturityDY.ToArray(), HCalData.DividendYield.ToArray());
             this.r.Parse(null);
             this.q.Parse(null);
 
@@ -119,6 +120,8 @@ namespace Dupire
             //Matrix locVolMatrix = LocVolMatrixFromImpliedVol(Hdataset, fittedSurface, out locVolMat, out locVolStr);
             CallPriceSurface fittedSurface = CallPriceSurface.NoArbitrageSurface(HCalData);
             Matrix locVolMatrix = LocVolMatrixFromCallPrices(Hdataset, fittedSurface, out locVolMat, out locVolStr);
+            Console.WriteLine(locVolMatrix);
+
 
             // Create dupire outputs.
             PFunction2D.PFunction2D localVol = new PFunction2D.PFunction2D(locVolMat, locVolStr, locVolMatrix);
@@ -151,11 +154,11 @@ namespace Dupire
             Matrix locVolMatrix = new Matrix(nmat, nstrike);
            
             Integrate integrate = new Integrate(this);
-            double sigma, dSigmadk, num, y, den, integral;
+            double sigma, dSigmadk, num, y, den, avgGrowthRate;
             Vector x = new Vector(2);
             for (int i = 0; i < nmat; i++)
             {
-                integral = integrate.AdaptLobatto(0.0, locVolMat[i]);
+                avgGrowthRate = integrate.AdaptLobatto(0.0, locVolMat[i]);
 
                 int j = 0;
                 x[0] = locVolMat[i];
@@ -173,8 +176,8 @@ namespace Dupire
                     sigma = impVol.Evaluate(x);
                     dSigmadk = impVol.Partial(x, 1);
                     num = Math.Pow(sigma, 2) + 2.0 * sigma * x[0] *
-                        (impVol.Partial(x, 0) + (this.r.Evaluate(x[0]) - this.q.Evaluate(x[0])) * x[1] * dSigmadk);
-                    y = Math.Log(locVolStr[j] / Hdataset.S0) + integral;
+                        (impVol.Partial(x, 0) + avgGrowthRate * x[1] * dSigmadk);
+                    y = Math.Log(locVolStr[j] / Hdataset.S0) + avgGrowthRate;
                     den = System.Math.Pow(1.0 - x[1] * y * dSigmadk / sigma, 2) + x[1] * sigma * x[0] *
                         (dSigmadk - 0.25 * x[1] * sigma * x[0] * dSigmadk * dSigmadk + x[1] * impVol.Partial2(x, 1));
                     locVolMatrix[i, j] = Math.Sqrt(num / den);
@@ -183,15 +186,18 @@ namespace Dupire
             return locVolMatrix;
         }
 
-        private Matrix LocVolMatrixFromCallPrices(CallPriceMarketData Hdataset, IFunction CallPrice, out Vector locVolMat, out Vector locVolStr)
+        private Matrix LocVolMatrixFromCallPrices(CallPriceMarketData Hdataset, CallPriceSurface CallPrice, out Vector locVolMat, out Vector locVolStr)
         {
+            Integrate integrate = new Integrate(this);  
+
             int nmat = calibrationSettings.LocalVolatilityMaturities;
             int nstrike = calibrationSettings.LocalVolatilityStrikes;
-            
-            double firstMat = Hdataset.Maturity[0];
-            double firstStr = Hdataset.Strike[0];
-            double lastMat = Hdataset.Maturity[Range.End];
-            double lastStr = Hdataset.Strike[Range.End];
+
+            double firstMat = CallPrice.MinMaturity;
+            double lastMat = CallPrice.MaxMaturity;
+           
+            double firstStr =  CallPrice.MinStrike;
+            double lastStr = CallPrice.MaxStrike;
             double delta = (lastStr - firstStr) / nstrike;
             locVolMat = Vector.Linspace(firstMat, lastMat, nmat);
             locVolStr = Vector.Linspace(firstStr + delta, lastStr - delta, nstrike);
@@ -201,34 +207,81 @@ namespace Dupire
             Matrix squaredLocVolMatrix = new Matrix(nmat, nstrike);
             double num, den, call, dCdt, dCdk, d2Cdk2;
             Vector x = new Vector(2);
-            double hs = 0.01*Hdataset.S0;//increment for numerical derivatives (stock)
-            double ht = 0.25*(lastMat-firstMat)/nmat;//increment for numerical derivatives (maturities)
-            double d2Threshold=10e-8;
+            double h0 = 0.02*Hdataset.S0;//increment for numerical derivatives (stock)
+            double ht = 0.02;// 0.25 * (lastMat - firstMat) / nmat;//increment for numerical derivatives (maturities)
+            double hs = h0;
+            double d2Threshold=10e-5;
             for (int i = 0; i < nmat; i++)
-            {
+            { 
+                double growthRate = integrate.AdaptLobatto(0.0, locVolMat[i]);
                 x[0] = locVolMat[i];
                 for (int j = 0; j < nstrike; j++)
                 {
                     x[1] = locVolStr[j];
-                    call = CallPrice.Evaluate(x);
-                    dCdt = CallPrice.Partial(x, 0, ht);
-                    do
+
+                    var support=CallPrice.SupportY(x[0]);
+                    //if (x[1] > support[1] && j > 1)
+                    if(x[1]<support[0]||x[1]>support[1])
                     {
-                        
-                        dCdk = CallPrice.Partial(x, 1, hs);
-                        d2Cdk2 = CallPrice.Partial2(x, 1, hs);
-                        if (Math.Abs(d2Cdk2) > d2Threshold || hs > 1)
-                           break;
-                        hs *= 2;
-                    } while (true);
+                        //skip...fill later
+                        //squaredLocVolMatrix[i, j] = squaredLocVolMatrix[i, j - 1];
+                        //locVolMatrix[i, j] = locVolMatrix[i, j-1];
+                    }
+                    else
+                    {
+                        bool fail = false;
+                        call = CallPrice.Evaluate(x);
+                        dCdt = CallPrice.Partial(x, 0, ht);
+                        //do
+                       // {
 
+                            dCdk = CallPrice.Partial(x, 1, hs);
+                            d2Cdk2 = CallPrice.Partial2(x, 1, hs);
+                            //if (Math.Abs(d2Cdk2) > d2Threshold || hs > 0.1 * Hdataset.S0)
+                            if (Math.Abs(d2Cdk2) < d2Threshold)
+                            {
+                                fail = true;
+                                //break;
+                            }
+                        //    hs *= 2;
+                        //} while (true);
 
-                    num = dCdt + (this.r.Evaluate(x[0]) - this.q.Evaluate(x[0])) * x[1] * dCdk + this.q.Evaluate(x[0]) * call;
-                    den = x[1] * x[1] * d2Cdk2;
-                    squaredLocVolMatrix[i, j] = 2.0 * num / den;
-                    locVolMatrix[i, j] = Math.Sqrt( Math.Abs( 2.0 * num / den ) );
+                        if (!fail)
+                        {
+                            double qq = this.q.Evaluate(x[0]);
+                            num = dCdt + growthRate * x[1] * dCdk + qq * call;
+                            den = x[1] * x[1] * d2Cdk2;
+                            squaredLocVolMatrix[i, j] = 2.0 * num / den;
+                            locVolMatrix[i, j] = Math.Sqrt(Math.Abs(2.0 * num / den));
+                        }
+                    }
                 }
             }
+
+            //Fill missing vol
+            for (int i = 0; i < nmat; i++)
+            {
+                double lastVol=0;
+                for (int j = 0; j < nstrike; j++)
+                {
+                    if (locVolMatrix[i, j] != 0)
+                        lastVol = locVolMatrix[i, j];
+                    else
+                        locVolMatrix[i, j] = lastVol;
+                }
+                lastVol = 0;
+                for (int j = nstrike-1; j >=0; j--)
+                {
+                    if (locVolMatrix[i, j] != 0)
+                        lastVol = locVolMatrix[i, j];
+                    else
+                        locVolMatrix[i, j] = lastVol;
+                }
+                //
+
+            }
+
+
             return locVolMatrix;
         }
 
@@ -246,7 +299,7 @@ namespace Dupire
         /// <returns></returns>
         IFunction FitImplVolModel(CallPriceMarketData Hdataset)
         {
-            int model = 0;
+            int model = 1;
             switch (model)
             {
                 case 0:
@@ -269,6 +322,7 @@ namespace Dupire
 
                     // Unroll matrix and coordinate vectors in order to make it suitable
                     // for the Quadratic model implementation.
+                    
                     int n = Hdataset.Volatility.R * Hdataset.Volatility.C;
                     Matrix xy = new Matrix(n, 2);
                     Vector z = new Vector(n);
@@ -277,12 +331,16 @@ namespace Dupire
                     {
                         for (int y = 0; y < Hdataset.Volatility.C; y++)
                         {
-                            xy[count, Range.All] = ((Matrix)new Vector() { Hdataset.Strike[x], Hdataset.Volatility[y] }).T;
-                            z[count] = Hdataset.Volatility[x, y];
-                            count++;
+                            if (Hdataset.Volatility[x, y] > 0.01)
+                            {
+                                xy[count, Range.All] = (new Vector() { Hdataset.Maturity[x],Hdataset.Strike[y] }).T;
+                                z[count] = Hdataset.Volatility[x, y];
+                                count++;
+                            }
                         }
                     }
-
+                    xy.Resize(count, xy.C);
+                    z.Resize(count);
                     impVol.Estimate(xy, z);
                     return impVol;
             }

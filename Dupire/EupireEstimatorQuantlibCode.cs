@@ -17,20 +17,29 @@ namespace Dupire
             if (hasArbitrage)
                 Console.WriteLine("Market data contains arbitrage opportunity");
 
-            this.r = new DVPLDOM.PFunction(null);
-            this.q = new DVPLDOM.PFunction(null);
-            this.r.Expr = (double[,])ArrayHelper.Concat(discoutingCurve.Durations.ToArray(),discoutingCurve.Values.ToArray());
-            this.q.Expr = (double[,])ArrayHelper.Concat(HCalData.MaturityDY.ToArray(), HCalData.DividendYield.ToArray());
-            this.r.Parse(null);
-            this.q.Parse(null);
+            this.r = new DVPLDOM.PFunction(discoutingCurve.Durations,discoutingCurve.Values);
+            this.q = HCalData.dyFunc as PFunction;
+         
+            //this.r.Parse(null);
+            //this.q.Parse(null);
 
+            Hdataset.Volatility = new Matrix(Hdataset.CallPrice.R, Hdataset.CallPrice.C);
             for (int i = 0; i < Hdataset.Volatility.R; i++)
             {
+                double m=Hdataset.Maturity[i];
                 for (int j = 0; j < Hdataset.Volatility.C; j++)
                 {
-                    Hdataset.Volatility[i, j] = Hdataset.Volatility[i, j] * Hdataset.Volatility[i, j] * Hdataset.Maturity[i];
+                    if (Hdataset.CallPrice[i, j] > 0)
+                    {
+                        var bs = new Fairmat.Finance.BlackScholes(r.Evaluate(m), Hdataset.S0, Hdataset.Strike[j], 0, m, q.Evaluate(m));
+                        //Hdataset.Volatility[i, j] = Hdataset.Volatility[i, j] * Hdataset.Volatility[i, j] * Hdataset.Maturity[i];
+                        
+                        //Hdataset.Volatility[i, j] = bs.ImpliedCallVolatility(Hdataset.CallPrice[i, j]);
+                    }
                 }
             }
+
+            Console.WriteLine(Hdataset.Volatility);
 
             IFunction impVol = FitImplVolModel(Hdataset);
 
@@ -110,6 +119,7 @@ namespace Dupire
             }
 
             // Create dupire outputs.
+            Console.WriteLine(locVolMat);
             PFunction2D.PFunction2D localVol = new PFunction2D.PFunction2D(locVolMat, locVolStr, locVolMatrix);
             localVol.Parse(null);
             string[] names = new string[] { "S0" };
