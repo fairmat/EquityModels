@@ -100,7 +100,7 @@ namespace VarianceGamma
         {
             return new EstimateRequirement[] { new EstimateRequirement(typeof(EquitySpotMarketData)), 
                                                new EstimateRequirement(typeof(CallPriceMarketData)), 
-                                               new EstimateRequirement(typeof(DiscountingCurveMarketData)) };
+                                               new EstimateRequirement(typeof(DiscountingCurveMarketData),MarketRequirement.TickerMarket) };
         }
 
         /// <summary>
