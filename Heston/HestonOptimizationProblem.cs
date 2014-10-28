@@ -38,7 +38,7 @@ namespace HestonEstimator
     /// </summary>
     public class HestonCallOptimizationProblem : IOptimizationProblem
     {
-        CallPriceMarketData cpmd;
+        protected CallPriceMarketData cpmd;
         /// <summary>
         /// The call market price matrix.
         /// </summary>
@@ -52,17 +52,17 @@ namespace HestonEstimator
         /// <summary>
         /// The strike vector relative to callMarketPrice matrix.
         /// </summary>
-        private Vector strike;
+        protected Vector strike;
 
         /// <summary>
         /// The average rate vector up to a given maturity 
         /// </summary>
-        private Vector rate;
+        protected Vector rate;
 
         /// <summary>
         /// The avereage dividend yield vector up to a given maturity
         /// </summary>
-        private Vector dividendYield;
+        protected Vector dividendYield;
 
         /// <summary>
         /// Averegate drift up to a given maturity
@@ -82,11 +82,11 @@ namespace HestonEstimator
         /// <summary>
         /// Weights to be used in the calibration.
         /// </summary>
-        Matrix callWeight;
+        protected Matrix callWeight;
         /// <summary>
         /// Weights to be used in the calibration.
         /// </summary>
-        Matrix putWeight;
+        protected Matrix putWeight;
 
 
 
@@ -94,38 +94,41 @@ namespace HestonEstimator
         /// Builds objective function on relative pricing error.
         /// </summary>
         static bool optimizeRelativeError = false;
-        static double pricingMin = 0.001;
+        static double pricingMin = 0.0001;
         static internal bool displayPricingError = false;
-        static internal double optionThreshold = 0.00;
+        static internal double optionThreshold = 0.0001;
         /// <summary>
         /// Small value used in the boundary penalty function.
         /// </summary>
-        private double smallValue = 1e-4;
+        protected double smallValue = 1e-4;
 
         /// <summary>
         /// Value that weights the boundary penalty function.
         /// </summary>
-        private double k1 = 1e10;
+        protected double k1 = 1e10;
 
         /// <summary>
         /// Value that weights the Feller inequality penalty function.
         /// </summary>
-        private double k2 = 1e6;
+        protected double k2 = 1e6;
 
         /// <summary>
         /// The number of call option on which calibration is performed.
         /// </summary>
-        internal int numCall;
-        internal int numPut;
-
+        protected internal int numCall;
+        protected internal int numPut;
+        /// <summary>
+        /// Total volume for calls and puts.
+        /// </summary>
+        protected internal double totalVolume;
         /// <summary>
         /// Process starting value.
         /// </summary>
-        private double s0;
+        protected double s0;
 
 
-        Vector matBound;
-        Vector strikeBound;
+        protected Vector matBound;
+        protected Vector strikeBound;
 
         /// <summary>
         /// Initializes a new instance of the HestonCallOptimizationProblem class using the
@@ -240,7 +243,7 @@ namespace HestonEstimator
 
             for (int r = 0; r < this.callMarketPrice.R; r++)
             {
-                if (this.maturity[r] >= matBound[0])
+                if (this.maturity[r] >= matBound[0] && this.maturity[r]<= matBound[1])
                 {
                     for (int c = 0; c < this.callMarketPrice.C; c++)
                     {
@@ -248,21 +251,24 @@ namespace HestonEstimator
                         {
                             if (this.callMarketPrice[r, c] > s0 * optionThreshold && this.cpmd.CallVolume[r, c] > 0)
                             {
-                                this.callWeight[r, c] = Math.Log(this.cpmd.CallVolume[r, c]) + 1;
+                                this.callWeight[r, c] = CalculateWeight(this.cpmd.CallVolume[r, c]);
                                 this.numCall++;
+                                this.totalVolume += CalculateWeight(this.cpmd.CallVolume[r, c]) ;
                             }
                             if (this.cpmd.PutPrice != null && this.cpmd.PutPrice[r, c] > s0 * optionThreshold && this.cpmd.PutVolume[r, c] > 0)
                             {
-                                this.putWeight[r, c] = Math.Log(this.cpmd.PutVolume[r, c]) + 1;
+                                this.putWeight[r, c] = CalculateWeight(this.cpmd.PutVolume[r, c]) ;
+                           
                                 this.numPut++;
+                                this.totalVolume += CalculateWeight(this.cpmd.PutVolume[r, c]);
                             }
                         }
                     }
                 }
             }
             Console.WriteLine("OptionThreshold:\t" + optionThreshold);
-            Console.WriteLine("Strike Bounds:\t" + strikeBound);         
-         
+            Console.WriteLine("Strike Bounds:\t" + strikeBound);
+            Console.WriteLine("Maturity Bounds:\t" + matBound);  
             if(Engine.Verbose>=2)
                 PutCallTest();
         }
@@ -313,12 +319,12 @@ namespace HestonEstimator
                 if (HestonConstantDriftEstimator.impliedDividends)
                 {
                     bounds.Lb = (Vector)new double[] { 0, 0, 0.001, -1, 0, 0 };
-                    bounds.Ub = (Vector)new double[] { 40, 10, 1, 1, 1, 0.1 };
+                    bounds.Ub = (Vector)new double[] { 1, 10, 1, 1, 1, 0.1 };
                 }
                 else
                 {
                     bounds.Lb = (Vector)new double[] { 0, 0, 0.001, -1, 0};
-                    bounds.Ub = (Vector)new double[] { 40, 10, 1, 1, 1, 0 };
+                    bounds.Ub = (Vector)new double[] { 1, 10,    1,  1, 1};
                 }
                 return bounds;
             }
@@ -376,7 +382,7 @@ namespace HestonEstimator
         /// <returns>
         /// Objective function value.
         /// </returns>
-        public double Obj(DVPLI.Vector x)
+        public virtual double Obj(DVPLI.Vector x)
         {
             double sum = 0;
             if(Engine.MultiThread && !displayPricingError)
@@ -457,7 +463,7 @@ namespace HestonEstimator
             }
 
             //Calculate average distance...
-            sum = Math.Sqrt( sum / (this.numCall+this.numPut));
+            sum = Math.Sqrt( sum /this.totalVolume);
             if (this.useBoundPenalty)
                 sum += this.BoundPenalty(x);
 
@@ -709,6 +715,24 @@ namespace HestonEstimator
             }
         }
 
+        /// <summary>
+        /// Allows different specification of call/put weighting
+        /// </summary>
+        /// <param name="volume"></param>
+        /// <returns></returns>
+        double CalculateWeight(double volume)
+        {
+            //return 1;//no-volume information used
+            //return volume; //proportional to call/put volume
+            
+            
+            //proportional to logarithm of call/put volume
+            if (volume > 0)
+                return Math.Log(volume) + 1;
+            else
+                return 0;
+            
+        }
 
     }
 }

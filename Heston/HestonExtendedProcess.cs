@@ -240,6 +240,7 @@ namespace HestonExtended
             for (int i = 0; i < simulationDates.Length; i++)
             {
                 time[0] = simulationDates[i];
+                //Istantaneous growth rate is d/dt[z(t)*t] hence z(t)+d/dt[z(t)]*t
                 this.mu[i] = this.zrCurve.Partial(time, 0) * time[0] + this.zrCurve.Evaluate(time) - this.dyCurve.Evaluate(time);
             }
         }

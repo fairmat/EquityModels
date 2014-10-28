@@ -69,7 +69,7 @@ namespace HestonEstimator
         /// </returns>
         public EstimateRequirement[] GetRequirements(IEstimationSettings settings, EstimateQuery query)
         {
-            return new EstimateRequirement[] { new EstimateRequirement(typeof(DiscountingCurveMarketData)), 
+            return new EstimateRequirement[] { new EstimateRequirement(typeof(DiscountingCurveMarketData),MarketRequirement.TickerMarket), 
                                                new EstimateRequirement(typeof(CallPriceMarketData)) };
         }
 
@@ -77,6 +77,12 @@ namespace HestonEstimator
         {
            
         }
+
+        protected virtual HestonCallOptimizationProblem NewOptimizationProblem(EquityCalibrationData equityCalData, Vector matBound, Vector strikeBound)
+        {
+            return new HestonCallOptimizationProblem(equityCalData, matBound, strikeBound);
+        }
+
 
         /// <summary>
         /// Attempts to solve the Heston optimization problem using
@@ -104,31 +110,40 @@ namespace HestonEstimator
             // Optimization problem instance.
             Vector matBound = new Vector(2);
             Vector strikeBound = new Vector(2);
-            matBound[0] = 0;
-            matBound[1] = 6; //Up to 6Y maturities
-            strikeBound[0] = 0.5;
-            strikeBound[1] = 2;
+            matBound[0] = 0.0;// .25;
+            matBound[1] = 6;// 10; //Up to 6Y maturities
+            strikeBound[0] = 0.7;// 0.5;
+            strikeBound[1] = 1.3;//1.5;
 
-            HestonCallOptimizationProblem problem = new HestonCallOptimizationProblem(equityCalData, matBound, strikeBound);
-            Console.WriteLine("Optimization based on " + problem.numCall + " call options and "+problem.numPut+" put options");
+            HestonCallOptimizationProblem problem = NewOptimizationProblem(equityCalData, matBound, strikeBound);
+            int totalOpts = problem.numCall + problem.numPut;
+            Console.WriteLine("Calibration based on "+totalOpts+ " options. (" + problem.numCall + " call options and "+problem.numPut+" put options).");
 
-            IOptimizationAlgorithm solver = new QADE();
+            //IOptimizationAlgorithm solver = new  QADE();
+            IOptimizationAlgorithm solver = new MultiLevelSingleLinkage();
             IOptimizationAlgorithm solver2 = new SteepestDescent();
 
             DESettings o = new DESettings();
             o.controller = controller;
-            o.NP = 50;
-            o.MaxIter = 25;
-            o.Verbosity = 1;
-
-
             
             // If true the optimization algorithm will operate in parallel.
             o.Parallel = Engine.MultiThread;
-            o.h = 10e-8;
-            o.epsilon = 10e-8;
+            o.h = 10e-7;
+            o.epsilon = 10e-7;
           
             SolutionInfo solution = null;
+
+            double minObj=double.MaxValue;
+            Vector minX= null;
+            int Z = 1;
+            //if (problem.GetType() == typeof(Heston.HestonCallSimulationOptimizationProblem))
+            //    Z = 2;
+
+            for(int z=0;z<Z;z++)
+            {
+                o.NP = 50;
+                o.MaxIter =  25;
+                o.Verbosity = 1;
 
             Vector x0 = null;// new Vector(new double[] { 0.5, 0.5, 0.8, -0.5, 0.05 });
 
@@ -148,6 +163,18 @@ namespace HestonEstimator
             }
             if (solution.errors)
                 return null;
+
+            if (solution.obj < minObj)
+            {
+                minObj = solution.obj;
+                minX = solution.x.Clone();
+            }
+            }
+
+
+            
+            solution.obj = minObj;
+            solution.x = minX;
 
             //Displays pricing error structure
             HestonCallOptimizationProblem.displayPricingError = true;
@@ -180,7 +207,7 @@ namespace HestonEstimator
             result.Objects = new object[2];
             result.Objects[0] = zerorate;
             result.Objects[1] = dividendYield;
-            result.Fit = HestonCallOptimizationProblem.avgPricingError;
+            result.Fit = solution.obj;
             Console.WriteLine(result);
             return result;
         }
@@ -189,7 +216,10 @@ namespace HestonEstimator
 
         public virtual string Description
         {
-            get { return "Calibrate against call options"; }
+            get { return "Calibrate against options (closed form)"; }
         }
+
+
+
     }
 }
