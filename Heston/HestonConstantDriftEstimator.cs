@@ -22,6 +22,7 @@ using DVPLDOM;
 using DVPLI;
 using Fairmat.MarketData;
 using Fairmat.Optimization;
+using DVPLI.MarketDataTypes;
 
 namespace HestonEstimator
 {
@@ -126,12 +127,12 @@ namespace HestonEstimator
             return dy;
         }
 
-        protected override EstimationResult BuildEstimate(CurveMarketData interestDataSet,CallPriceMarketData callDataSet, EquityCalibrationData equityCalData, SolutionInfo solution)
+        protected override EstimationResult BuildEstimate(Scalar spotPrice, CurveMarketData interestDataSet, CallPriceMarketData callDataSet, EquityCalibrationData equityCalData, SolutionInfo solution)
         {
             string[] names = new string[] { "S0", "kappa", "theta", "sigma",
                                             "rho", "V0", "r", "q" };
             Vector param = new Vector(8);
-            param[0] = callDataSet.S0;
+            param[0] = spotPrice.Value;
             param[Range.New(1, 5)] = solution.x[Range.New(0, 4)];
             param[6] = equityCalData.zrFunc.Evaluate(TheoreticalModelsSettings.ConstantDYRFMaturity);
             if (impliedDividends)

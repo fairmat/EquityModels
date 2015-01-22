@@ -22,6 +22,7 @@ using DVPLDOM;
 using DVPLI;
 using Fairmat.MarketData;
 using Fairmat.Optimization;
+using DVPLI.MarketDataTypes;
 
 namespace HestonEstimator
 {
@@ -31,6 +32,9 @@ namespace HestonEstimator
     [Mono.Addins.Extension("/Fairmat/Estimator")]
     public class CallEstimator : IEstimator, IDescription
     {
+        
+
+
         #region IEstimator Members
 
         /// <summary>
@@ -70,7 +74,8 @@ namespace HestonEstimator
         public EstimateRequirement[] GetRequirements(IEstimationSettings settings, EstimateQuery query)
         {
             return new EstimateRequirement[] { new EstimateRequirement(typeof(DiscountingCurveMarketData),MarketRequirement.TickerMarket), 
-                                               new EstimateRequirement(typeof(CallPriceMarketData)) };
+                                               new EstimateRequirement(typeof(CallPriceMarketData)),
+                                               new EstimateRequirement(typeof(DVPLI.MarketDataTypes.Scalar))};
         }
 
         protected virtual void Setup(EquityCalibrationData equityCalData, IEstimationSettings settings)
@@ -98,7 +103,7 @@ namespace HestonEstimator
             var interestDataSet = (CurveMarketData)marketData[0];
             CallPriceMarketData callDataSet = (CallPriceMarketData)marketData[1];
             EquityCalibrationData equityCalData = new EquityCalibrationData(callDataSet, interestDataSet);
-            
+            var spotPrice = (DVPLI.MarketDataTypes.Scalar)marketData[2];
 
             Setup(equityCalData, settings);
 
@@ -110,17 +115,24 @@ namespace HestonEstimator
             // Optimization problem instance.
             Vector matBound = new Vector(2);
             Vector strikeBound = new Vector(2);
-            matBound[0] = 0.0;// .25;
+            matBound[0] = 0.1;// .25;
             matBound[1] = 6;// 10; //Up to 6Y maturities
-            strikeBound[0] = 0.7;// 0.5;
-            strikeBound[1] = 1.3;//1.5;
+            strikeBound[0] = 0.7;
+            strikeBound[1] = 1.3;
 
+            /*
+            //CBA TEST
+            matBound[0] = 1;// .25;
+            matBound[1] = 3.5;// 10; //Up to 6Y maturities
+            strikeBound[0] = 0.5;// 0.5;
+            strikeBound[1] = 2;//1.5;
+            */
             HestonCallOptimizationProblem problem = NewOptimizationProblem(equityCalData, matBound, strikeBound);
             int totalOpts = problem.numCall + problem.numPut;
             Console.WriteLine("Calibration based on "+totalOpts+ " options. (" + problem.numCall + " call options and "+problem.numPut+" put options).");
 
-            //IOptimizationAlgorithm solver = new  QADE();
-            IOptimizationAlgorithm solver = new MultiLevelSingleLinkage();
+            IOptimizationAlgorithm solver = new  QADE();
+            //IOptimizationAlgorithm solver = new MultiLevelSingleLinkage();
             IOptimizationAlgorithm solver2 = new SteepestDescent();
 
             DESettings o = new DESettings();
@@ -141,10 +153,18 @@ namespace HestonEstimator
 
             for(int z=0;z<Z;z++)
             {
-                o.NP = 50;
-                o.MaxIter =  25;
+                if (solver.GetType() == typeof(MultiLevelSingleLinkage))
+                {
+                    o.NP = 50;
+                    o.MaxIter = 25;
+                    o.MaxGamma = 6;       
+                }
+                else
+                {
+                    o.NP = 40;
+                    o.MaxIter = 35;
+                }
                 o.Verbosity = 1;
-
             Vector x0 = null;// new Vector(new double[] { 0.5, 0.5, 0.8, -0.5, 0.05 });
 
             // GA
@@ -182,14 +202,14 @@ namespace HestonEstimator
             HestonCallOptimizationProblem.displayPricingError = false;
             Console.WriteLine("Calibration Time (s)\t" + (DateTime.Now - t0).TotalSeconds);
 
-            return BuildEstimate(interestDataSet, callDataSet, equityCalData, solution);
+            return BuildEstimate(spotPrice,interestDataSet, callDataSet, equityCalData, solution);
         }
 
-        protected virtual EstimationResult BuildEstimate(CurveMarketData interestDataSet, CallPriceMarketData callDataSet, EquityCalibrationData equityCalData, SolutionInfo solution)
+        protected virtual EstimationResult BuildEstimate(Scalar spotPrice, CurveMarketData interestDataSet, CallPriceMarketData callDataSet, EquityCalibrationData equityCalData, SolutionInfo solution)
         {
             string[] names = new string[] { "S0", "kappa", "theta", "sigma", "rho", "V0" };
             Vector param = new Vector(6);
-            param[0] = callDataSet.S0;
+            param[0] = spotPrice.Value;
             param[Range.New(1, 5)] = solution.x;
             var result = new EstimationResult(names, param);
 

@@ -75,7 +75,8 @@ namespace HestonEstimator
         public bool useBoundPenalty = false;
 
         /// <summary>
-        /// Establish whether to use the Feller penalty function or not.
+        /// Establish whether to use the Feller penalty function or not. 
+        /// Note: it's affect a lot the multi-level single linkage algorithm performance.
         /// </summary>
         public bool useFellerPenalty = true;
 
@@ -97,6 +98,9 @@ namespace HestonEstimator
         static double pricingMin = 0.0001;
         static internal bool displayPricingError = false;
         static internal double optionThreshold = 0.0001;
+        static internal int weighting = 2;  //Option weighting 0=constant w. //1=linear //2 log
+        internal static bool calibrateOnPutOptions = true;
+        internal static bool calibrateOnCallOptions = true;
         /// <summary>
         /// Small value used in the boundary penalty function.
         /// </summary>
@@ -249,26 +253,32 @@ namespace HestonEstimator
                     {
                         if (this.strike[c] >= s0 * strikeBound[0] && this.strike[c] <= s0 * strikeBound[1])
                         {
-                            if (this.callMarketPrice[r, c] > s0 * optionThreshold && this.cpmd.CallVolume[r, c] > 0)
-                            {
-                                this.callWeight[r, c] = CalculateWeight(this.cpmd.CallVolume[r, c]);
-                                this.numCall++;
-                                this.totalVolume += CalculateWeight(this.cpmd.CallVolume[r, c]) ;
-                            }
-                            if (this.cpmd.PutPrice != null && this.cpmd.PutPrice[r, c] > s0 * optionThreshold && this.cpmd.PutVolume[r, c] > 0)
-                            {
-                                this.putWeight[r, c] = CalculateWeight(this.cpmd.PutVolume[r, c]) ;
-                           
-                                this.numPut++;
-                                this.totalVolume += CalculateWeight(this.cpmd.PutVolume[r, c]);
-                            }
+                            if (calibrateOnCallOptions)
+                                if (this.callMarketPrice[r, c] > s0 * optionThreshold && this.cpmd.CallVolume[r, c] > 0)
+                                {
+                                    this.callWeight[r, c] = CalculateWeight(this.cpmd.CallVolume[r, c]);
+                                    this.numCall++;
+                                    this.totalVolume += CalculateWeight(this.cpmd.CallVolume[r, c]) ;
+                                }
+                            if (calibrateOnPutOptions)
+                                if (this.cpmd.PutPrice != null && this.cpmd.PutPrice[r, c] > s0 * optionThreshold && this.cpmd.PutVolume[r, c] > 0)
+                                {
+                                    this.putWeight[r, c] = CalculateWeight(this.cpmd.PutVolume[r, c]);
+
+                                    this.numPut++;
+                                    this.totalVolume += CalculateWeight(this.cpmd.PutVolume[r, c]);
+                                }
+                            
                         }
                     }
                 }
             }
+            Console.WriteLine("Options weighting:\t" + weighting);
             Console.WriteLine("OptionThreshold:\t" + optionThreshold);
             Console.WriteLine("Strike Bounds:\t" + strikeBound);
-            Console.WriteLine("Maturity Bounds:\t" + matBound);  
+            Console.WriteLine("Maturity Bounds:\t" + matBound);
+            Console.WriteLine("Lb:\t" + Bounds.Lb);
+            Console.WriteLine("Ub:\t" + Bounds.Ub);
             if(Engine.Verbose>=2)
                 PutCallTest();
         }
@@ -319,12 +329,12 @@ namespace HestonEstimator
                 if (HestonConstantDriftEstimator.impliedDividends)
                 {
                     bounds.Lb = (Vector)new double[] { 0, 0, 0.001, -1, 0, 0 };
-                    bounds.Ub = (Vector)new double[] { 1, 10, 1, 1, 1, 0.1 };
+                    bounds.Ub = (Vector)new double[] { 15, 1, 2, 1, 1, 0.1 };
                 }
                 else
                 {
                     bounds.Lb = (Vector)new double[] { 0, 0, 0.001, -1, 0};
-                    bounds.Ub = (Vector)new double[] { 1, 10,    1,  1, 1};
+                    bounds.Ub = (Vector)new double[] { 15, 1,    2,  1, 1};
                 }
                 return bounds;
             }
@@ -674,7 +684,7 @@ namespace HestonEstimator
         /// <returns>
         /// Penalty value.
         /// </returns>
-        private double FellerPenalty(Vector x)
+        protected double FellerPenalty(Vector x)
         {
             double result;
             result = Math.Max(0, x[2] * x[2] - 2 * x[0] * x[1]);
@@ -722,15 +732,21 @@ namespace HestonEstimator
         /// <returns></returns>
         double CalculateWeight(double volume)
         {
-            //return 1;//no-volume information used
-            //return volume; //proportional to call/put volume
-            
-            
-            //proportional to logarithm of call/put volume
-            if (volume > 0)
-                return Math.Log(volume) + 1;
-            else
-                return 0;
+            switch (weighting)
+            {
+                case 0://constant
+                    return 1;//no-volume information
+                case 1://linear
+                    return volume;
+                case 2://log
+                    if (volume > 0)
+                        return Math.Log(volume) + 1;
+                    else
+                        return 0;
+                default:
+                    throw new Exception("Not defined");
+
+            }
             
         }
 
