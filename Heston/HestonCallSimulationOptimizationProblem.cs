@@ -55,9 +55,9 @@ namespace Heston
         /// </summary>
         int I;
         /// <summary>
-        /// Numeber of realizations
+        /// Number of Monte Carlo realizations
         /// </summary>
-        int N =5000;
+        int N =8000;
         /// <summary>
         /// Normal noise.
         /// </summary>
@@ -113,7 +113,7 @@ namespace Heston
         }
 
         /// <summary>
-        /// Generates (antithetic )random numbers for both components
+        /// Generates (antithetic)random numbers for both components
         /// </summary>
         private void NewRandomNumbers()
         {
@@ -122,11 +122,12 @@ namespace Heston
                 int offset = 0;// component offset
                 for (int c = 0; c < 2; c++)
                 {
-                    for (int s = 0; s < N / 2; s++)
+                    for (int s = 0; s < N / 2; s++)//uncomment this line for antithetic
+                    //for (int s = 0; s < N; s++)//uncomment this line for non-antithetic
                     {
                         double x=Engine.Generator.Normal();
                         epsilon[i, offset + s] =x;
-                        epsilon[i, offset + s + N / 2] = -x;
+                        epsilon[i, offset + s + N / 2] = -x;//uncomment this line for antitethic
                     }
                     offset += N;
                 }
@@ -248,16 +249,30 @@ namespace Heston
             GC.KeepAlive(input);// if input is the result of a temporay op.
             return sum / n;
         }
+        unsafe double SmoothedPositivePartMean(Vector input)
+        {
+            int n = input.Length;
+            double* buffer = input.Buffer;
+            double sum = 0;
+            for (int z = 0; z < n; z++)
+                if (buffer[z] > 1) sum += buffer[z];
+                else
+                    if (buffer[z] > -15) 
+                            sum += Math.Exp(buffer[z]);
+
+            GC.KeepAlive(input);// if input is the result of a temporay op.
+            return sum / n;
+        }
 
         double CallPrice(Vector[] paths, double strike, double maturity)
         {
             int z = (int)(maturity / dt);
-            return PositivePartMean(paths[z] - strike) *Math.Exp(-this.zrFunc.Evaluate(maturity) * maturity);
+            return SmoothedPositivePartMean(paths[z] - strike) *Math.Exp(-this.zrFunc.Evaluate(maturity) * maturity);
         }
         double PutPrice(Vector[] paths, double strike, double maturity)
         {
             int z = (int)(maturity / dt);
-            return PositivePartMean(strike - paths[z]) *Math.Exp(-this.zrFunc.Evaluate(maturity) * maturity);
+            return SmoothedPositivePartMean(strike - paths[z]) * Math.Exp(-this.zrFunc.Evaluate(maturity) * maturity);
         }
 
        
@@ -287,24 +302,25 @@ namespace Heston
                         if (strike < strikeBound[0] * s0 || strike > strikeBound[1] * s0)
                             continue;
 
-
-                        if (this.cpmd.CallPrice[i, j] > s0 * optionThreshold)
-                            if (cpmd.CallVolume[i, j] > 0)
-                            {
-                                double call = CallPrice(paths, strike, maturity);
-                                sum += this.callWeight[i,j] * System.Math.Pow(this.cpmd.CallPrice[i, j] - call, 2.0);
-                                count++;
-                            }
-
-                        if (cpmd.PutPrice != null)
-                            if (cpmd.PutPrice[i, j] > s0 * optionThreshold)
-                                if (cpmd.PutVolume[i, j] > 0)
+                        if(calibrateOnCallOptions)
+                            if (this.cpmd.CallPrice[i, j] > s0 * optionThreshold)
+                                if (cpmd.CallVolume[i, j] > 0)
                                 {
-                                    double put = PutPrice(paths, strike, maturity);
-
-                                    sum += this.putWeight[i, j] * System.Math.Pow(cpmd.PutPrice[i, j] - put, 2.0);
+                                    double call = CallPrice(paths, strike, maturity);
+                                    sum += this.callWeight[i,j] * System.Math.Pow(this.cpmd.CallPrice[i, j] - call, 2.0);
                                     count++;
                                 }
+
+                        if(calibrateOnPutOptions)
+                            if (cpmd.PutPrice != null)
+                                if (cpmd.PutPrice[i, j] > s0 * optionThreshold)
+                                    if (cpmd.PutVolume[i, j] > 0)
+                                    {
+                                        double put = PutPrice(paths, strike, maturity);
+
+                                        sum += this.putWeight[i, j] * System.Math.Pow(cpmd.PutPrice[i, j] - put, 2.0);
+                                        count++;
+                                    }
                     }
                 }
                 double p = 0;
@@ -313,9 +329,12 @@ namespace Heston
                 for (int i = 0; i < paths.Length; i++)
                     paths[i].Dispose();
 
-              
+
+                if (this.useFellerPenalty)
+                    p += this.FellerPenalty(x);
+
                 if (double.IsNaN(sum) || double.IsInfinity(sum))
-                    return 10e5 * x.Norm();
+                    return p+10e5 * x.Norm();
                 return p + Math.Sqrt(sum / this.totalVolume);
         }
 
