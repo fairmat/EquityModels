@@ -114,7 +114,7 @@ namespace HestonEstimator
         /// <summary>
         /// Value that weights the Feller inequality penalty function.
         /// </summary>
-        protected double k2 = 1e6;
+        protected double k2 = 1e2;
 
         /// <summary>
         /// The number of call option on which calibration is performed.
@@ -157,6 +157,14 @@ namespace HestonEstimator
             SetVariables(equityCalData.Hdata.CallPrice, equityCalData.Hdata.Maturity,
                          equityCalData.Hdata.Strike, equityCalData.CallMatrixRiskFreeRate,
                          equityCalData.CallMatrixDividendYield, equityCalData.Hdata.S0);
+
+            //calibrate minVolatility
+            if(equityCalData.Hdata.Volatility!=null)
+            {
+                //Rows maturities, columns strikes
+                v0Min = 0.5 * equityCalData.Hdata.Volatility.Min().Min();
+            }
+
             displayPricingError = false;
         }
 
@@ -317,6 +325,11 @@ namespace HestonEstimator
         #region IOptimizationProblem Members
 
         /// <summary>
+        /// If volatility is observed, it may be useful to use this information
+        /// </summary>
+        protected double v0Min=0.001;
+
+        /// <summary>
         /// Gets the bounds for the optimization.
         /// </summary>
         public Bounds Bounds
@@ -328,12 +341,12 @@ namespace HestonEstimator
                 // The order of parameters is k, theta, sigma, rho,  V0 (and optionally div.y)
                 if (HestonConstantDriftEstimator.impliedDividends)
                 {
-                    bounds.Lb = (Vector)new double[] { 0, 0, 0.001, -1, 0, 0 };
-                    bounds.Ub = (Vector)new double[] { 15, 1, 2, 1, 1, 0.1 };
+                    bounds.Lb = (Vector)new double[] { 0, v0Min, 0.001, -1, v0Min, 0 };
+                    bounds.Ub = (Vector)new double[] { 15, 1, 2, 1, 1, .2 };
                 }
                 else
                 {
-                    bounds.Lb = (Vector)new double[] { 0, 0, 0.001, -1, 0};
+                    bounds.Lb = (Vector)new double[] { 0, v0Min, 0.001, -1, v0Min };
                     bounds.Ub = (Vector)new double[] { 15, 1,    2,  1, 1};
                 }
                 return bounds;
@@ -478,11 +491,8 @@ namespace HestonEstimator
                 sum += this.BoundPenalty(x);
 
             if (this.useFellerPenalty)
-                sum += this.FellerPenalty(x);
-            
-            
-            
-            
+                sum +=this.FellerPenalty(x);
+         
             return sum;
         }
         static int objCount = 0;
@@ -688,7 +698,7 @@ namespace HestonEstimator
         {
             double result;
             result = Math.Max(0, x[2] * x[2] - 2 * x[0] * x[1]);
-            return this.k2 * result * result;
+            return this.s0*this.k2 * result * result;
         }
 
         /// <summary>
