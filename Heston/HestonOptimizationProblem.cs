@@ -99,7 +99,7 @@ namespace HestonEstimator
         static internal bool displayPricingError = false;
         static internal double optionThreshold = 0.0001;
         static internal int weighting = 2;  //Option weighting 0=constant w. //1=linear //2 log
-        internal static bool calibrateOnPutOptions = true;
+        internal static bool calibrateOnPutOptions =  true;
         internal static bool calibrateOnCallOptions = true;
         /// <summary>
         /// Small value used in the boundary penalty function.
@@ -162,7 +162,9 @@ namespace HestonEstimator
             if(equityCalData.Hdata.Volatility!=null)
             {
                 //Rows maturities, columns strikes
-                v0Min = 0.5 * equityCalData.Hdata.Volatility.Min().Min();
+                //vLastMin = 0.5 * equityCalData.Hdata.Volatility.Min().Min();
+                //v0Min = 0.8 * equityCalData.Hdata.Volatility[0, Range.All].Min().Min();
+                
             }
 
             displayPricingError = false;
@@ -328,6 +330,7 @@ namespace HestonEstimator
         /// If volatility is observed, it may be useful to use this information
         /// </summary>
         protected double v0Min=0.001;
+        protected double vLastMin = 0.001;
 
         /// <summary>
         /// Gets the bounds for the optimization.
@@ -341,12 +344,12 @@ namespace HestonEstimator
                 // The order of parameters is k, theta, sigma, rho,  V0 (and optionally div.y)
                 if (HestonConstantDriftEstimator.impliedDividends)
                 {
-                    bounds.Lb = (Vector)new double[] { 0, v0Min, 0.001, -1, v0Min, 0 };
+                    bounds.Lb = (Vector)new double[] { 0, v0Min, 0.001, -1, vLastMin, 0 };
                     bounds.Ub = (Vector)new double[] { 15, 1, 2, 1, 1, .2 };
                 }
                 else
                 {
-                    bounds.Lb = (Vector)new double[] { 0, v0Min, 0.001, -1, v0Min };
+                    bounds.Lb = (Vector)new double[] { 0, v0Min, 0.001, -1, vLastMin };
                     bounds.Ub = (Vector)new double[] { 15, 1,    2,  1, 1};
                 }
                 return bounds;

@@ -69,7 +69,7 @@ namespace Heston
         /// <summary>
         /// Temporal discretization 
         /// </summary>
-        double dt = 1.0 /52;
+        double dt = 2*1.0 /52;
 
         IFunction dyFunc;
         IFunction zrFunc;
@@ -251,14 +251,16 @@ namespace Heston
         }
         unsafe double SmoothedPositivePartMean(Vector input)
         {
+            double scaling = Math.Max(1, s0 / 2000);
+
             int n = input.Length;
             double* buffer = input.Buffer;
             double sum = 0;
             for (int z = 0; z < n; z++)
-                if (buffer[z] > 1) sum += buffer[z];
+                if (buffer[z] > scaling) sum += buffer[z];
                 else
                     if (buffer[z] > -15) 
-                            sum += Math.Exp(buffer[z]);
+                            sum += scaling*Math.Exp(buffer[z]-scaling);
 
             GC.KeepAlive(input);// if input is the result of a temporay op.
             return sum / n;
@@ -267,12 +269,12 @@ namespace Heston
         double CallPrice(Vector[] paths, double strike, double maturity)
         {
             int z = (int)(maturity / dt);
-            return SmoothedPositivePartMean(paths[z] - strike) *Math.Exp(-this.zrFunc.Evaluate(maturity) * maturity);
+            return PositivePartMean(paths[z] - strike) * Math.Exp(-this.zrFunc.Evaluate(maturity) * maturity);
         }
         double PutPrice(Vector[] paths, double strike, double maturity)
         {
             int z = (int)(maturity / dt);
-            return SmoothedPositivePartMean(strike - paths[z]) * Math.Exp(-this.zrFunc.Evaluate(maturity) * maturity);
+            return PositivePartMean(strike - paths[z]) * Math.Exp(-this.zrFunc.Evaluate(maturity) * maturity);
         }
 
        
