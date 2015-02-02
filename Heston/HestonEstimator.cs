@@ -115,11 +115,12 @@ namespace HestonEstimator
             // Optimization problem instance.
             Vector matBound = new Vector(2);
             Vector strikeBound = new Vector(2);
-            matBound[0] = 0.1;// .25;
+            matBound[0] = 1.0/12;// .25;
             matBound[1] = 6;// 10; //Up to 6Y maturities
-            strikeBound[0] = 0.7;
-            strikeBound[1] = 1.3;
+            strikeBound[0] = 0.4;
+            strikeBound[1] = 1.6;
 
+            Console.WriteLine(callDataSet);
             /*
             //CBA TEST
             matBound[0] = 1;// .25;
@@ -140,8 +141,8 @@ namespace HestonEstimator
             
             // If true the optimization algorithm will operate in parallel.
             o.Parallel = Engine.MultiThread;
-            o.h = 10e-7;
-            o.epsilon = 10e-7;
+            o.h = 10e-8;
+            o.epsilon = 10e-8;
           
             SolutionInfo solution = null;
 
@@ -162,7 +163,7 @@ namespace HestonEstimator
                 else
                 {
                     o.NP = 40;
-                    o.MaxIter = 35;
+                    o.MaxIter = 30;
                 }
                 o.Verbosity = 1;
             Vector x0 = null;// new Vector(new double[] { 0.5, 0.5, 0.8, -0.5, 0.05 });

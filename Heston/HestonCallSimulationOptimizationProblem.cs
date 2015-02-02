@@ -134,9 +134,9 @@ namespace Heston
             }
         }
 
-         
 
-        unsafe Vector[] SimulateScenarios(double s0,double v0,double kappa,double theta,double sigma,double rho,double horizon) 
+
+        unsafe void SimulateScenarios(double s0, double v0, double kappa, double theta, double sigma, double rho, double horizon, out Vector[] equityScenarios, out Vector[] volScenarios) 
         {
             double rdt = Math.Sqrt(dt);
             // v is the stochastic volatility
@@ -146,13 +146,17 @@ namespace Heston
             double chol22 = Math.Sqrt(1 - rho * rho);
 
             int I = (int)Math.Ceiling(horizon / dt);
-            var paths = new Vector[I + 1];
-            paths[0] = s0 * Vector.Ones(N);
+            equityScenarios = new Vector[I + 1];
+            equityScenarios[0] = s0 * Vector.Ones(N);
+
+            volScenarios = new Vector[I + 1];
+            volScenarios[0] = v0 * Vector.Ones(N);
+
             for (int i = 1; i <= I; i++)
             {
-                double* _s = paths[i-1].Buffer;
-                paths[i] = new Vector(N, false);
-                double* _sNew = paths[i].Buffer;
+                double* _s = equityScenarios[i - 1].Buffer;
+                equityScenarios[i] = new Vector(N, false);
+                double* _sNew = equityScenarios[i].Buffer;
 
                 double t = i * dt;
                 double gr = growth[i - 1];
@@ -172,8 +176,6 @@ namespace Heston
             ///////////////////
             GC.KeepAlive(v); //Given that we only a copy of  v.Buffer, v must be kept alive
             ///////////////////
-
-            return paths;
         }
 
         unsafe Vector[] SimulateScenariosMT(double s0, double v0, double kappa, double theta, double sigma, double rho, double horizon)
@@ -233,6 +235,7 @@ namespace Heston
             }
 
             GC.KeepAlive(v); //Given that we only a copy of  v.Buffer, v must be kept alive
+            v.Dispose();
             return;
         }
 
@@ -247,11 +250,12 @@ namespace Heston
             for (int z = 0; z < n; z++)
                 if (buffer[z] > 0) sum += buffer[z];
             GC.KeepAlive(input);// if input is the result of a temporay op.
+            input.Dispose();
             return sum / n;
         }
         unsafe double SmoothedPositivePartMean(Vector input)
         {
-            double scaling = Math.Max(1, s0 / 2000);
+            double scaling = Math.Min(1, s0 / 2000);
 
             int n = input.Length;
             double* buffer = input.Buffer;
@@ -263,6 +267,7 @@ namespace Heston
                             sum += scaling*Math.Exp(buffer[z]-scaling);
 
             GC.KeepAlive(input);// if input is the result of a temporay op.
+            input.Dispose();
             return sum / n;
         }
 
@@ -286,7 +291,8 @@ namespace Heston
             double rho = x[3];
             double v0 = x[4];
 
-               var paths = SimulateScenariosMT(s0, v0, kappa, theta, sigma, rho, this.cpmd.Maturity[Range.End]);
+            var paths = SimulateScenariosMT(s0, v0, kappa, theta, sigma, rho, this.cpmd.Maturity[Range.End]);
+               
 
                 double sum = 0;
                 int count = 0;
@@ -330,16 +336,16 @@ namespace Heston
                 //Frees memory
                 for (int i = 0; i < paths.Length; i++)
                     paths[i].Dispose();
-
+                
 
                 if (this.useFellerPenalty)
                     p += this.FellerPenalty(x);
 
                 if (double.IsNaN(sum) || double.IsInfinity(sum))
                     return p+10e5 * x.Norm();
-                return p + Math.Sqrt(sum / this.totalVolume);
+                return p + Math.Sqrt(sum / this.totalVolume)/s0*100;
         }
 
-
+ 
     }
 }

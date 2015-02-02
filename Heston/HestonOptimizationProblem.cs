@@ -78,7 +78,7 @@ namespace HestonEstimator
         /// Establish whether to use the Feller penalty function or not. 
         /// Note: it's affect a lot the multi-level single linkage algorithm performance.
         /// </summary>
-        public bool useFellerPenalty = true;
+        public bool useFellerPenalty = false;
 
         /// <summary>
         /// Weights to be used in the calibration.
@@ -97,10 +97,11 @@ namespace HestonEstimator
         static bool optimizeRelativeError = false;
         static double pricingMin = 0.0001;
         static internal bool displayPricingError = false;
-        static internal double optionThreshold = 0.0001;
+        static internal double optionThreshold = 0.000;
         static internal int weighting = 2;  //Option weighting 0=constant w. //1=linear //2 log
-        internal static bool calibrateOnPutOptions =  true;
         internal static bool calibrateOnCallOptions = true;
+        internal static bool calibrateOnPutOptions = true;
+
         /// <summary>
         /// Small value used in the boundary penalty function.
         /// </summary>
@@ -158,14 +159,7 @@ namespace HestonEstimator
                          equityCalData.Hdata.Strike, equityCalData.CallMatrixRiskFreeRate,
                          equityCalData.CallMatrixDividendYield, equityCalData.Hdata.S0);
 
-            //calibrate minVolatility
-            if(equityCalData.Hdata.Volatility!=null)
-            {
-                //Rows maturities, columns strikes
-                //vLastMin = 0.5 * equityCalData.Hdata.Volatility.Min().Min();
-                //v0Min = 0.8 * equityCalData.Hdata.Volatility[0, Range.All].Min().Min();
-                
-            }
+           
 
             displayPricingError = false;
         }
@@ -283,6 +277,18 @@ namespace HestonEstimator
                     }
                 }
             }
+
+            //calibrate minVolatility: actually in this.cpmd.Volatility there is sigma not sigma^2
+            if (this.cpmd.Volatility != null)
+            {
+                //Rows maturities, columns strikes
+                vLastMin = 0.5 * Math.Pow(this.cpmd.Volatility.Min().Min(), 2);
+
+                v0Min = 0.99 * Math.Pow(this.cpmd.Volatility[0, Range.All].Min().Min(), 2);
+                v0Max = 1.01 * Math.Pow(this.cpmd.Volatility[0, Range.All].Max().Max(), 2);
+            }
+
+
             Console.WriteLine("Options weighting:\t" + weighting);
             Console.WriteLine("OptionThreshold:\t" + optionThreshold);
             Console.WriteLine("Strike Bounds:\t" + strikeBound);
@@ -330,6 +336,7 @@ namespace HestonEstimator
         /// If volatility is observed, it may be useful to use this information
         /// </summary>
         protected double v0Min=0.001;
+        protected double v0Max = 1;
         protected double vLastMin = 0.001;
 
         /// <summary>
@@ -345,12 +352,12 @@ namespace HestonEstimator
                 if (HestonConstantDriftEstimator.impliedDividends)
                 {
                     bounds.Lb = (Vector)new double[] { 0, v0Min, 0.001, -1, vLastMin, 0 };
-                    bounds.Ub = (Vector)new double[] { 15, 1, 2, 1, 1, .2 };
+                    bounds.Ub = (Vector)new double[] { 15, v0Max, 2, 1, 1, .2 };
                 }
                 else
                 {
                     bounds.Lb = (Vector)new double[] { 0, v0Min, 0.001, -1, vLastMin };
-                    bounds.Ub = (Vector)new double[] { 15, 1,    2,  1, 1};
+                    bounds.Ub = (Vector)new double[] { 15,v0Max, 2, 1, 1 };
                 }
                 return bounds;
             }
