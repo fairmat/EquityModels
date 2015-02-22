@@ -372,6 +372,16 @@ namespace HestonExtended
             b[1] = this.sigma.fV() * m;
         }
 
+        public void ab(int i, double* x, double* a,double* b)
+        {
+            double m = Math.Max(0, x[1]);
+            a[0] = this.mu[i] - 0.5 * m;
+            a[1] = this.k.fV() * (this.theta.fV() - m);
+            
+            b[0] = m;
+            b[1] = this.sigma.fV() * m;
+        }
+
         /// <summary>
         /// Sets the passed array with a Boolean stating if the process
         /// must be simulated as a log-normal process. Here the first component

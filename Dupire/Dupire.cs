@@ -249,6 +249,14 @@ namespace Dupire
         #endregion // IParsable implementation
 
         #region IMarkovSimulator implementation
+
+        public unsafe void ab(int i, double* x, double* a,double *b)
+        {
+            a[0] = this.mu[i] - 0.5 * System.Math.Pow(this.context.localVol.Evaluate(this.simDates[i], x[0]), 2.0);
+            b[0] = this.context.localVol.Evaluate(this.simDates[i], x[0]);
+        }
+
+
         public unsafe void a(int i, double* x, double* a)
         {
             a[0] = this.mu[i] - 0.5 * System.Math.Pow(this.context.localVol.Evaluate(this.simDates[i], x[0]), 2.0);
