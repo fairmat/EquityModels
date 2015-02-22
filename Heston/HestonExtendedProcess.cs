@@ -29,7 +29,8 @@ namespace HestonExtended
     /// </summary>
     [Serializable]
     public unsafe class HestonExtendedProcess : IExtensibleProcess, IMarkovSimulator, IParsable,
-                                                IEstimationResultPopulable, IGreeksDerivativesInfo
+                                                IEstimationResultPopulable, IGreeksDerivativesInfo,
+                                                IExportableContainer
     {
         #region Serialized Parameters
         /// <summary>
