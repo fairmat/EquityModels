@@ -30,7 +30,8 @@ namespace VarianceGamma
     /// </summary>
     [Serializable]
     public class VarianceGamma : IExtensibleProcess, IFullSimulator, IParsable,
-                                 IPopulable, IGreeksDerivativesInfo, ISerializable
+                                 IPopulable, IGreeksDerivativesInfo, ISerializable,
+                                 IExportableContainer
     {
         #region SerializedFields
 
