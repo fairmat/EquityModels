@@ -21,9 +21,9 @@ using System.Runtime.InteropServices;
 using Mono.Addins;
 
 // The following lines tell that the assembly is an addin
-[assembly: AssemblyVersion("1.1.0.0")]
-[assembly: AssemblyFileVersion("1.1.0.0")]
-[assembly: Mono.Addins.Addin("Heston model", "1.1.0", Category = "Stochastic Process")]
+[assembly: AssemblyVersion("1.1.1.0")]
+[assembly: AssemblyFileVersion("1.1.1.0")]
+[assembly: Mono.Addins.Addin("Heston model", "1.1.1", Category = "Stochastic Process")]
 [assembly: Mono.Addins.AddinDependency("Fairmat", "1.0")]
 [assembly: Mono.Addins.AddinAuthor("Fairmat SRL")]
 [assembly: AddinDescription("The Heston model simulates equity or index prices taking into " +
@@ -53,7 +53,7 @@ using Mono.Addins;
                                "and to calibrate them to a series of call prices.")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Fairmat SRL")]
-[assembly: AssemblyCopyright("Copyright © Fairmat SRL 2009-2014")]
+[assembly: AssemblyCopyright("Copyright © Fairmat SRL 2009-2015")]
 [assembly: AssemblyProduct("Heston")]
 [assembly: AssemblyTrademark("Fairmat")]
 [assembly: AssemblyCulture("")]
