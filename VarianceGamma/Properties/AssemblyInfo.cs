@@ -51,11 +51,11 @@ using Mono.Addins;
 // You can specify all the values or you can default the Build and Revision Numbers
 // by using the '*' as shown below:
 // [assembly: AssemblyVersion("1.0.*")]
-[assembly: AssemblyVersion("1.0.3")]
-[assembly: AssemblyFileVersion("1.0.3")]
+[assembly: AssemblyVersion("1.0.4")]
+[assembly: AssemblyFileVersion("1.0.4")]
 
 // The following lines tell that the assembly is an addin.
-[assembly: Addin("Variance Gamma", "1.0.3", Category = "Stochastic Process")]
+[assembly: Addin("Variance Gamma", "1.0.4", Category = "Stochastic Process")]
 [assembly: AddinDependency("Fairmat", "1.0")]
 [assembly: AddinAuthor("Fairmat SRL / Safe Khampol")]
 [assembly: AddinDescription("Variance Gamma equity model calibration and simulation.")]
