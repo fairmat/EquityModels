@@ -41,6 +41,9 @@ namespace Heston
         {
             get { return "Calibrate against options (Monte Carlo simulation)"; }
         }
+
+     
+
     }
 
 
@@ -57,7 +60,7 @@ namespace Heston
         /// <summary>
         /// Number of Monte Carlo realizations
         /// </summary>
-        int N =8000;
+        int N =10000;
         /// <summary>
         /// Normal noise.
         /// </summary>
@@ -92,7 +95,8 @@ namespace Heston
         public HestonCallSimulationOptimizationProblem(EquityCalibrationData equityCalData, Vector matBound, Vector strikeBound)
         :base(equityCalData,matBound,strikeBound)
         {
-            this.dyFunc = equityCalData.dyFunc;
+            //this.dyFunc = equityCalData.dyFunc;
+            this.dyFunc = CallEstimator.IstantaneousDividendYield(equityCalData);
             this.zrFunc = equityCalData.zrFunc;
             
             // Generates common random numbers
@@ -134,8 +138,8 @@ namespace Heston
             }
         }
 
-
-
+        /*
+        [Obsolete]
         unsafe void SimulateScenarios(double s0, double v0, double kappa, double theta, double sigma, double rho, double horizon, out Vector[] equityScenarios, out Vector[] volScenarios) 
         {
             double rdt = Math.Sqrt(dt);
@@ -177,7 +181,20 @@ namespace Heston
             GC.KeepAlive(v); //Given that we only a copy of  v.Buffer, v must be kept alive
             ///////////////////
         }
+        */
 
+
+        /// <summary>
+        /// Generate Underlying scenarios.
+        /// </summary>
+        /// <param name="s0"></param>
+        /// <param name="v0"></param>
+        /// <param name="kappa"></param>
+        /// <param name="theta"></param>
+        /// <param name="sigma"></param>
+        /// <param name="rho"></param>
+        /// <param name="horizon"></param>
+        /// <returns>Scenarios: the first component is time step, the second one is the underlying path.</returns>
         unsafe Vector[] SimulateScenariosMT(double s0, double v0, double kappa, double theta, double sigma, double rho, double horizon)
         {
             int I = (int)Math.Ceiling(horizon / dt);
@@ -291,8 +308,31 @@ namespace Heston
             double rho = x[3];
             double v0 = x[4];
 
-            var paths = SimulateScenariosMT(s0, v0, kappa, theta, sigma, rho, this.cpmd.Maturity[Range.End]);
-               
+            if (displayObjInfo)
+            {
+                Console.WriteLine(".");
+            }
+
+            var paths = SimulateScenariosMT(s0, v0, kappa, theta, sigma, rho,Math.Min(this.matBound[1],this.cpmd.Maturity[Range.End]));
+            
+                if(displayObjInfo)
+                {
+                    Console.WriteLine("Average Underlying Scenario");
+                    int Z=paths.Length;// number of time steps
+                    int J = paths[0].Length;//number of realizations.
+                    //display average path
+                    for (int z = 0; z < Z; z++)
+                    {
+                        double avg = 0;
+                        for (int j = 0; j < J; j++)
+                            avg += paths[z][j];
+                        avg /= J;
+
+                        Console.WriteLine((z * dt) + "\t" + avg);
+                    }
+                   
+                }
+
 
                 double sum = 0;
                 int count = 0;

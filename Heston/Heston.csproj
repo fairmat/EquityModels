@@ -79,6 +79,10 @@
       <HintPath>..\..\DVPLReferences\Fairmat.Optimization.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="GBMEstimation">
+      <HintPath>..\..\DVPLReferences\Plugins\GBMEstimation.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
     <Reference Include="Mono.Addins">
       <HintPath>..\..\DVPLReferences\Mono.Addins.dll</HintPath>
       <Private>False</Private>
@@ -86,6 +90,7 @@
     <Reference Include="System" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="HestonCalibrationSettings.cs" />
     <Compile Include="HestonCall.cs" />
     <Compile Include="HestonCallSimulationOptimizationProblem.cs" />
     <Compile Include="HestonChoice.cs" />

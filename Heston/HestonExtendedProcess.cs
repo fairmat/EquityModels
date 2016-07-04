@@ -352,6 +352,7 @@ namespace HestonExtended
         /// <param name="i">The time step of the simulation.</param>
         /// <param name="x">The state vector at the previous state.</param>
         /// <param name="a">The output of the function.</param>
+        [Obsolete]
         public void a(int i, double* x, double* a)
         {
             double m = Math.Max(0, x[1]);
@@ -366,6 +367,7 @@ namespace HestonExtended
         /// <param name="i">The parameter is not used.</param>
         /// <param name="x">The state vector at the previous state.</param>
         /// <param name="b">The output of the function.</param>
+        [Obsolete]
         public void b(int i, double* x, double* b)
         {
             double m = Math.Sqrt(Math.Max(0, x[1]));
@@ -378,9 +380,10 @@ namespace HestonExtended
             double m = Math.Max(0, x[1]);
             a[0] = this.mu[i] - 0.5 * m;
             a[1] = this.k.fV() * (this.theta.fV() - m);
-            
-            b[0] = m;
-            b[1] = this.sigma.fV() * m;
+
+            double sqrtV = Math.Sqrt(m);
+            b[0] = sqrtV;
+            b[1] = this.sigma.fV() * sqrtV;
         }
 
         /// <summary>

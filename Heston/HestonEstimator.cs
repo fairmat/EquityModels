@@ -23,6 +23,7 @@ using DVPLI;
 using Fairmat.MarketData;
 using Fairmat.Optimization;
 using DVPLI.MarketDataTypes;
+using Heston;
 
 namespace HestonEstimator
 {
@@ -30,7 +31,7 @@ namespace HestonEstimator
     /// Implements and resolves the Heston optimization problem.
     /// </summary>
     [Mono.Addins.Extension("/Fairmat/Estimator")]
-    public class CallEstimator : IEstimator, IDescription
+    public class CallEstimator : IEstimatorEx, IDescription
     {
         
 
@@ -80,14 +81,12 @@ namespace HestonEstimator
 
         protected virtual void Setup(EquityCalibrationData equityCalData, IEstimationSettings settings)
         {
-           
         }
 
         protected virtual HestonCallOptimizationProblem NewOptimizationProblem(EquityCalibrationData equityCalData, Vector matBound, Vector strikeBound)
         {
             return new HestonCallOptimizationProblem(equityCalData, matBound, strikeBound);
         }
-
 
         /// <summary>
         /// Attempts to solve the Heston optimization problem using
@@ -105,8 +104,10 @@ namespace HestonEstimator
             EquityCalibrationData equityCalData = new EquityCalibrationData(callDataSet, interestDataSet);
             var spotPrice = (DVPLI.MarketDataTypes.Scalar)marketData[2];
 
+
             Setup(equityCalData, settings);
 
+            var calSettings = settings as HestonCalibrationSettings;
             // Creates the context.
             Document doc = new Document();
             ProjectROV prj = new ProjectROV(doc);
@@ -115,11 +116,21 @@ namespace HestonEstimator
             // Optimization problem instance.
             Vector matBound = new Vector(2);
             Vector strikeBound = new Vector(2);
-            matBound[0] = 1.0/12;// .25;
-            matBound[1] = 6;// 10; //Up to 6Y maturities
-            strikeBound[0] = 0.4;
-            strikeBound[1] = 1.6;
-
+            if (calSettings != null)
+            {
+                matBound[0] = calSettings.MinMaturity;
+                matBound[1] = calSettings.MaxMaturity;
+                strikeBound[0] = calSettings.MinStrike;
+                strikeBound[1] = calSettings.MaxStrike;
+            }
+            else
+            {
+                //use defaults
+                matBound[0] = 1.0 / 12;// .25;
+                matBound[1] = 6;// 10; //Up to 6Y maturities
+                strikeBound[0] = 0.4;
+                strikeBound[1] = 1.6;
+            }
             Console.WriteLine(callDataSet);
             /*
             //CBA TEST
@@ -162,8 +173,8 @@ namespace HestonEstimator
                 }
                 else
                 {
-                    o.NP = 40;
-                    o.MaxIter = 30;
+                    o.NP = 60;
+                    o.MaxIter = 35;
                 }
                 o.Verbosity = 1;
             Vector x0 = null;// new Vector(new double[] { 0.5, 0.5, 0.8, -0.5, 0.05 });
@@ -198,9 +209,9 @@ namespace HestonEstimator
             solution.x = minX;
 
             //Displays pricing error structure
-            HestonCallOptimizationProblem.displayPricingError = true;
+            HestonCallOptimizationProblem.displayObjInfo = true;
             problem.Obj(solution.x);
-            HestonCallOptimizationProblem.displayPricingError = false;
+            HestonCallOptimizationProblem.displayObjInfo = false;
             Console.WriteLine("Calibration Time (s)\t" + (DateTime.Now - t0).TotalSeconds);
 
             return BuildEstimate(spotPrice,interestDataSet, callDataSet, equityCalData, solution);
@@ -224,7 +235,8 @@ namespace HestonEstimator
             //dividendYield[Range.All, 1] = equityCalData.DividendYield;
 
             Matrix zerorate = new Matrix((equityCalData.zrFunc as PFunction).Expr);
-            Matrix dividendYield = new Matrix((equityCalData.dyFunc as PFunction).Expr);
+            //Matrix dividendYield = new Matrix((equityCalData.dyFunc as PFunction).Expr);
+            Matrix dividendYield = ToMatrix(IstantaneousDividendYield(equityCalData));
             result.Objects = new object[2];
             result.Objects[0] = zerorate;
             result.Objects[1] = dividendYield;
@@ -240,7 +252,39 @@ namespace HestonEstimator
             get { return "Calibrate against options (closed form)"; }
         }
 
+        public IEstimationSettings DefaultSettings
+        {
+            get
+            {
+                return UserSettings.GetSettings(typeof(HestonCalibrationSettings)) as HestonCalibrationSettings;
+            }
+        }
+
+        internal static IFunction IstantaneousDividendYield(EquityCalibrationData ecd)
+        {
+            double support = Math.Min(6, Math.Max(2, (ecd.dyFunc as PFunction).Support[Range.End]));
+         
+            var avgDy = new GBM.FunctionParamPiecewiseConstant(support, 0);//positive f.
+            (avgDy as GBM.FunctionParamBase).FitToMean(ecd.dyFunc, 0, support);
+            return avgDy;
+        }
 
 
+        internal static Matrix ToMatrix(IFunction func)
+        {
+            int n = 20;
+            double ub=5;
+            var sup = func as ISupport1D;
+            if (sup != null)
+                ub = sup.Support[1];
+            var mat = new Matrix(n,2);
+            for (int i = 0; i < n; i++)
+            {
+                double x = i*ub / n;
+                mat[i, 0] = x;
+                mat[i, 1] = func.Evaluate(x);
+            }
+            return mat;
+        }
     }
 }

@@ -96,7 +96,7 @@ namespace HestonEstimator
         /// </summary>
         static bool optimizeRelativeError = false;
         static double pricingMin = 0.0001;
-        static internal bool displayPricingError = false;
+        static internal bool displayObjInfo = false;
         static internal double optionThreshold = 0.000;
         static internal int weighting = 2;  //Option weighting 0=constant w. //1=linear //2 log
         internal static bool calibrateOnCallOptions = true;
@@ -161,7 +161,7 @@ namespace HestonEstimator
 
            
 
-            displayPricingError = false;
+            displayObjInfo = false;
         }
 
         /// <summary>
@@ -418,7 +418,7 @@ namespace HestonEstimator
         public virtual double Obj(DVPLI.Vector x)
         {
             double sum = 0;
-            if(Engine.MultiThread && !displayPricingError)
+            if(Engine.MultiThread && !displayObjInfo)
             {
                 // Instantiate parallel computation if enabled.
                 List<Task> tl = new List<Task>();
@@ -469,7 +469,7 @@ namespace HestonEstimator
                 }
 
                 var pricingErrors = hc.hestonCallPrice - this.callMarketPrice;
-                if (displayPricingError)
+                if (displayObjInfo)
                 {
                     avgPricingError = 0;
                     for (int r = 0; r < this.callMarketPrice.R; r++)
