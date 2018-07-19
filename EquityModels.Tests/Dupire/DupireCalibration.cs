@@ -39,28 +39,6 @@ namespace Dupire
         }
 
         [Test]
-        public void TestCalibrationFTSE()
-        {
-           CurveMarketData IData = MyObject.ReadFromXMLFile(@"c:\fermat\fairmat\prj\fairmatplugins/TestData/CallPrices/ZR20140922.xml") as CurveMarketData;
-            CallPriceMarketData HData = MyObject.ReadFromXMLFile(@"c:\fermat\fairmat\prj\fairmatplugins/TestData/CallPrices/FTSE20140922.xml") as CallPriceMarketData;
-           
-
-            List<object> l = new List<object>();
-            l.Add(IData);
-            l.Add(HData);
-
-            DupireEstimator DE = new DupireEstimator();
-            DupireCalibrationSettings settings = new DupireCalibrationSettings();
-            settings.LocalVolatilityCalculation = LocalVolatilityCalculation.Method1;
-            settings.LocalVolatilityStrikes = 10;
-            settings.LocalVolatilityMaturities = 10;
-
-            EstimationResult res = DE.Estimate(l, settings);
-            var localVol = res.Objects[3] as  PFunction2D.PFunction2D;
-            //localVol.m
-        }
-
-        [Test]
         public void TestCalibration()
         {
             InterestRateMarketData IData = InterestRateMarketData.FromFile("../../TestData/IRMD-sample.xml");
