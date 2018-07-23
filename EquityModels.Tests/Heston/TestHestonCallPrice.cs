@@ -59,7 +59,7 @@ namespace Heston
             param[4] = v0;
             HestonCall hestonCall = new HestonCall();
             double fairmatPrice = hestonCall.HestonCallPrice(param, s0, tau, k, rate, dy);
-            double tol = 1e-9;
+            double tol = 1e-3;
             double benchmarkPrice = 0.339537359104676;
 
             Console.WriteLine("Theoretical Benchmark  Price = " + benchmarkPrice.ToString());
