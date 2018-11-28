@@ -38,7 +38,7 @@ namespace Dupire
             TestCommon.TestInitialization.CommonInitialization();
         }
 
-        [Test]
+        [Test,Category("BigTest")]
         public void TestCalibration()
         {
             InterestRateMarketData IData = InterestRateMarketData.FromFile("../../TestData/IRMD-sample.xml");

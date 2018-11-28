@@ -29,7 +29,7 @@ namespace VarianceGamma
     [TestFixture]
     public class TestVarianceGammaCalibration
     {
-        [Test]
+        [Test,Category("BigTest")]
         public void Test()
         {
             // Yield (dividend).
@@ -240,17 +240,23 @@ namespace VarianceGamma
             VarianceGammaOptionsCalibration c = new VarianceGammaOptionsCalibration();
             List<object> marketData = new List<object>();
 
-            EquitySpotMarketData espmd = new EquitySpotMarketData();
-            CallPriceMarketData cpmd = new CallPriceMarketData();
+            var espmd = new EquitySpotMarketData();
             espmd.Price = s0;
             espmd.RiskFreeRate = r;
             espmd.DividendYield = q;
+
+            var cpmd = new CallPriceMarketData();
             cpmd.Strike = k;
             cpmd.Maturity = m;
             cpmd.CallPrice = cp;
 
+            var dc = new DiscountingCurveMarketData();
+            dc.Durations = new Vector() { 0 };
+            dc.Values = new Vector() { r };
+
             marketData.Add(espmd);
             marketData.Add(cpmd);
+            marketData.Add(dc);
 
             EstimationResult res = c.Estimate(marketData, null);
             return (Vector)res.Values;
