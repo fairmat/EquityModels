@@ -372,7 +372,7 @@ namespace VarianceGamma
             {
                 dt = Dates[i] - Dates[i - 1];
                 this.gamma = new Fairmat.Statistics.Gamma(dt / this.nu.fV(), 1.0 / this.nu.fV());
-                GammaNoise = this.gamma.Draw(Engine.Generator);
+                lock(this) { GammaNoise = this.gamma.Draw(Engine.Generator); }
                 OutDynamic[i, 0] = OutDynamic[i - 1, 0] * Math.Exp(this.drift * dt +
                     this.theta.fV() * GammaNoise + this.sigma.fV() * Math.Sqrt(GammaNoise) * Noise[i - 1, 0]);
             }
