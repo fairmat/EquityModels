@@ -9,6 +9,8 @@
     <OutputType>Library</OutputType>
     <RootNamespace>Dupire</RootNamespace>
     <AssemblyName>Dupire</AssemblyName>
+    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>True</DebugSymbols>
