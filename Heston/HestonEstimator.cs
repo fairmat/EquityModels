@@ -165,17 +165,14 @@ namespace HestonEstimator
 
             for(int z=0;z<Z;z++)
             {
+                o.NP = AttributesUtility.RetrieveAttributeOrDefaultValue<int>(properties, "NP", 50);
+                o.MaxIter = AttributesUtility.RetrieveAttributeOrDefaultValue<int>(properties, "MaxIter", 25);
+
                 if (solver.GetType() == typeof(MultiLevelSingleLinkage))
                 {
-                    o.NP = 50;
-                    o.MaxIter = 25;
                     o.MaxGamma = 6;       
                 }
-                else
-                {
-                    o.NP = 60;
-                    o.MaxIter = 35;
-                }
+               
                 o.Verbosity = 1;
             Vector x0 = null;// new Vector(new double[] { 0.5, 0.5, 0.8, -0.5, 0.05 });
 
@@ -247,6 +244,7 @@ namespace HestonEstimator
 
         #endregion
 
+       
         public virtual string Description
         {
             get { return "Calibrate against options (closed form)"; }
