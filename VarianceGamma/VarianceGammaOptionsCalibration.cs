@@ -117,7 +117,7 @@ namespace VarianceGamma
             EquitySpotMarketData espmd = data[0] as EquitySpotMarketData;
             CallPriceMarketData cpmd = data[1] as CallPriceMarketData;
             DiscountingCurveMarketData dcmd = data[2] as DiscountingCurveMarketData;
-            //EquityCalibrationData ecd = new EquityCalibrationData(cpmd, dcmd);
+
             
             this.s0 = espmd.Price;
             this.r = espmd.RiskFreeRate;
