@@ -117,14 +117,15 @@ namespace VarianceGamma
             EquitySpotMarketData espmd = data[0] as EquitySpotMarketData;
             CallPriceMarketData cpmd = data[1] as CallPriceMarketData;
             DiscountingCurveMarketData dcmd = data[2] as DiscountingCurveMarketData;
-            EquityCalibrationData ecd = new EquityCalibrationData(cpmd, dcmd);
+
+            
             this.s0 = espmd.Price;
             this.r = espmd.RiskFreeRate;
             this.q = espmd.DividendYield;
 
-            this.k = ecd.Hdata.Strike;
-            this.m = ecd.Hdata.Maturity;
-            this.cp = ecd.Hdata.CallPrice;
+            this.k = cpmd.Strike;
+            this.m = cpmd.Maturity;
+            this.cp = cpmd.CallPrice;
 
             Vector x0 = (Vector)new double[] { -0.1, 0.2, 0.1 };
             IOptimizationAlgorithm algorithm = new QADE();
@@ -193,6 +194,8 @@ namespace VarianceGamma
         {
             if (c <= 0 && (c - Math.Floor(c)) == 0)
                 throw new Exception("Psi function is not defined on negative integers");
+            if (Double.IsNaN(a) || Double.IsNaN(b) || Double.IsNaN(c))
+                return Double.NaN;
             double u = b / Math.Sqrt(2.0 + b * b);
             double d = Math.Abs(a) * Math.Sqrt(2.0 + b * b);
             double fi = Math.Pow(d, c + 0.5) * Math.Exp(Math.Sign(a) * d) * Math.Pow(1.0 + u, c) * BesselK(c + 0.5, d) / (Math.Sqrt(2.0 * Math.PI) * Gamma(c) * c);
