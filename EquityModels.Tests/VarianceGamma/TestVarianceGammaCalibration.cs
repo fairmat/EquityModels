@@ -63,12 +63,17 @@ namespace VarianceGamma
             // Time to expiration of the option.
             double t = 0.05 + rand.NextDouble() * 0.95;
             Vector x = Test(nm, nk, q, s0, r, t, theta, sigma, nu);
+            indexTheta = 1;
+            indexSigma = 2;
+            indexGamma = 3;
+
+            Vector calibratedParams = (Vector)new double[] { x[indexTheta], x[indexSigma], x[indexGamma] }; 
             Vector benchmark = (Vector)new double[] { theta, sigma, nu };
-            double distance = Math.Sqrt((x - benchmark).Scalar(x - benchmark));
+            double distance = Math.Sqrt((calibratedParams - benchmark).Scalar(calibratedParams - benchmark));
             Console.WriteLine(distance);
-            double thetaa = x[0];
-            double sigmaa = x[1];
-            double nuu = x[2];
+            double thetaa = calibratedParams[0];
+            double sigmaa = calibratedParams[1];
+            double nuu = calibratedParams[2];
             Graph(thetaa, sigmaa, nuu, t, k, q, r);
             VGSimulation(thetaa, sigmaa, nuu, t, k, q, s0, r);
         }
