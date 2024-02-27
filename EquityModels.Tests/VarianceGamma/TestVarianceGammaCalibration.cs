@@ -63,9 +63,9 @@ namespace VarianceGamma
             // Time to expiration of the option.
             double t = 0.05 + rand.NextDouble() * 0.95;
             Vector x = Test(nm, nk, q, s0, r, t, theta, sigma, nu);
-            indexTheta = 1;
-            indexSigma = 2;
-            indexGamma = 3;
+            int indexTheta = 1;
+            int indexSigma = 2;
+            int indexGamma = 3;
 
             Vector calibratedParams = (Vector)new double[] { x[indexTheta], x[indexSigma], x[indexGamma] }; 
             Vector benchmark = (Vector)new double[] { theta, sigma, nu };
