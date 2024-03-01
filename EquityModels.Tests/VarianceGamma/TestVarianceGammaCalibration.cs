@@ -74,8 +74,8 @@ namespace VarianceGamma
             double thetaa = calibratedParams[0];
             double sigmaa = calibratedParams[1];
             double nuu = calibratedParams[2];
-            Graph(thetaa, sigmaa, nuu, t, k, q, r);
-            VGSimulation(thetaa, sigmaa, nuu, t, k, q, s0, r);
+            Graph(thetaa, sigmaa, nuu, t, k, q, r, num: 10);
+            VGSimulation(thetaa, sigmaa, nuu, t, k, q, s0, r, n: 10);
         }
 
         /// <summary>
@@ -88,9 +88,8 @@ namespace VarianceGamma
         /// <param name="k"></param>
         /// <param name="q"></param>
         /// <param name="r"></param>
-        private static void Graph(double theta, double sigma, double nu, double t, double k, double q, double r)
+        private static void Graph(double theta, double sigma, double nu, double t, double k, double q, double r, int num = 200)
         {
-            int num = 200;
 
             double[] cbls = new double[num];
             double[] pbls = new double[num];
@@ -145,9 +144,8 @@ namespace VarianceGamma
         /// <param name="q"></param>
         /// <param name="s0"></param>
         /// <param name="r"></param>
-        private static void VGSimulation(double theta, double sigma, double nu, double t, double k, double q, double s0, double r)
+        private static void VGSimulation(double theta, double sigma, double nu, double t, double k, double q, double s0, double r, int n = 1000)
         {
-            int n = 1000;
             double omega = Math.Log(1 - sigma * sigma * nu * 0.5 - theta * nu) / nu;
             double dt = t / n;
 
