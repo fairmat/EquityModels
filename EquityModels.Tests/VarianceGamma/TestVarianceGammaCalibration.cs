@@ -40,10 +40,10 @@ namespace VarianceGamma
             Random rand = new Random();
 
             // Number of observed options samples.
-            int nm = 9;
+            int nm = 3;
 
             // Number of observed options samples.
-            int nk = 11;
+            int nk = 3;
 
             // Drift theta of VG model.
             double theta = -0.02 + rand.NextDouble() * 0.04;
@@ -263,7 +263,10 @@ namespace VarianceGamma
             marketData.Add(cpmd);
             marketData.Add(dc);
 
-            EstimationResult res = c.Estimate(marketData, null);
+            Dictionary<string, object> properties = new Dictionary<string, object>();
+            properties["MaxIter"] = 1;
+
+            EstimationResult res = c.Estimate(marketData, null, properties: properties);
             return (Vector)res.Values;
         }
 
