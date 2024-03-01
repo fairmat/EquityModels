@@ -262,7 +262,7 @@ namespace VarianceGamma
             marketData.Add(dc);
 
             Dictionary<string, object> properties = new Dictionary<string, object>();
-            properties["MaxIter"] = 1;
+            properties.Add("MaxIter", 5);
 
             EstimationResult res = c.Estimate(marketData, null, properties: properties);
             return (Vector)res.Values;
@@ -396,7 +396,9 @@ namespace VarianceGamma
 
         private static double GammaInv(double p, double a, double b)
         {
-            return (new Fairmat.Statistics.Gamma(a, b)).InvCdf(p);
+            var gamma = (new Fairmat.Statistics.Gamma(a, b));
+            double invCdf = gamma.InvCdf(p);
+            return invCdf;
         }
     }
 }
