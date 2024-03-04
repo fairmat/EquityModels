@@ -143,7 +143,7 @@ namespace Dupire
 
             Console.WriteLine("Surf = " + volfunc.Expr);
 
-            // Compare the one of the prices used for calibration to the MC Dupire price
+            // Compare one of the prices used for calibration to the MC Dupire price
             double referencePrice = HData.CallPrice[i, j]; 
             Console.WriteLine("Theoretical Price  = " + referencePrice.ToString());
             Console.WriteLine("Monte Carlo Price  = " + samplePrice);
