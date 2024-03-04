@@ -130,13 +130,22 @@ namespace VarianceGamma
             IOptimizationAlgorithm algorithm = new QADE();
             OptimizationSettings optimizationSettings = new DESettings();
 
+
+            int MaxIter = AttributesUtility.RetrieveAttributeOrDefaultValue(properties, "MaxIter", optimizationSettings.MaxIter);
+            double Tolerance = AttributesUtility.RetrieveAttributeOrDefaultValue(properties, "Tolerance", 10e-5);
+            TimeSpan Maxtime = AttributesUtility.RetrieveAttributeOrDefaultValue(properties, "Maxtime", optimizationSettings.MaxTime);
+
+            optimizationSettings.MaxIter = MaxIter;
+            optimizationSettings.epsilon = Tolerance;
+            optimizationSettings.MaxTime = Maxtime;
+            
+
             // Maximum number of iteration allowed.
 
             // Positive integer values print debug info.
             optimizationSettings.Verbosity = 1;
 
             // Tolerance.
-            optimizationSettings.epsilon = 10e-5;
             var solution = algorithm.Minimize(new VarianceGammaOptimizationProblem(this.q, this.s0, this.k,
                                                                           this.r, this.cp, this.m),
                                                                           optimizationSettings, x0);
