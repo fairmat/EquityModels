@@ -71,19 +71,11 @@ namespace Dupire
             ProjectROV rov = new ProjectROV(doc);
             doc.Part.Add(rov);
             doc.DefaultProject.NMethods.m_UseAntiteticPaths = true;
+            //simulation settings
             int n_sim = 10000;
             int n_steps = 500;
+            //simu and maturity to be used for checking the MC valuation 
             double strike = HData.Strike[j];
-            //double volatility = HData.Volatility[i, j];
-            
-            /*
-            PFunction2D.PFunction2D impvolfunc = new PFunction2D.PFunction2D(rov);
-            impvolfunc = res.Objects[3] as PFunction2D.PFunction2D;
-            impvolfunc.VarName = "impvol";
-            rov.Symbols.Add(impvolfunc);
-            double volatility = impvolfunc.Evaluate(HData.Maturity[i], HData.Strike[j]);
-             */
-            double volatility = 0.2;
             double maturity = HData.Maturity[i];
 
             ModelParameter Pstrike = new ModelParameter(strike, string.Empty, "strike");
@@ -151,14 +143,14 @@ namespace Dupire
 
             Console.WriteLine("Surf = " + volfunc.Expr);
 
-            // Calculation of the theoretical value of the call.
-            double theoreticalPrice = BlackScholes.Call(rate, S0, strike, volatility, maturity, dy);
-            Console.WriteLine("Theoretical Price  = " + theoreticalPrice.ToString());
+            // Compare one of the prices used for calibration to the MC Dupire price
+            double referencePrice = HData.CallPrice[i, j]; 
+            Console.WriteLine("Theoretical Price  = " + referencePrice.ToString());
             Console.WriteLine("Monte Carlo Price  = " + samplePrice);
             Console.WriteLine("Standard Deviation = " + sampleDevSt.ToString());
             double tol = 4.0 * sampleDevSt;
             doc.WriteToXMLFile("Dupire.fair");
-            Assert.LessOrEqual(Math.Abs(theoreticalPrice - samplePrice), tol);
+            Assert.LessOrEqual(Math.Abs(referencePrice - samplePrice), tol);
         }
     }
 }
