@@ -117,29 +117,18 @@ namespace VarianceGamma
             EquitySpotMarketData espmd = data[0] as EquitySpotMarketData;
             CallPriceMarketData cpmd = data[1] as CallPriceMarketData;
             DiscountingCurveMarketData dcmd = data[2] as DiscountingCurveMarketData;
-
-            
+            EquityCalibrationData ecd = new EquityCalibrationData(cpmd, dcmd);
             this.s0 = espmd.Price;
             this.r = espmd.RiskFreeRate;
             this.q = espmd.DividendYield;
 
-            this.k = cpmd.Strike;
-            this.m = cpmd.Maturity;
-            this.cp = cpmd.CallPrice;
+            this.k = ecd.Hdata.Strike;
+            this.m = ecd.Hdata.Maturity;
+            this.cp = ecd.Hdata.CallPrice;
 
             Vector x0 = (Vector)new double[] { -0.1, 0.2, 0.1 };
             IOptimizationAlgorithm algorithm = new QADE();
             OptimizationSettings optimizationSettings = new DESettings();
-
-
-            int MaxIter = AttributesUtility.RetrieveAttributeOrDefaultValue(properties, "MaxIter", optimizationSettings.MaxIter);
-            double Tolerance = AttributesUtility.RetrieveAttributeOrDefaultValue(properties, "Tolerance", 10e-5);
-            TimeSpan Maxtime = AttributesUtility.RetrieveAttributeOrDefaultValue(properties, "Maxtime", optimizationSettings.MaxTime);
-
-            optimizationSettings.MaxIter = MaxIter;
-            optimizationSettings.epsilon = Tolerance;
-            optimizationSettings.MaxTime = Maxtime;
-            
 
             // Maximum number of iteration allowed.
 
@@ -147,6 +136,7 @@ namespace VarianceGamma
             optimizationSettings.Verbosity = 1;
 
             // Tolerance.
+            optimizationSettings.epsilon = 10e-5;
             var solution = algorithm.Minimize(new VarianceGammaOptimizationProblem(this.q, this.s0, this.k,
                                                                           this.r, this.cp, this.m),
                                                                           optimizationSettings, x0);
@@ -203,8 +193,6 @@ namespace VarianceGamma
         {
             if (c <= 0 && (c - Math.Floor(c)) == 0)
                 throw new Exception("Psi function is not defined on negative integers");
-            if (Double.IsNaN(a) || Double.IsNaN(b) || Double.IsNaN(c))
-                return Double.NaN;
             double u = b / Math.Sqrt(2.0 + b * b);
             double d = Math.Abs(a) * Math.Sqrt(2.0 + b * b);
             double fi = Math.Pow(d, c + 0.5) * Math.Exp(Math.Sign(a) * d) * Math.Pow(1.0 + u, c) * BesselK(c + 0.5, d) / (Math.Sqrt(2.0 * Math.PI) * Gamma(c) * c);

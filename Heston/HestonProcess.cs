@@ -291,11 +291,10 @@ namespace Heston
         public void ab(int i, double* x, double* a,double* b)
         {
             double m = Math.Max(0, x[1]);
-            double radqM = Math.Sqrt(m);
             a[0] = this.r.fV() - this.q.fV() - 0.5 * m;
             a[1] = this.k.fV() * (this.theta.fV() - m);
-            b[0] = radqM;
-            b[1] = this.sigma.fV() * radqM;
+            b[0] = m;
+            b[1] = this.sigma.fV() * m;
         }
 
 

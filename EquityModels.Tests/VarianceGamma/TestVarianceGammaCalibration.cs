@@ -40,10 +40,10 @@ namespace VarianceGamma
             Random rand = new Random();
 
             // Number of observed options samples.
-            int nm = 3;
+            int nm = 9;
 
             // Number of observed options samples.
-            int nk = 3;
+            int nk = 11;
 
             // Drift theta of VG model.
             double theta = -0.02 + rand.NextDouble() * 0.04;
@@ -63,19 +63,14 @@ namespace VarianceGamma
             // Time to expiration of the option.
             double t = 0.05 + rand.NextDouble() * 0.95;
             Vector x = Test(nm, nk, q, s0, r, t, theta, sigma, nu);
-            int indexTheta = 1;
-            int indexSigma = 2;
-            int indexGamma = 3;
-
-            Vector calibratedParams = (Vector)new double[] { x[indexTheta], x[indexSigma], x[indexGamma] }; 
             Vector benchmark = (Vector)new double[] { theta, sigma, nu };
-            double distance = Math.Sqrt((calibratedParams - benchmark).Scalar(calibratedParams - benchmark));
+            double distance = Math.Sqrt((x - benchmark).Scalar(x - benchmark));
             Console.WriteLine(distance);
-            double thetaa = calibratedParams[0];
-            double sigmaa = calibratedParams[1];
-            double nuu = calibratedParams[2];
-            Graph(thetaa, sigmaa, nuu, t, k, q, r, num: 10);
-            VGSimulation(thetaa, sigmaa, nuu, t, k, q, s0, r, n: 10);
+            double thetaa = x[0];
+            double sigmaa = x[1];
+            double nuu = x[2];
+            Graph(thetaa, sigmaa, nuu, t, k, q, r);
+            VGSimulation(thetaa, sigmaa, nuu, t, k, q, s0, r);
         }
 
         /// <summary>
@@ -88,8 +83,9 @@ namespace VarianceGamma
         /// <param name="k"></param>
         /// <param name="q"></param>
         /// <param name="r"></param>
-        private static void Graph(double theta, double sigma, double nu, double t, double k, double q, double r, int num = 200)
+        private static void Graph(double theta, double sigma, double nu, double t, double k, double q, double r)
         {
+            int num = 200;
 
             double[] cbls = new double[num];
             double[] pbls = new double[num];
@@ -144,8 +140,9 @@ namespace VarianceGamma
         /// <param name="q"></param>
         /// <param name="s0"></param>
         /// <param name="r"></param>
-        private static void VGSimulation(double theta, double sigma, double nu, double t, double k, double q, double s0, double r, int n = 1000)
+        private static void VGSimulation(double theta, double sigma, double nu, double t, double k, double q, double s0, double r)
         {
+            int n = 1000;
             double omega = Math.Log(1 - sigma * sigma * nu * 0.5 - theta * nu) / nu;
             double dt = t / n;
 
@@ -261,10 +258,7 @@ namespace VarianceGamma
             marketData.Add(cpmd);
             marketData.Add(dc);
 
-            Dictionary<string, object> properties = new Dictionary<string, object>();
-            properties.Add("MaxIter", 5);
-
-            EstimationResult res = c.Estimate(marketData, null, properties: properties);
+            EstimationResult res = c.Estimate(marketData, null);
             return (Vector)res.Values;
         }
 
@@ -396,9 +390,7 @@ namespace VarianceGamma
 
         private static double GammaInv(double p, double a, double b)
         {
-            var gamma = (new Fairmat.Statistics.Gamma(a, b));
-            double invCdf = gamma.InvCdf(p);
-            return invCdf;
+            return (new Fairmat.Statistics.Gamma(a, b)).InvCdf(p);
         }
     }
 }
