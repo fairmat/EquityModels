@@ -34,7 +34,7 @@
     <Reference Include="DVPLUtils">
       <HintPath>..\..\DVPLReferences\DVPLUtils.dll</HintPath>
     </Reference>
-    <Reference Include="Fairmat.Optimization, Version=1.0.0.0, Culture=neutral, PublicKeyToken=0c08731b4bb5a116, processorArchitecture=MSIL">
+    <Reference Include="Fairmat.Optimization">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\DVPLReferences\Fairmat.Optimization.dll</HintPath>
     </Reference>
