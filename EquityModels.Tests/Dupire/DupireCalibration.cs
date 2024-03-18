@@ -115,6 +115,12 @@ namespace Dupire
             StochasticProcessExtendible s = new StochasticProcessExtendible(rov, process);
             rov.Processes.AddProcess(s);
 
+            AFunction dyfunc = new AFunction(rov);
+            dyfunc.VarName = "dy";
+            dyfunc.m_IndependentVariables = 1;
+            dyfunc.m_Value = (RightValue)dy;
+            rov.Symbols.Add(dyfunc);
+
             // Set the discounting.
             RiskFreeInfo rfi = rov.GetDiscountingModel() as RiskFreeInfo;
             rfi.ActualizationType = EActualizationType.RiskFree;
