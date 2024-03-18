@@ -397,8 +397,16 @@ namespace VarianceGamma
         private static double GammaInv(double p, double a, double b)
         {
             var gamma = (new Fairmat.Statistics.Gamma(a, b));
-            double invCdf = gamma.InvCdf(p);
-            return invCdf;
+            try
+            {
+                return gamma.InvCdf(p);
+            }
+            catch (Exception e)
+            {
+                return double.NaN;
+            }
+            
+               
         }
     }
 }
