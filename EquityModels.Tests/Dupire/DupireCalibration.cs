@@ -145,7 +145,6 @@ namespace Dupire
             }
 
             Assert.IsFalse(rov.HasErrors);
-            double discount = Math.Exp(-rate * maturity);
 
             ResultItem price = rov.m_ResultList[0] as ResultItem;
             double samplePrice = price.value;
