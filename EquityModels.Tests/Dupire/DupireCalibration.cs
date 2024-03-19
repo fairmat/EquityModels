@@ -65,6 +65,10 @@ namespace Dupire
             int i = 5; // Maturity.
             int j = 4; // Strike.
 
+            //simu and maturity to be used for checking the MC valuation 
+            double strike = HData.Strike[j];
+            double maturity = HData.Maturity[i];
+
             Engine.MultiThread = true;
 
             Document doc = new Document();
@@ -72,11 +76,9 @@ namespace Dupire
             doc.Part.Add(rov);
             doc.DefaultProject.NMethods.m_UseAntiteticPaths = true;
             //simulation settings
-            int n_sim = 10000;
-            int n_steps = 500;
-            //simu and maturity to be used for checking the MC valuation 
-            double strike = HData.Strike[j];
-            double maturity = HData.Maturity[i];
+            int n_sim = 5000;
+            int n_steps = (int)(365*maturity*2.0);
+            
 
             ModelParameter Pstrike = new ModelParameter(strike, string.Empty, "strike");
             rov.Symbols.Add(Pstrike);
@@ -137,14 +139,17 @@ namespace Dupire
             }
 
             Assert.IsFalse(rov.HasErrors);
+            double discount = Math.Exp(-rate * maturity);
+
             ResultItem price = rov.m_ResultList[0] as ResultItem;
             double samplePrice = price.value;
             double sampleDevSt = price.stdDev / Math.Sqrt((double)n_sim);
 
             Console.WriteLine("Surf = " + volfunc.Expr);
 
+
             // Compare one of the prices used for calibration to the MC Dupire price
-            double referencePrice = HData.CallPrice[i, j]; 
+            double referencePrice =  HData.CallPrice[i, j]; 
             Console.WriteLine("Theoretical Price  = " + referencePrice.ToString());
             Console.WriteLine("Monte Carlo Price  = " + samplePrice);
             Console.WriteLine("Standard Deviation = " + sampleDevSt.ToString());
