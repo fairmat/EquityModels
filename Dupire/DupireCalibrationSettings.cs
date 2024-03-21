@@ -48,7 +48,8 @@ namespace Dupire
         public int LocalVolatilityStrikes = 10;
         [RangeSettingDescription("Number of Local volatility Maturities", 2, 30)]
         public int LocalVolatilityMaturities = 10;
-
+        [SettingDescription("DummyCalibration")]
+        public bool DummyCalibration { get; set; } = false; 
     }
 }
 
