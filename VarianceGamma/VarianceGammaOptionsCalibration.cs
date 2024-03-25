@@ -114,11 +114,13 @@ namespace VarianceGamma
         /// <returns>The results of the optimization.</returns>
         public EstimationResult Estimate(List<object> data, IEstimationSettings settings = null, IController controller = null, Dictionary<string, object> properties = null)
         {
+            var names = new string[] { "S0", "theta", "sigma", "nu", "rate", "dividend" };
+            Vector x0 = (Vector)new double[] { -0.1, 0.2, 0.1 };
+
             EquitySpotMarketData espmd = data[0] as EquitySpotMarketData;
             CallPriceMarketData cpmd = data[1] as CallPriceMarketData;
             DiscountingCurveMarketData dcmd = data[2] as DiscountingCurveMarketData;
 
-            
             this.s0 = espmd.Price;
             this.r = espmd.RiskFreeRate;
             this.q = espmd.DividendYield;
@@ -127,7 +129,16 @@ namespace VarianceGamma
             this.m = cpmd.Maturity;
             this.cp = cpmd.CallPrice;
 
-            Vector x0 = (Vector)new double[] { -0.1, 0.2, 0.1 };
+            // implementing dummy calibration 
+            if (settings.DummyCalibration)
+            {
+                var dummyRes = new EstimationResult();
+                dummyRes.Names = names;
+                var dummySol = x0;
+                dummyRes.Values = new double[] { this.s0, dummySol[0], dummySol[1], dummySol[2], this.r, this.q };
+                return dummyRes;
+            }
+
             IOptimizationAlgorithm algorithm = new QADE();
             OptimizationSettings optimizationSettings = new DESettings();
 
@@ -155,7 +166,7 @@ namespace VarianceGamma
                 return new EstimationResult(solution.message);
 
             var er = new EstimationResult();
-            er.Names= new string[]{"S0","theta","sigma","nu","rate","dividend"};
+            er.Names = names; 
             er.Values = new double[] {this.s0,solution.x[0],solution.x[1],solution.x[2],this.r,this.q};
             return er;
         }

@@ -34,6 +34,8 @@ namespace Heston
         public double MinMaturity = 1.0 / 12;
         [SettingDescription("Max Maturity")]
         public double MaxMaturity = 6;
+        [SettingDescription("Dummy Calibration")]
+        public bool DummyCalibration { get; set; } = false; 
 
 
     }

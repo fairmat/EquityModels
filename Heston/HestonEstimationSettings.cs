@@ -36,5 +36,8 @@ namespace HestonEstimator
         /// </summary>
         [RangeSettingDescription("Maturity to fix risk free rate and dividend yield", 0.0, 10)]
         public double Maturity=1;
+        [SettingDescription("DummyCalibration")]
+        public bool DummyCalibration { get; set; } = false;
+
     }
 }

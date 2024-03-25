@@ -107,6 +107,15 @@ namespace HestonEstimator
 
             Setup(equityCalData, settings);
 
+            // implementing dummy calibration 
+            if (settings.DummyCalibration)
+            {
+                var x0 = new Vector(new double[] { 0.5, 0.5, 0.8, -0.5, 0.05 });
+                SolutionInfo dummySol = new SolutionInfo(0.0, x0, 0, 0, false, "dummy solution");
+                return BuildEstimate(spotPrice, interestDataSet, callDataSet, equityCalData, dummySol); 
+            }
+
+
             var calSettings = settings as HestonCalibrationSettings;
             // Creates the context.
             Document doc = new Document();
