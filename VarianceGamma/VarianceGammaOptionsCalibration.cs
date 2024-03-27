@@ -130,7 +130,7 @@ namespace VarianceGamma
             this.cp = cpmd.CallPrice;
 
             // implementing dummy calibration 
-            if (settings.DummyCalibration)
+            if (settings?.DummyCalibration ?? false)
             {
                 var dummyRes = new EstimationResult();
                 dummyRes.Names = names;
