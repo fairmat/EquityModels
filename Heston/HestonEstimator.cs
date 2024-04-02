@@ -165,10 +165,10 @@ namespace HestonEstimator
             o.epsilon = 10e-8;
 
             // let's fix the random seed to avoid flaky test
-            int RandomSeed = AttributesUtility.RetrieveAttributeOrDefaultValue(properties, "RandomSeed", -1);
-            if (RandomSeed != -1)
+            int randomSeed = AttributesUtility.RetrieveAttributeOrDefaultValue(properties, "RandomSeed", -1);
+            if (randomSeed != -1)
             {
-                o.RandomSeed = RandomSeed;
+                o.RandomSeed = randomSeed;
                 o.Repeatable = true;
             }
 
