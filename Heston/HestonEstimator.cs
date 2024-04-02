@@ -163,7 +163,15 @@ namespace HestonEstimator
             o.Parallel = Engine.MultiThread;
             o.h = 10e-8;
             o.epsilon = 10e-8;
-          
+
+            // let's fix the random seed to avoid flaky test
+            int RandomSeed = AttributesUtility.RetrieveAttributeOrDefaultValue(properties, "RandomSeed", -1);
+            if (RandomSeed != -1)
+            {
+                o.RandomSeed = RandomSeed;
+                o.Repeatable = true;
+            }
+
             SolutionInfo solution = null;
 
             double minObj=double.MaxValue;
