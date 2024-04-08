@@ -50,6 +50,9 @@
     <Reference Include="nunit.framework, Version=3.5.0.0, Culture=neutral, PublicKeyToken=2638cd05610744eb, processorArchitecture=MSIL">
       <HintPath>..\packages\NUnit.3.5.0\lib\net45\nunit.framework.dll</HintPath>
     </Reference>
+    <Reference Include="PFunction2D">
+      <HintPath>..\..\DVPLReferences\Plugins\PFunction2D.dll</HintPath>
+    </Reference>
     <Reference Include="QLNet, Version=1.11.4.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\QLNet.1.11.4\lib\netstandard2.0\QLNet.dll</HintPath>
     </Reference>
@@ -109,10 +112,6 @@
     <ProjectReference Include="..\Dupire\Dupire.csproj">
       <Project>{1458DF4A-CE48-4010-B123-7DDD00F4B194}</Project>
       <Name>Dupire</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\ModelingTools\PFunction2D\PFunction2D.csproj">
-      <Project>{61982E89-DAB3-4E01-BBE7-1BD5E3C71297}</Project>
-      <Name>PFunction2D</Name>
     </ProjectReference>
     <ProjectReference Include="..\Heston\Heston.csproj">
       <Project>{50B13FC9-5FEA-44D7-85E8-25B9B7B48BDE}</Project>

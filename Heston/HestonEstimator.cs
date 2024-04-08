@@ -279,8 +279,8 @@ namespace HestonEstimator
         {
             double support = Math.Min(6, Math.Max(2, (ecd.dyFunc as PFunction).Support[Range.End]));
          
-            var avgDy = new GBM.FunctionParamPiecewiseConstant(support, 0);//positive f.
-            (avgDy as GBM.FunctionParamBase).FitToMean(ecd.dyFunc, 0, support);
+            var avgDy = new FunctionParamPiecewiseConstant(support, 0);//positive f.
+            (avgDy as FunctionParamBase).FitToMean(ecd.dyFunc, 0, support);
             return avgDy;
         }
 
