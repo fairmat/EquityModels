@@ -1,105 +1,59 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProductVersion>10.0.0</ProductVersion>
-    <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{1458DF4A-CE48-4010-B123-7DDD00F4B194}</ProjectGuid>
+    <TargetFrameworks>netstandard2.0;net48</TargetFrameworks>
     <OutputType>Library</OutputType>
-    <RootNamespace>Dupire</RootNamespace>
-    <AssemblyName>Dupire</AssemblyName>
-    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
-    <Prefer32Bit>false</Prefer32Bit>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <AssemblyTitle>Dupire</AssemblyTitle>
+    <Description>Implements Dupire local volatility model.</Description>
+    <Company>Fairmat Srl</Company>
+    <Product>Dupire</Product>
+    <Copyright>Copyright © Fairmat Srl 2012-2015</Copyright>
+    <AssemblyVersion>1.0.6</AssemblyVersion>
+    <FileVersion>1.0.6</FileVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <DebugSymbols>True</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>False</Optimize>
     <OutputPath>bin\Debug</OutputPath>
     <DefineConstants>DEBUG;</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
     <Externalconsole>True</Externalconsole>
     <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>none</DebugType>
-    <Optimize>True</Optimize>
     <OutputPath>bin\Release</OutputPath>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
     <Externalconsole>True</Externalconsole>
     <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Fairmat.Optimization">
-      <HintPath>..\..\DVPLReferences\Fairmat.Optimization.dll</HintPath>
-      <Private>False</Private>
+    <Reference Include="CoreExtensions">
+      <HintPath>..\..\DVPLReferences\CoreExtensions.dll</HintPath>
     </Reference>
-    <Reference Include="Mono.Addins, Version=1.0.0.0, Culture=neutral, PublicKeyToken=0738eb9f132ed756, processorArchitecture=MSIL">
-      <HintPath>..\packages\Mono.Addins.1.4.1\lib\net472\Mono.Addins.dll</HintPath>
-    </Reference>
-    <Reference Include="System" />
     <Reference Include="DVPLDOM">
       <HintPath>..\..\DVPLReferences\DVPLDOM.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="DVPLInterfaces">
-      <HintPath>..\..\DVPLReferences\DVPLInterfaces.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="DVPLI">
-      <HintPath>..\..\DVPLReferences\DVPLI.dll</HintPath>
-      <Private>False</Private>
     </Reference>
     <Reference Include="DVPLDOME">
       <HintPath>..\..\DVPLReferences\DVPLDOME.dll</HintPath>
-      <Private>False</Private>
     </Reference>
-    <Reference Include="CoreExtensions">
-      <HintPath>..\..\DVPLReferences\CoreExtensions.dll</HintPath>
+    <Reference Include="DVPLI">
+      <HintPath>..\..\DVPLReferences\DVPLI.dll</HintPath>
+    </Reference>
+    <Reference Include="DVPLInterfaces">
+      <HintPath>..\..\DVPLReferences\DVPLInterfaces.dll</HintPath>
+    </Reference>
+    <Reference Include="Fairmat.Optimization">
+      <HintPath>..\..\DVPLReferences\Fairmat.Optimization.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="DVPLUtils">
       <HintPath>..\..\DVPLReferences\DVPLUtils.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="System.Buffers, Version=4.0.3.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Buffers.4.5.1\lib\net461\System.Buffers.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Collections.Immutable, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Collections.Immutable.6.0.0\lib\net461\System.Collections.Immutable.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Memory, Version=4.0.1.1, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Memory.4.5.4\lib\net461\System.Memory.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Numerics" />
-    <Reference Include="System.Numerics.Vectors, Version=4.1.4.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Numerics.Vectors.4.5.0\lib\net46\System.Numerics.Vectors.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Runtime.CompilerServices.Unsafe, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Runtime.CompilerServices.Unsafe.6.0.0\lib\net461\System.Runtime.CompilerServices.Unsafe.dll</HintPath>
-    </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="EupireEstimatorQuantlibCode.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Dupire.cs" />
-    <Compile Include="DupireSymbolChoice.cs" />
-    <Compile Include="DupireEstimator.cs" />
-    <Compile Include="DupireCalibrationSettings.cs" />
-  </ItemGroup>
-  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
-  <ItemGroup>
-    <ProjectReference Include="..\..\ModelingTools\PFunction2D\PFunction2D.csproj">
-      <Project>{61982E89-DAB3-4E01-BBE7-1BD5E3C71297}</Project>
-      <Name>PFunction2D</Name>
-      <Private>False</Private>
-    </ProjectReference>
+    <ProjectReference Include="..\..\ModelingTools\PFunction2D\PFunction2D.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="app.config" />
-    <None Include="packages.config" />
+    <PackageReference Include="Mono.Addins">
+      <Version>1.4.1</Version>
+    </PackageReference>
   </ItemGroup>
 </Project>
