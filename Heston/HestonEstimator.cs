@@ -24,6 +24,7 @@ using Fairmat.MarketData;
 using Fairmat.Optimization;
 using DVPLI.MarketDataTypes;
 using Heston;
+using Fairmat.Math;
 
 namespace HestonEstimator
 {
