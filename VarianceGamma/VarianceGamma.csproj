@@ -1,107 +1,45 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <TargetFramework>netstandard2.0</TargetFramework>
     <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
-    <ProductVersion>8.0.30703</ProductVersion>
-    <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{1CF5F32A-530F-4CA5-BD23-25431EF3B9F5}</ProjectGuid>
     <OutputType>Library</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>VarianceGamma</RootNamespace>
-    <AssemblyName>VarianceGamma</AssemblyName>
-    <TargetFrameworkProfile>
-    </TargetFrameworkProfile>
-    <FileAlignment>512</FileAlignment>
-    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
-    <Prefer32Bit>false</Prefer32Bit>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <PropertyGroup>
     <StartupObject />
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'">
-    <DebugSymbols>true</DebugSymbols>
-    <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <DebugType>full</DebugType>
-    <PlatformTarget>AnyCPU</PlatformTarget>
-    <ErrorReport>prompt</ErrorReport>
-    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|AnyCPU'">
-    <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <Optimize>true</Optimize>
-    <DebugType>pdbonly</DebugType>
-    <PlatformTarget>AnyCPU</PlatformTarget>
-    <ErrorReport>prompt</ErrorReport>
-    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <AssemblyTitle>Variance Gamma</AssemblyTitle>
+    <Description>Variance Gamma equity model calibration and simulation.</Description>
+    <Company>Fairmat SRL / Safe Khampol</Company>
+    <Product>Variance Gamma</Product>
+    <Copyright>Copyright © Fairmat SRL 2013-2015</Copyright>
+    <AssemblyVersion>1.0.4</AssemblyVersion>
+    <FileVersion>1.0.4</FileVersion>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="CoreExtensions, Version=1.0.0.0, Culture=neutral, PublicKeyToken=0c08731b4bb5a116, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\DVPLReferences\CoreExtensions.dll</HintPath>
-      <Private>False</Private>
+    <Reference Include="CoreExtensions">
+      <HintPath>..\..\plugins\DVPLReferences\CoreExtensions.dll</HintPath>
     </Reference>
-    <Reference Include="DVPLDOM, Version=1.0.0.0, Culture=neutral, PublicKeyToken=0c08731b4bb5a116, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\DVPLReferences\DVPLDOM.dll</HintPath>
-      <Private>False</Private>
+    <Reference Include="DVPLDOM">
+      <HintPath>..\..\plugins\DVPLReferences\DVPLDOM.dll</HintPath>
     </Reference>
-    <Reference Include="DVPLDOME, Version=1.0.0.0, Culture=neutral, PublicKeyToken=0c08731b4bb5a116, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\DVPLReferences\DVPLDOME.dll</HintPath>
-      <Private>False</Private>
+    <Reference Include="DVPLDOME">
+      <HintPath>..\..\plugins\DVPLReferences\DVPLDOME.dll</HintPath>
     </Reference>
-    <Reference Include="DVPLI, Version=1.0.0.0, Culture=neutral, PublicKeyToken=0c08731b4bb5a116, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\DVPLReferences\DVPLI.dll</HintPath>
-      <Private>False</Private>
+    <Reference Include="DVPLI">
+      <HintPath>..\..\plugins\DVPLReferences\DVPLI.dll</HintPath>
     </Reference>
     <Reference Include="DVPLInterfaces">
-      <HintPath>..\..\DVPLReferences\DVPLInterfaces.dll</HintPath>
-      <Private>False</Private>
+      <HintPath>..\..\plugins\DVPLReferences\DVPLInterfaces.dll</HintPath>
     </Reference>
     <Reference Include="Fairmat.Optimization">
       <HintPath>..\..\DVPLReferences\Fairmat.Optimization.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="Mono.Addins, Version=1.0.0.0, Culture=neutral, PublicKeyToken=0738eb9f132ed756, processorArchitecture=MSIL">
-      <HintPath>..\packages\Mono.Addins.1.4.1\lib\net472\Mono.Addins.dll</HintPath>
-    </Reference>
-    <Reference Include="System" />
-    <Reference Include="System.Collections.Immutable, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Collections.Immutable.6.0.0\lib\net461\System.Collections.Immutable.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Memory, Version=4.0.1.1, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Memory.4.5.4\lib\net461\System.Memory.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Numerics" />
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="VarianceGamma.cs" />
-    <Compile Include="VarianceGammaChoice.cs" />
-    <Compile Include="VarianceGammaOptionsCalibration.cs" />
-    <Compile Include="VarianceGammaOptimizationProblem.cs" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Mono.Addins">
       <Version>1.4.1</Version>
     </PackageReference>
   </ItemGroup>
-  <ItemGroup>
-    <None Include="app.config" />
-    <None Include="Documentation\VarianceGamma.tex" />
-  </ItemGroup>
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
-       Other similar extension points exist, see Microsoft.Common.targets.
-  <Target Name="BeforeBuild">
-  </Target>
-  <Target Name="AfterBuild">
-  </Target>
-  -->
 </Project>
