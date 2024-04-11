@@ -61,7 +61,11 @@
     <ProjectReference Include="..\Heston\Heston.csproj" />
     <ProjectReference Include="..\VarianceGamma\VarianceGamma.csproj" />
   </ItemGroup>
+  <ItemGroup Condition="'$(TargetFramework)'=='net8'">
+	<PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.9.0" />
+  </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="Accord.Math" Version="3.8.0" />
     <PackageReference Include="Mono.Addins">
       <Version>1.4.1</Version>
     </PackageReference>
