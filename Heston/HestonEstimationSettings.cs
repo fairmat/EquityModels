@@ -25,7 +25,7 @@ namespace HestonEstimator
     /// Maintains some settings to be used by the Heston calibrator.
     /// These settings will be available from the plugin settings tab in Fairmat.
     /// </summary>
-    [SettingsContainer("Calibration Settings for Heston",SettingType= SettingType.Calibration)]
+    [SettingsContainer("Calibration Settings",SettingType= SettingType.Calibration)]
     [Mono.Addins.Extension("/Fairmat/UserSettings")]
     [Serializable]
     public class HestonEstimationSettings : IEstimationSettings

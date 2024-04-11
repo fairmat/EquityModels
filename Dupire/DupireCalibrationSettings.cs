@@ -36,7 +36,7 @@ namespace Dupire
     /// <summary>
     /// Calass containing calibration options for the Dupire process 
     /// </summary>
-    [SettingsContainer("Calibration Settings for Dupire")]
+    [SettingsContainer("Calibration Settings")]
     [Mono.Addins.Extension("/Fairmat/UserSettings")]
     [Serializable]
     public class DupireCalibrationSettings : IEstimationSettings
