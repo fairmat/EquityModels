@@ -18,19 +18,19 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="CoreExtensions">
-      <HintPath>..\..\plugins\DVPLReferences\CoreExtensions.dll</HintPath>
+      <HintPath>..\..\DVPLReferences\CoreExtensions.dll</HintPath>
     </Reference>
     <Reference Include="DVPLDOM">
-      <HintPath>..\..\plugins\DVPLReferences\DVPLDOM.dll</HintPath>
+      <HintPath>..\..\DVPLReferences\DVPLDOM.dll</HintPath>
     </Reference>
     <Reference Include="DVPLDOME">
-      <HintPath>..\..\plugins\DVPLReferences\DVPLDOME.dll</HintPath>
+      <HintPath>..\..\DVPLReferences\DVPLDOME.dll</HintPath>
     </Reference>
     <Reference Include="DVPLI">
-      <HintPath>..\..\plugins\DVPLReferences\DVPLI.dll</HintPath>
+      <HintPath>..\..\DVPLReferences\DVPLI.dll</HintPath>
     </Reference>
     <Reference Include="DVPLInterfaces">
-      <HintPath>..\..\plugins\DVPLReferences\DVPLInterfaces.dll</HintPath>
+      <HintPath>..\..\DVPLReferences\DVPLInterfaces.dll</HintPath>
     </Reference>
     <Reference Include="Fairmat.Optimization">
       <HintPath>..\..\DVPLReferences\Fairmat.Optimization.dll</HintPath>
