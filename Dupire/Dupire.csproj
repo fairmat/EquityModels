@@ -40,9 +40,6 @@
     <Reference Include="Mono.Addins, Version=1.0.0.0, Culture=neutral, PublicKeyToken=0738eb9f132ed756, processorArchitecture=MSIL">
       <HintPath>..\packages\Mono.Addins.1.4.1\lib\net472\Mono.Addins.dll</HintPath>
     </Reference>
-    <Reference Include="PFunction2D">
-      <HintPath>..\..\DVPLReferences\Plugins\PFunction2D.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="DVPLDOM">
       <HintPath>..\..\DVPLReferences\DVPLDOM.dll</HintPath>
@@ -94,6 +91,13 @@
     <Compile Include="DupireCalibrationSettings.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+  <ItemGroup>
+    <ProjectReference Include="..\..\ModelingTools\PFunction2D\PFunction2D.csproj">
+      <Project>{61982E89-DAB3-4E01-BBE7-1BD5E3C71297}</Project>
+      <Name>PFunction2D</Name>
+      <Private>False</Private>
+    </ProjectReference>
+  </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
     <None Include="packages.config" />
