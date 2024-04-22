@@ -17,8 +17,11 @@
  */
 
 using System;
+using System.Reflection;
+using DVPLDOM;
 using DVPLI;
 using Fairmat.Math;
+using Heston;
 
 namespace HestonEstimator
 {
@@ -121,6 +124,7 @@ namespace HestonEstimator
             hestonPutPrice = new Matrix(problem.callMarketPrice.R, problem.callMarketPrice.C);
         }
 
+
         /// <summary>
         /// Initializes a new instance of the <see cref="HestonEstimator.HestonCall"/> class.
         /// </summary>
@@ -145,7 +149,25 @@ namespace HestonEstimator
                 this.dividend = x[5];
             this.s0 = s0;
         }
+
         
+
+        internal HestonCall(HestonProcess process, double strike, double timeToMaturity)
+        {
+            this.kappa = process.k.fV();
+            this.theta = process.theta.fV();
+            this.sigma = process.sigma.fV();
+            this.v0 = process.V0.fV();
+            this.dividend = process.q.fV();
+            this.s0 = process.S0.fV();
+
+            // this is to fix
+            this.rho = 0.0;
+            this.K = strike;
+            this.T = timeToMaturity; 
+
+        }
+
         /// <summary>
         /// Calculates the Heston model call price by using local variables.
         /// </summary>

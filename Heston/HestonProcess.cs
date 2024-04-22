@@ -19,7 +19,9 @@
 using System;
 using System.Collections.Generic;
 using DVPLDOM;
+using HestonEstimator;
 using DVPLI;
+using System.ComponentModel;
 
 namespace Heston
 {
@@ -29,7 +31,7 @@ namespace Heston
     [Serializable]
     public unsafe class HestonProcess : IExtensibleProcess, IMarkovSimulator, IParsable,
                                         IGreeksDerivativesInfo, IEstimationResultPopulable,
-                                        IOpenCLCode, IExportableContainer
+                                        IOpenCLCode, IExportableContainer, IPlainVanillaPricing
     {
         #region Serialized Parameters
 
@@ -385,6 +387,104 @@ namespace Heston
             }
 
             return errors;
+        }
+
+        #endregion
+
+        #region IPlainVanillaPricing Members
+
+        /// <summary>
+        /// Calculate the price of a european call option.
+        /// </summary>
+        /// <param name="component">
+        /// The component of the process
+        /// </param>
+        /// <param name="strike">
+        /// The strike of the call option
+        /// <param name="timeToMaturity">
+        /// The time to maturity of the option: T-t
+        /// <param name="additionalInformation">"
+        /// Additional information regarding the call option
+        /// </param>
+        public double Call(int component, double strike, double timeToMaturity, Dictionary<string, object> additionalInformation)
+        {
+            // we are assuming that the model is already calibrated 
+            var hc = new HestonCall(this, strike: strike, timeToMaturity: timeToMaturity);
+            return hc.HestonCallPrice();
+        }
+
+        /// <summary>
+        /// Calculate the price of a european put option.
+        /// </summary>
+        /// <param name="component">
+        /// The component of the process
+        /// </param>
+        /// <param name="strike">
+        /// The strike of the put option
+        /// <param name="timeToMaturity">
+        /// The time to maturity of the option: T-t
+        /// <param name="additionalInformation">"
+        /// Additional information regarding the put option
+        /// </param>
+        public double Put(int component, double strike, double timeToMaturity, Dictionary<string, object> additionalInformation)
+        {
+            // we are assuming that the model is already calibrated 
+            var hc = new HestonCall(this, strike: strike, timeToMaturity: timeToMaturity);           
+            return hc.HestonPutPrice();
+        }
+
+        /// <summary>
+        /// Calculate the price of a european digital call option.
+        /// </summary>
+        /// <param name="component">
+        /// The component of the process
+        /// </param>
+        /// <param name="strike">
+        /// The strike of the digital call option
+        /// <param name="timeToMaturity">
+        /// The time to maturity of the option: T-t
+        /// <param name="additionalInformation">"
+        /// Additional information regarding the digital call option
+        /// </param>
+        public double DigitalCall(int component, double strike, double timeToMaturity, Dictionary<string, object> additionalInformation)
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// Calculate the price of a european digital put option.
+        /// </summary>
+        /// <param name="component">
+        /// The component of the process
+        /// </param>
+        /// <param name="strike">
+        /// The strike of the digital put option
+        /// <param name="timeToMaturity">
+        /// The time to maturity of the option: T-t
+        /// <param name="additionalInformation">"
+        /// Additional information regarding the digital put option
+        /// </param>
+        public double DigitalPut(int component, double strike, double timeToMaturity, Dictionary<string, object> additionalInformation)
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// Calculate the price of a swap option
+        /// </summary>
+        /// <param name="component">
+        /// The component of the process
+        /// </param>
+        /// <param name="strike">
+        /// The strike of the swap option
+        /// <param name="swapMaturity">
+        /// The time to maturity of the option: T-t
+        /// <param name="additionalInformation">"
+        /// Additional information regarding the swap option
+        /// </param>
+        public double Swap(int component, double strike, double swapMaturity, Dictionary<string, object> additionalInformation = null)
+        {
+            throw new NotImplementedException();
         }
 
         #endregion
