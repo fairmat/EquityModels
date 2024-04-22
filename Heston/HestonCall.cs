@@ -195,9 +195,6 @@ namespace HestonEstimator
             
             double integral = part1 + a * IntegrandFunc(a / 2.0);
 
-            // here the call formula is the following 
-            //  C = e^(-rT) * (1/2 * (F-K) + 1/pi * integral)
-
             double call = Math.Exp(-this.rate * this.T) * (firstTerm + integral / Math.PI);
            
             return call;
