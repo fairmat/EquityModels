@@ -21,7 +21,6 @@ using System.Collections.Generic;
 using DVPLDOM;
 using HestonEstimator;
 using DVPLI;
-using System.ComponentModel;
 
 namespace Heston
 {
@@ -448,7 +447,8 @@ namespace Heston
         /// </param>
         public double DigitalCall(int component, double strike, double timeToMaturity, Dictionary<string, object> additionalInformation)
         {
-            throw new NotImplementedException();
+            var hd = new HestonDigital(this, strike: strike, timeToMaturity: timeToMaturity);
+            return hd.HestonDigitalCallPrice();
         }
 
         /// <summary>
@@ -466,7 +466,8 @@ namespace Heston
         /// </param>
         public double DigitalPut(int component, double strike, double timeToMaturity, Dictionary<string, object> additionalInformation)
         {
-            throw new NotImplementedException();
+            var hd = new HestonDigital(this, strike: strike, timeToMaturity: timeToMaturity);
+            return hd.HestonDigitalPutPrice();
         }
 
         /// <summary>

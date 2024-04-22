@@ -184,8 +184,6 @@ namespace HestonEstimator
             double b = 1000.0;
 
             
-          
-
            
             // The second term of this expressions approximates the integral in the interval [0,a].
 
@@ -195,10 +193,12 @@ namespace HestonEstimator
             //integrate.MaxRecursionLevel = 4;// 4;
             //double part1 = integrate.AdaptLobatto(a, b);
             double part1 = PerformIntegral(a, b, IntegrandFunc);
-           
             
-
             double integral = part1 + a * IntegrandFunc(a / 2.0);
+
+            // here the call formula is the following 
+            //  C = e^(-rT) * (1/2 * (F-K) + 1/pi * integral)
+
             double call = Math.Exp(-this.rate * this.T) * (firstTerm + integral / Math.PI);
            
             return call;
@@ -257,7 +257,7 @@ namespace HestonEstimator
         /// <param name="a">The left bound.</param>
         /// <param name="b">The right bound.</param>
         /// <returns>The integral.</returns>
-        double PerformIntegral(double a, double b,TAEDelegateFunction1D f)
+        public static double PerformIntegral(double a, double b,TAEDelegateFunction1D f)
         {
             double sum = 0;
             double dt = a/10;
@@ -320,12 +320,27 @@ namespace HestonEstimator
         /// </returns>
         public double IntegrandFunc(double u)
         {
-            Complex I = Complex.I;
+
             Complex Iu = Complex.I * u;
             Complex A = Complex.Exp(-Iu * Math.Log(this.K));
-            Complex complexVal1 = A * Phi(u - I, this.kappa, this.theta, this.sigma, this.rho, this.s0, this.v0, this.rate - this.dividend, this.T) / Iu;
-            Complex complexVal2 = A * Phi(u, this.kappa, this.theta, this.sigma, this.rho, this.s0, this.v0, this.rate - this.dividend, this.T) / Iu;
+            Complex complexVal1 = A * f1(u) / Iu;
+            Complex complexVal2 = A * f2(u) / Iu;
             return complexVal1.Re - this.K * complexVal2.Re;
+
+            // call = E[St * 1(St>k)] - K*E[1(St>k)]
+            // digital = E[1(St>k)] = P(St>k)
+        }
+
+
+        public Complex f2(double u)
+        {
+            return Phi(u, this.kappa, this.theta, this.sigma, this.rho, this.s0, this.v0, this.rate - this.dividend, this.T);
+        }
+
+        public Complex f1(double u)
+        {
+            Complex I = Complex.I;
+            return Phi(u - I, this.kappa, this.theta, this.sigma, this.rho, this.s0, this.v0, this.rate - this.dividend, this.T);
         }
 
         public double PutIntegrandFunc(double u)
