@@ -17,6 +17,7 @@
  */
 
 using System;
+using DVPLDOM;
 using DVPLI;
 using Fairmat.Math;
 using Heston;
@@ -158,9 +159,9 @@ namespace HestonEstimator
             this.v0 = process.V0.fV();
             this.dividend = process.q.fV();
             this.s0 = process.S0.fV();
+            this.rho = process.rho.fV();
 
-            // this is to fix
-            this.rho = 0.0;
+            // call specific parameters 
             this.K = strike;
             this.T = timeToMaturity; 
 

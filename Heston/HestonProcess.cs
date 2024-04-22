@@ -22,6 +22,7 @@ using DVPLDOM;
 using HestonEstimator;
 using DVPLI;
 
+
 namespace Heston
 {
     /// <summary>
@@ -70,6 +71,11 @@ namespace Heston
         /// </summary>
         public IModelParameter V0;
 
+        /// <summary>
+        /// Correlation parameter
+        /// </summary>
+        public IModelParameter rho;
+
         #endregion Serialized Parameters
 
         /// <summary>
@@ -109,6 +115,7 @@ namespace Heston
             this.sigma = new ModelParameter(0.0, "sigma");
             this.S0 = new ModelParameter(0.0, "S0");
             this.V0 = new ModelParameter(0.0, "V0");
+            this.rho = new ModelParameter(0.0, "rho");
         }
 
         /// <summary>
@@ -130,6 +137,7 @@ namespace Heston
             this.sigma = new ModelParameter(0.2, "sigma");
             this.S0 = new ModelParameter(100, "S0");
             this.V0 = new ModelParameter(0.3, "V0");
+            this.rho = new ModelParameter(0.0, "rho");
         }
 
         /// <summary>
@@ -238,6 +246,7 @@ namespace Heston
             parameters.Add(this.k);
             parameters.Add(this.theta);
             parameters.Add(this.sigma);
+            parameters.Add(this.rho);
             return parameters;
         }
 
@@ -512,11 +521,14 @@ namespace Heston
             this.r = new ModelParameter(PopulateHelper.GetValue("r", estimate.Names, estimate.Values, out found), this.r.Description);
             this.q = new ModelParameter(PopulateHelper.GetValue("q", estimate.Names, estimate.Values, out found), this.q.Description);
 
+            var rhoEstimate = PopulateHelper.GetValue("rho", estimate.Names, estimate.Values, out found);
+            this.rho = new ModelParameter(rhoEstimate, this.rho.Description);
+
             int index = stocProcess.NoiseIndex;
             ProjectProcess prj = stocProcess.Context as ProjectProcess;
 
             // Updates the correlation.
-            prj.Processes.r.Set(index, index + 1, (RightValue)PopulateHelper.GetValue("rho", estimate.Names, estimate.Values, out found));
+            prj.Processes.r.Set(index, index + 1, (RightValue)rhoEstimate);
         }
     }
 }
