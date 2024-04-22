@@ -21,7 +21,7 @@ using System.Text;
 using DVPLI;
 namespace Heston
 {
-    [SettingsContainer("Heston Calibration Preferences", SettingType = SettingType.Calibration)]
+    [SettingsContainer("Calibration Preferences", SettingType = SettingType.Calibration)]
     [Mono.Addins.Extension("/Fairmat/UserSettings")]
     [Serializable]
     public class HestonCalibrationSettings : IEstimationSettings
