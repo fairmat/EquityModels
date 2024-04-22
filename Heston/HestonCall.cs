@@ -17,8 +17,6 @@
  */
 
 using System;
-using System.Reflection;
-using DVPLDOM;
 using DVPLI;
 using Fairmat.Math;
 using Heston;
