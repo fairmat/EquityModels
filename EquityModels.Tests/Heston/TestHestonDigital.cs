@@ -49,6 +49,34 @@ namespace Heston
             Assert.Less(Math.Abs(fairmatPrice - benchmarkPrice), tol);
         }
 
+        [Test]
+        public void TestCallPut()
+        {
+            double k = 90;
+            double tau = 2.0;
+
+            double rate = 0.00;
+            double dy = 0.00;
+            double kappa = 2.5;
+            double theta = 0.4;
+            double sigma = 0.2;
+            double s0 = 100.0;
+            double v0 = 0.3;
+            double rho = -0.8;
+
+            // Calculates the theoretical value of the call.
+            Vector param = new Vector(5);
+            param[0] = kappa;
+            param[1] = theta;
+            param[2] = sigma;
+            param[3] = rho;
+            param[4] = v0;
+            var hestonDigital = new HestonDigital();
+            double callPrice = hestonDigital.HestonDigitalCallPrice(param, s0, tau, k, rate, dy);
+            double putPrice = hestonDigital.HestonDigitalPutPrice();
+            Assert.AreEqual(callPrice + putPrice , 1.0, 1e-6);
+        }
+
 
         [TestCase(1,100.0)]
         [TestCase(5, 100.0)]
