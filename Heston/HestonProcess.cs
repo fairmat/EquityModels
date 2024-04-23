@@ -419,8 +419,17 @@ namespace Heston
 
         public double Call(int component, double strike, double timeToMaturity, Dictionary<string, object> additionalInformation)
         {
-            var hC = new HestonCall(this, strike: strike, timeToMaturity: timeToMaturity);
-            return hC.HestonCallPrice();
+            return HestonCall.HestonCallPrice(
+                kappa: this.k.fV(),
+                theta: this.theta.fV(),
+                sigma: this.sigma.fV(),
+                rho: this.rho.fV(),
+                v0: this.V0.fV(),
+                s0: this.S0.fV(),
+                T: timeToMaturity,
+                K: strike,
+                r: this.r.fV(),
+                q: this.q.fV());
         }
     
 
@@ -440,9 +449,18 @@ namespace Heston
         /// <returns>The put price</returns>
         public double Put(int component, double strike, double timeToMaturity, Dictionary<string, object> additionalInformation)
         {
-            var hC = new HestonCall(this, strike: strike, timeToMaturity: timeToMaturity);
-            return hC.HestonPutPrice();
-            
+            return  HestonCall.HestonPutPrice(
+                kappa: this.k.fV(),
+                theta: this.theta.fV(),
+                sigma: this.sigma.fV(),
+                rho: this.rho.fV(),
+                v0: this.V0.fV(),
+                s0: this.S0.fV(),
+                T: timeToMaturity,
+                K: strike,
+                r: this.r.fV(),
+                q: this.q.fV());
+
         }
 
         /// <summary>
@@ -462,8 +480,18 @@ namespace Heston
 
         public double DigitalCall(int component, double strike, double timeToMaturity, Dictionary<string, object> additionalInformation)
         {
-            var hD = new HestonDigital(this, strike: strike, timeToMaturity: timeToMaturity);
-            return hD.HestonDigitalCallPrice();
+            return HestonDigital.HestonDigitalCallPrice(
+                kappa: this.k.fV(),
+                theta: this.theta.fV(),
+                sigma: this.sigma.fV(),
+                rho: this.rho.fV(),
+                v0: this.V0.fV(),
+                s0: this.S0.fV(),
+                T: timeToMaturity,
+                K: strike,
+                r: this.r.fV(),
+                q: this.q.fV()
+                );
         }
 
         /// <summary>
@@ -482,8 +510,17 @@ namespace Heston
         /// <returns>The digital put price</returns>
         public double DigitalPut(int component, double strike, double timeToMaturity, Dictionary<string, object> additionalInformation)
         {
-            var hD = new HestonDigital(this, strike: strike, timeToMaturity: timeToMaturity);
-            return hD.HestonDigitalPutPrice();
+            return HestonDigital.HestonDigitalPutPrice(kappa: this.k.fV(),
+                theta: this.theta.fV(),
+                sigma: this.sigma.fV(),
+                rho: this.rho.fV(),
+                v0: this.V0.fV(),
+                s0: this.S0.fV(),
+                T: timeToMaturity,
+                K: strike,
+                r: this.r.fV(),
+                q: this.q.fV()
+                );
         }
 
         /// <summary>

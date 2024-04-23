@@ -38,8 +38,7 @@ namespace Heston
             param[2] = sigma;
             param[3] = rho;
             param[4] = v0;
-            var hestonDigital = new HestonDigital();
-            double fairmatPrice = hestonDigital.HestonDigitalCallPrice(param, s0, tau, k, rate, dy);
+            double fairmatPrice = HestonDigital.HestonDigitalCallPrice(param, s0, tau, k, rate, dy);
             double tol = 1e-3;
             double benchmarkPrice = 0.331117450319339;
 
@@ -71,9 +70,8 @@ namespace Heston
             param[2] = sigma;
             param[3] = rho;
             param[4] = v0;
-            var hestonDigital = new HestonDigital();
-            double callPrice = hestonDigital.HestonDigitalCallPrice(param, s0, tau, k, rate, dy);
-            double putPrice = hestonDigital.HestonDigitalPutPrice();
+            double callPrice = HestonDigital.HestonDigitalCallPrice(param, s0, tau, k, rate, dy);
+            double putPrice = HestonDigital.HestonDigitalPutPrice(param, s0, tau, k, rate, dy);
             Assert.AreEqual(callPrice + putPrice , 1.0, 1e-6);
         }
 
@@ -82,6 +80,7 @@ namespace Heston
         [TestCase(5, 100.0)]
         [TestCase(1, 80.0)]
         [TestCase(.5, 80.0)]
+
         public void TestTheoreticalPriceVsMC(double tau, double k)
         {
 
@@ -101,8 +100,7 @@ namespace Heston
             param[2] = sigma;
             param[3] = rho;
             param[4] = v0;
-            var hestonDigital = new HestonDigital();
-            double fairmatPrice = hestonDigital.HestonDigitalCallPrice(param, s0, tau, k, rate, dy);
+            double fairmatPrice = HestonDigital.HestonDigitalCallPrice(param, s0, tau, k, rate, dy);
 
 
             // set up MC simu
