@@ -472,6 +472,16 @@ namespace HestonEstimator
         /// </returns>
         public static double IntegrandFunc(double u, double kappa, double theta, double rho, double v0, double sigma, double s0, double T, double K, double r, double q)
         {
+            var int1 = IntegrandFunc1(u:u, kappa:kappa, theta:theta, rho: rho, v0: v0, sigma:sigma, s0:s0, T:T, K:K, r:r, q:q);
+            var int2 = IntegrandFunc2(u:u, kappa:kappa, theta:theta, rho: rho, v0: v0, sigma:sigma, s0:s0, T:T, K:K, r:r, q:q);
+            return int1 - int2;
+        }
+
+
+
+
+        public static double IntegrandFunc1(double u, double kappa, double theta, double rho, double v0, double sigma, double s0, double T, double K, double r, double q)
+        {
 
             Complex Iu = Complex.I * u;
             Complex I = Complex.I;
@@ -489,6 +499,20 @@ namespace HestonEstimator
                T: T
                );
 
+
+            Complex complexVal1 = A * f1 / Iu;
+            return complexVal1.Re;
+
+        }
+
+
+        public static double IntegrandFunc2(double u, double kappa, double theta, double rho, double v0, double sigma, double s0, double T, double K, double r, double q)
+        {
+
+            Complex Iu = Complex.I * u;
+            Complex A = Complex.Exp(-Iu * Math.Log(K));
+
+           
             var f2 = Phi(
                 u: u,
                kappa: kappa,
@@ -502,11 +526,11 @@ namespace HestonEstimator
                );
 
 
-            Complex complexVal1 = A * f1 / Iu;
             Complex complexVal2 = A * f2 / Iu;
-            return complexVal1.Re - K * complexVal2.Re;
+            return  K * complexVal2.Re;
 
         }
+
 
         public double PutIntegrandFunc(double u)
         {
