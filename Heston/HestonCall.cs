@@ -167,6 +167,17 @@ namespace HestonEstimator
 
         }
 
+        internal HestonCall(HestonProcess process)
+        {
+            this.kappa = process.k.fV();
+            this.theta = process.theta.fV();
+            this.sigma = process.sigma.fV();
+            this.v0 = process.V0.fV();
+            this.dividend = process.q.fV();
+            this.s0 = process.S0.fV();
+            this.rho = process.rho.fV();
+        }
+
         /// <summary>
         /// Calculates the Heston model call price by using local variables.
         /// </summary>

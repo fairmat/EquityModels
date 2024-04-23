@@ -8,13 +8,14 @@ namespace Heston
     public class HestonDigital: HestonCall
     {
 
-
         // define the constructors from the base class 
         public HestonDigital() { }
 
         public HestonDigital(HestonCallOptimizationProblem problem) : base(problem) { }
 
-        public HestonDigital(HestonProcess process, double strike, double timeToMaturity) : base(process, strike, timeToMaturity) { } 
+        public HestonDigital(HestonProcess process, double strike, double timeToMaturity) : base(process, strike, timeToMaturity) { }
+
+        public HestonDigital(HestonProcess process) : base(process) { }
 
         public double HestonDigitalCallPrice(double strike, double timeToMaturity)
         {
@@ -33,7 +34,6 @@ namespace Heston
             this.s0 = s0;
             this.T = T;
             this.K = K;
-
             this.rate = r;
             this.dividend = q;
 
@@ -76,7 +76,7 @@ namespace Heston
             Complex Iu = Complex.I * u;
             Complex A = Complex.Exp(-Iu * Math.Log(this.K));
 
-            // f2 comes for the call framework 
+            // f2 comes from the call framework 
             var complexValue = A * f2(u) / Iu;
             // return the real part of the integrand 
             return complexValue.Re;
