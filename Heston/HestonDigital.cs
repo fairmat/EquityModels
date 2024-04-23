@@ -46,6 +46,13 @@ namespace Heston
             return DiscountFactor() * UndiscountedHestonDigitalCallPrice();
         }
 
+        public double HestonDigitalPutPrice(double strike, double timeToMaturity)
+        {
+            this.T = timeToMaturity;
+            this.K = strike;
+            return HestonDigitalPutPrice();
+        }
+
         public double HestonDigitalPutPrice()
         {
             // Price of the digital put is discountFactor * P(St<K) = discountFactor * (1 - P(St>K))

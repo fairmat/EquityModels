@@ -78,6 +78,11 @@ namespace Heston
 
         #endregion Serialized Parameters
 
+        // parameters to be used for pricing 
+        protected HestonCall hC;
+        protected HestonDigital hD;
+
+
         /// <summary>
         /// Gets the factors for Delta Greek derivative.
         /// </summary>
@@ -417,8 +422,15 @@ namespace Heston
         public double Call(int component, double strike, double timeToMaturity, Dictionary<string, object> additionalInformation)
         {
             // we are assuming that the model is already calibrated 
-            var hc = new HestonCall(this, strike: strike, timeToMaturity: timeToMaturity);
-            return hc.HestonCallPrice();
+            if (hC == null)
+            {
+                hC = new HestonCall(this, strike: strike, timeToMaturity: timeToMaturity);
+                return hC.HestonCallPrice();
+            }
+            else
+            {
+                return hC.HestonCallPrice(strike: strike, timeToMaturity: timeToMaturity);
+            }
         }
 
         /// <summary>
@@ -437,8 +449,15 @@ namespace Heston
         public double Put(int component, double strike, double timeToMaturity, Dictionary<string, object> additionalInformation)
         {
             // we are assuming that the model is already calibrated 
-            var hc = new HestonCall(this, strike: strike, timeToMaturity: timeToMaturity);           
-            return hc.HestonPutPrice();
+            if (hC == null)
+            {
+                hC = new HestonCall(this, strike: strike, timeToMaturity: timeToMaturity);
+                return hC.HestonPutPrice();
+            }
+            else
+            {
+                return hC.HestonPutPrice(strike: strike, timeToMaturity: timeToMaturity);
+            }
         }
 
         /// <summary>
@@ -456,8 +475,15 @@ namespace Heston
         /// </param>
         public double DigitalCall(int component, double strike, double timeToMaturity, Dictionary<string, object> additionalInformation)
         {
-            var hd = new HestonDigital(this, strike: strike, timeToMaturity: timeToMaturity);
-            return hd.HestonDigitalCallPrice();
+            if (hD == null)
+            {
+                hD = new HestonDigital(this, strike: strike, timeToMaturity: timeToMaturity);
+                return hD.HestonDigitalCallPrice();
+            }
+            else
+            {
+                return hD.HestonDigitalCallPrice(strike: strike, timeToMaturity: timeToMaturity);
+            }
         }
 
         /// <summary>
@@ -475,8 +501,15 @@ namespace Heston
         /// </param>
         public double DigitalPut(int component, double strike, double timeToMaturity, Dictionary<string, object> additionalInformation)
         {
-            var hd = new HestonDigital(this, strike: strike, timeToMaturity: timeToMaturity);
-            return hd.HestonDigitalPutPrice();
+            if (hD == null)
+            {
+                hD = new HestonDigital(this, strike: strike, timeToMaturity: timeToMaturity);
+                return hD.HestonDigitalPutPrice();
+            }
+            else
+            {
+                return hD.HestonDigitalPutPrice(strike: strike, timeToMaturity: timeToMaturity);
+            }
         }
 
         /// <summary>
@@ -529,6 +562,11 @@ namespace Heston
 
             // Updates the correlation.
             prj.Processes.r.Set(index, index + 1, (RightValue)rhoEstimate);
+
+            // populate the object heston call and heston digital 
+            this.hD = new HestonDigital(this);
+            this.hC = new HestonCall(this);
+
         }
     }
 }

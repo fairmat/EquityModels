@@ -229,6 +229,20 @@ namespace HestonEstimator
             return put;
         }
 
+        internal double HestonPutPrice(double strike, double timeToMaturity)
+        {
+            this.T = timeToMaturity;
+            this.K = strike;
+            return HestonPutPrice();
+        }
+
+        internal double HestonCallPrice(double strike, double timeToMaturity)
+        {
+            this.T = timeToMaturity;
+            this.K = strike;
+            return HestonCallPrice();
+        }
+
         /// <summary>
         /// Jointly calculate a call and a put price.
         /// </summary>
