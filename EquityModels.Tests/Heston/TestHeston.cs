@@ -78,6 +78,7 @@ namespace Heston
             process.S0 = (ModelParameter)100.0;
             process.V0 = (ModelParameter)0.3;
 
+
             StochasticProcessExtendible s = new StochasticProcessExtendible(rov, process);
             rov.Processes.AddProcess(s);
 
@@ -129,5 +130,7 @@ namespace Heston
 
             Assert.Less(Math.Abs(thPrice - samplePrice), tol);
         }
+
+
     }
 }

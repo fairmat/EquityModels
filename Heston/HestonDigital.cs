@@ -1,12 +1,14 @@
 ﻿using System;
 using HestonEstimator;
 using Fairmat.Math;
-
+using DVPLI;
 
 namespace Heston
 {
-    internal class HestonDigital: HestonCall
+    public class HestonDigital: HestonCall
     {
+
+
         // define the constructors from the base class 
         public HestonDigital() { }
 
@@ -20,7 +22,25 @@ namespace Heston
             this.K = strike;
             return  HestonDigitalCallPrice();
         }
-        
+
+        public double HestonDigitalCallPrice(Vector x, double s0, double T, double K, double r, double q)
+        {
+            this.kappa = x[0];
+            this.theta = x[1];
+            this.sigma = x[2];
+            this.rho = x[3];
+            this.v0 = x[4];
+            this.s0 = s0;
+            this.T = T;
+            this.K = K;
+
+            this.rate = r;
+            this.dividend = q;
+
+            return HestonDigitalCallPrice();
+        }
+
+
         public double HestonDigitalCallPrice()
         {
             return DiscountFactor() * UndiscountedHestonDigitalCallPrice();
@@ -46,7 +66,7 @@ namespace Heston
             double part1 = HestonCall.PerformIntegral(a, b, DigitalIntegrandFunc);
             double integral = part1 + a * DigitalIntegrandFunc(a / 2.0);
 
-            return (0.5 *  + 1 / Math.PI * integral);
+            return (0.5 + 1 / Math.PI * integral);
 
         }
         private double DiscountFactor() { return Math.Exp(-this.rate * this.T); }

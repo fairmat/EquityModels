@@ -65,8 +65,7 @@
       <Private>False</Private>
     </Reference>
     <Reference Include="DVPLI">
-      <HintPath>..\..\DVPLReferences\DVPLI.dll</HintPath>
-      <Private>False</Private>
+      <HintPath>..\..\dvpl\runtests\bin\Debug\DVPLI.dll</HintPath>
     </Reference>
     <Reference Include="DVPLInterfaces">
       <HintPath>..\..\DVPLReferences\DVPLInterfaces.dll</HintPath>

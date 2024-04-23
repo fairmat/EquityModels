@@ -33,32 +33,32 @@ namespace HestonEstimator
         /// <summary>
         /// Heston volatility mean reversion speed parameter.
         /// </summary>
-        private double kappa;
+        protected double kappa;
 
         /// <summary>
         /// Heston volatility mean reversion level parameter.
         /// </summary>
-        private double theta;
+        protected double theta;
 
         /// <summary>
         /// Heston volatility of volatility parameter.
         /// </summary>
-        private double sigma;
+        protected double sigma;
 
         /// <summary>
         /// Correlation between the two Wiener processes in the Heston dynamics.
         /// </summary>
-        private double rho;
+        protected double rho;
 
         /// <summary>
         /// Starting value for the stock process.
         /// </summary>
-        private double v0;
+        protected double v0;
 
         /// <summary>
         /// Starting value for the volatility process.
         /// </summary>
-        private double s0;
+        protected double s0;
 
         #endregion Model Parameters
 
