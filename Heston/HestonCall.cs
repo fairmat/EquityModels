@@ -149,8 +149,18 @@ namespace HestonEstimator
             this.s0 = s0;
         }
 
-        
-
+        /// <summary>
+        /// Initializes a new instance of the <see cref="HestonEstimator.HestonCall"/> class.
+        /// </summary>
+        /// <param name='process'>
+        /// HestonProcess at which call price calculations are to be linked.
+        /// </param>
+        /// <param name='strike'>
+        /// Strike of the option
+        /// </param>
+        /// <param name='timeToMaturity'>
+        /// Time to maturity of the option
+        /// </param>
         internal HestonCall(HestonProcess process, double strike, double timeToMaturity)
         {
             this.kappa = process.k.fV();
@@ -167,6 +177,12 @@ namespace HestonEstimator
 
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="HestonEstimator.HestonCall"/> class.
+        /// </summary>
+        /// <param name='process'>
+        /// HestonProcess at which call price calculations are to be linked.
+        /// </param>
         internal HestonCall(HestonProcess process)
         {
             this.kappa = process.k.fV();
@@ -210,6 +226,7 @@ namespace HestonEstimator
            
             return call;
         }
+
         /// <summary>
         /// Calculates a put price using the Heston model
         /// </summary>
@@ -229,6 +246,12 @@ namespace HestonEstimator
             return put;
         }
 
+        /// <summary>
+        /// Calculates a put price using the Heston model
+        /// </summary>
+        /// <param name="strike">The strike of the option.</param>
+        /// <param name="timeToMaturity">The time to maturity of the option.</param>
+        /// <returns>The put price</returns>
         internal double HestonPutPrice(double strike, double timeToMaturity)
         {
             this.T = timeToMaturity;
@@ -236,6 +259,12 @@ namespace HestonEstimator
             return HestonPutPrice();
         }
 
+        /// <summary>
+        /// Calculates a call price using the Heston model
+        /// </summary>
+        /// <param name="strike">The strike of the option.</param>
+        /// <param name="timeToMaturity">The time to maturity of the option.</param>
+        /// <returns>The put price</returns>
         internal double HestonCallPrice(double strike, double timeToMaturity)
         {
             this.T = timeToMaturity;
@@ -268,7 +297,6 @@ namespace HestonEstimator
             callPut[1] = Math.Exp(-this.rate * this.T) * (-firstTerm + integral / Math.PI);
             return callPut;
         }
-
 
 
         /// <summary>
@@ -348,16 +376,29 @@ namespace HestonEstimator
             Complex complexVal2 = A * f2(u) / Iu;
             return complexVal1.Re - this.K * complexVal2.Re;
 
-            // call = E[St * 1(St>k)] - K*E[1(St>k)]
-            // digital = E[1(St>k)] = P(St>k)
         }
 
-
+        /// <summary>
+        /// Calculates the value of the f2 function 
+        /// appears in the Heston model call price formula.
+        /// </summary>
+        /// <param name="u"> Value at which the f2 function is to be calculated.</param>
+        /// <returns>
+        /// The value of the f2 function
+        /// </returns>
         public Complex f2(double u)
         {
             return Phi(u, this.kappa, this.theta, this.sigma, this.rho, this.s0, this.v0, this.rate - this.dividend, this.T);
         }
 
+        /// <summary>
+        /// Calculates the value of the f1 function 
+        /// appears in the Heston model call price formula.
+        /// </summary>
+        /// <param name="u"> Value at which the f1 function is to be calculated.</param>
+        /// <returns>
+        /// The value of the f1 function
+        /// </returns>
         public Complex f1(double u)
         {
             Complex I = Complex.I;
@@ -373,7 +414,6 @@ namespace HestonEstimator
             Complex complexVal2 = A * Phi(u, this.kappa, this.theta, this.sigma, this.rho, this.s0, this.v0, this.rate - this.dividend, this.T) / Iu;
             return complexVal2.Re - this.K * complexVal1.Re;
         }
-
 
 
         /// <summary>

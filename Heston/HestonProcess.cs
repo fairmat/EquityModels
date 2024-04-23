@@ -419,6 +419,8 @@ namespace Heston
         /// <param name="additionalInformation">"
         /// Additional information regarding the call option
         /// </param>
+        /// <returns>The call price</returns>
+
         public double Call(int component, double strike, double timeToMaturity, Dictionary<string, object> additionalInformation)
         {
             // we are assuming that the model is already calibrated 
@@ -446,6 +448,7 @@ namespace Heston
         /// <param name="additionalInformation">"
         /// Additional information regarding the put option
         /// </param>
+        /// <returns>The put price</returns>
         public double Put(int component, double strike, double timeToMaturity, Dictionary<string, object> additionalInformation)
         {
             // we are assuming that the model is already calibrated 
@@ -473,6 +476,8 @@ namespace Heston
         /// <param name="additionalInformation">"
         /// Additional information regarding the digital call option
         /// </param>
+        /// <returns>The digital call price</returns>
+
         public double DigitalCall(int component, double strike, double timeToMaturity, Dictionary<string, object> additionalInformation)
         {
             if (hD == null)
@@ -499,6 +504,7 @@ namespace Heston
         /// <param name="additionalInformation">"
         /// Additional information regarding the digital put option
         /// </param>
+        /// <returns>The digital put price</returns>
         public double DigitalPut(int component, double strike, double timeToMaturity, Dictionary<string, object> additionalInformation)
         {
             if (hD == null)
@@ -525,6 +531,7 @@ namespace Heston
         /// <param name="additionalInformation">"
         /// Additional information regarding the swap option
         /// </param>
+        /// <returns>The swap price</returns>
         public double Swap(int component, double strike, double swapMaturity, Dictionary<string, object> additionalInformation = null)
         {
             throw new NotImplementedException();
