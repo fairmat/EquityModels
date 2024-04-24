@@ -17,6 +17,7 @@
  */
 
 using System;
+using System.Runtime.ExceptionServices;
 using DVPLDOM;
 using DVPLI;
 using Fairmat.Math;
@@ -622,6 +623,8 @@ namespace HestonEstimator
             return val;
         }
 
+
+
         /// <summary>
         /// Calculates Heston characteristic function with input u real.
         /// </summary>
@@ -641,6 +644,53 @@ namespace HestonEstimator
         {
             Complex Cu = new Complex(u);
             return Phi(Cu, kappa, theta, sigma, rho, v0, s0, r, T);
+        }
+
+
+        public static double HestonCallPriceCarrMadan(double kappa, double theta, double rho, double v0, double sigma, double s0, double T, double K, double r, double q)
+        {
+
+            // Carr Madan Approach to solve the call option price: https://perswww.kuleuven.be/~u0009713/ScSiTi03.pdf
+            double alpha = 0.75;
+            var multiplier = Math.Exp(-alpha * Math.Log(K)) / Math.PI;
+
+            Complex FunctionG(Complex U)
+            {
+                
+                var argumentPhi = U - (alpha + 1) * Complex.I; 
+                var g = Phi(argumentPhi, kappa:kappa, theta:theta, sigma:sigma, rho:rho, v0:v0, s0:s0, r:(r-q), T:T);
+                var denom = alpha * alpha + alpha - U * U + Complex.I * (2 * alpha + 1) * U;
+                return Math.Exp(-r*T) * g / denom; 
+            }
+
+
+            double FunctionToIntegrate(double u)
+            {
+                Complex iu = Complex.I * u;
+                Complex i = Complex.I;
+                Complex U = new Complex(u);
+
+                var g = FunctionG(U);
+                var result = (Complex.Exp(-iu * Math.Log(K)) * g);
+                return result.Re;
+            }
+
+
+            double a = 1E-12;
+            double b = 1000.0;
+            // The second term of this expressions approximates the integral in the interval [0,a].
+
+            //Uses PerformIntegral instead of AdaptLobatto in order to keep time constant
+            //var integrate = new Integrate(this);
+            //integrate.Tolerance = 10e-8;
+            //integrate.MaxRecursionLevel = 4;// 4;
+            //double part1 = integrate.AdaptLobatto(a, b);
+
+            double part1 = PerformIntegral(a, b, FunctionToIntegrate);
+
+            double integral = part1 + a * FunctionToIntegrate(a / 2.0);
+
+            return integral * multiplier; 
         }
     }
 }
