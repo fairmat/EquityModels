@@ -39,8 +39,11 @@ namespace Heston
             TestCommon.TestInitialization.CommonInitialization();
         }
 
-        [Test, Category("BigTest")]
-        public void Test()
+
+        [TestCase(100, 5, 0.1)]
+        [TestCase(80,1,0.01)]
+        [TestCase(150,0.5,0.1)]
+        public void Test(double strike, double tau, double r)
         {
             Engine.MultiThread = true;
             Document doc = new Document();
@@ -50,10 +53,9 @@ namespace Heston
 
             int n_sim = 50000;
             int n_steps = 512;
-            double strike = 100.0;
-            double tau = 5.0;
-            double rate = 0.1;
-            double dy = 0.07;
+           
+            double rate = r;
+            double dy = 0.00;
 
             ModelParameter pStrike = new ModelParameter(strike, "strike");
             pStrike.VarName = "strike";
