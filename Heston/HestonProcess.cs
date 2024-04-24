@@ -31,7 +31,7 @@ namespace Heston
     [Serializable]
     public unsafe class HestonProcess : IExtensibleProcess, IMarkovSimulator, IParsable,
                                         IGreeksDerivativesInfo, IEstimationResultPopulable,
-                                        IOpenCLCode, IExportableContainer, IPlainVanillaPricing
+                                        IOpenCLCode, IExportableContainer, IPlainVanillaPricing, IForwardStartingPricing
     {
         #region Serialized Parameters
 
@@ -543,6 +543,32 @@ namespace Heston
         }
 
         #endregion
+
+        #region IForwardStartingPricing Members
+        public double FSCall(int component, double strikeFraction, double fsTime, double timeToMaturity, Dictionary<string, object> additionalInformation = null)
+        {
+            throw new NotImplementedException();
+        }
+        public double FSPut(int component, double strikeFraction, double fsTime, double timeToMaturity, Dictionary<string, object> additionalInformation = null)
+        {
+            throw new NotImplementedException();
+        }
+        public double FSDigitalCall(int component, double strikeFraction, double fsTime, double timeToMaturity, Dictionary<string, object> additionalInformation = null)
+        {
+            throw new NotImplementedException();
+        }
+        public double FSDigitalPut(int component, double strikeFraction, double fsTime, double timeToMaturity, Dictionary<string, object> additionalInformation = null)
+        {
+            throw new NotImplementedException();
+        }
+        public double FSSwap(int component, double strikeFraction, double fsTime, double swapMaturity, Dictionary<string, object> additionalInformation = null)
+        {
+            throw new NotImplementedException();
+        }
+
+        #endregion
+
+
 
         /// <summary>
         /// Populate editable fields from name and value vectors
