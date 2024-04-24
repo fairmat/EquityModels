@@ -39,8 +39,11 @@ namespace Heston
             TestCommon.TestInitialization.CommonInitialization();
         }
 
-        [Test, Category("BigTest")]
-        public void Test()
+        [Category("BigTest")]
+        [TestCase(100, 5, 0.1)]
+        [TestCase(80,1,0.01)]
+        [TestCase(150,0.5,0.1)]
+        public void TestCall(double strike, double tau, double r)
         {
             Engine.MultiThread = true;
             Document doc = new Document();
@@ -50,10 +53,9 @@ namespace Heston
 
             int n_sim = 50000;
             int n_steps = 512;
-            double strike = 100.0;
-            double tau = 5.0;
-            double rate = 0.1;
-            double dy = 0.07;
+           
+            double rate = r;
+            double dy = 0.00;
 
             ModelParameter pStrike = new ModelParameter(strike, "strike");
             pStrike.VarName = "strike";
@@ -77,6 +79,7 @@ namespace Heston
             process.sigma = (ModelParameter)0.2;
             process.S0 = (ModelParameter)100.0;
             process.V0 = (ModelParameter)0.3;
+
 
             StochasticProcessExtendible s = new StochasticProcessExtendible(rov, process);
             rov.Processes.AddProcess(s);
@@ -119,8 +122,7 @@ namespace Heston
             param[2] = process.sigma.V();
             param[3] = 0.0;
             param[4] = process.V0.V();
-            HestonCall hestonCall = new HestonCall();
-            double thPrice = hestonCall.HestonCallPrice(param, process.S0.V(),
+            double thPrice = HestonCall.HestonCallPrice(param, process.S0.V(),
                                                         tau, strike, rate, dy);
             Console.WriteLine("Theoretical Price = " + thPrice.ToString());
             Console.WriteLine("Monte Carlo Price = " + samplePrice);
@@ -129,5 +131,101 @@ namespace Heston
 
             Assert.Less(Math.Abs(thPrice - samplePrice), tol);
         }
+
+        [Category("BigTest")]
+        [TestCase(100, 5, 0.1)]
+        [TestCase(80, 1, 0.01)]
+        [TestCase(150, 0.5, 0.1)]
+        public void TestPut(double strike, double tau, double r)
+        {
+            Engine.MultiThread = true;
+            Document doc = new Document();
+            ProjectROV rov = new ProjectROV(doc);
+            doc.Part.Add(rov);
+            doc.DefaultProject.NMethods.m_UseAntiteticPaths = true;
+
+            int n_sim = 50000;
+            int n_steps = 512;
+
+            double rate = r;
+            double dy = 0.05;
+
+            ModelParameter pStrike = new ModelParameter(strike, "strike");
+            pStrike.VarName = "strike";
+            rov.Symbols.Add(pStrike);
+
+            ModelParameter pRate = new ModelParameter(rate, "rfrate");
+            pRate.VarName = "rfrate";
+            rov.Symbols.Add(pRate);
+
+            AFunction payoff = new AFunction(rov);
+            payoff.VarName = "payoff";
+            payoff.m_IndependentVariables = 1;
+            payoff.m_Value = (RightValue)("max( -x1 + strike ; 0)");
+            rov.Symbols.Add(payoff);
+
+            HestonProcess process = new HestonProcess();
+            process.r = (ModelParameter)rate;
+            process.q = (ModelParameter)dy;
+            process.k = (ModelParameter)2.5;
+            process.theta = (ModelParameter)0.4;
+            process.sigma = (ModelParameter)0.2;
+            process.S0 = (ModelParameter)100.0;
+            process.V0 = (ModelParameter)0.3;
+
+
+            StochasticProcessExtendible s = new StochasticProcessExtendible(rov, process);
+            rov.Processes.AddProcess(s);
+
+            // Set the discounting.
+            RiskFreeInfo rfi = rov.GetDiscountingModel() as RiskFreeInfo;
+            rfi.ActualizationType = EActualizationType.RiskFree;
+            rfi.m_deterministicRF = rate;
+
+            OptionTree op = new OptionTree(rov);
+            op.PayoffInfo.PayoffExpression = "payoff(v1a)";
+            op.PayoffInfo.Timing.EndingTime.m_Value = (RightValue)tau;
+            op.PayoffInfo.European = true;
+            rov.Map.Root = op;
+
+            rov.NMethods.Technology = ETechType.T_SIMULATION;
+            rov.NMethods.PathsNumber = n_sim;
+            rov.NMethods.SimulationSteps = n_steps;
+
+            ROVSolver solver = new ROVSolver();
+            solver.BindToProject(rov);
+            solver.DoValuation(-1);
+
+            if (rov.HasErrors)
+            {
+                Console.WriteLine(rov.m_RuntimeErrorList[0]);
+            }
+
+            Assert.IsFalse(rov.HasErrors);
+
+            ResultItem price = rov.m_ResultList[0] as ResultItem;
+
+            double samplePrice = price.value;
+            double sampleDevSt = price.stdDev / Math.Sqrt((double)n_sim);
+
+            // Calculates the theoretical value of the put.
+            Vector param = new Vector(5);
+            param[0] = process.k.V();
+            param[1] = process.theta.V();
+            param[2] = process.sigma.V();
+            param[3] = 0.0;
+            param[4] = process.V0.V();
+            double thPrice = HestonCall.HestonPutPrice(param, process.S0.V(),
+                                                        tau, strike, rate, dy);
+
+            Console.WriteLine("Theoretical Price = " + thPrice.ToString());
+            Console.WriteLine("Monte Carlo Price = " + samplePrice);
+            Console.WriteLine("Standard Deviation = " + sampleDevSt.ToString());
+            double tol = 4.0 * sampleDevSt;
+
+            Assert.Less(Math.Abs(thPrice - samplePrice), tol);
+        }
+
+
     }
 }

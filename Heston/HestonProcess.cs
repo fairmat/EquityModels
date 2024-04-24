@@ -19,7 +19,9 @@
 using System;
 using System.Collections.Generic;
 using DVPLDOM;
+using HestonEstimator;
 using DVPLI;
+
 
 namespace Heston
 {
@@ -29,7 +31,7 @@ namespace Heston
     [Serializable]
     public unsafe class HestonProcess : IExtensibleProcess, IMarkovSimulator, IParsable,
                                         IGreeksDerivativesInfo, IEstimationResultPopulable,
-                                        IOpenCLCode, IExportableContainer
+                                        IOpenCLCode, IExportableContainer, IPlainVanillaPricing, IForwardStartingPricing
     {
         #region Serialized Parameters
 
@@ -69,7 +71,13 @@ namespace Heston
         /// </summary>
         public IModelParameter V0;
 
+        /// <summary>
+        /// Correlation parameter
+        /// </summary>
+        public IModelParameter rho;
+
         #endregion Serialized Parameters
+
 
         /// <summary>
         /// Gets the factors for Delta Greek derivative.
@@ -108,6 +116,7 @@ namespace Heston
             this.sigma = new ModelParameter(0.0, "sigma");
             this.S0 = new ModelParameter(0.0, "S0");
             this.V0 = new ModelParameter(0.0, "V0");
+            this.rho = new ModelParameter(0.0, "rho");
         }
 
         /// <summary>
@@ -129,6 +138,7 @@ namespace Heston
             this.sigma = new ModelParameter(0.2, "sigma");
             this.S0 = new ModelParameter(100, "S0");
             this.V0 = new ModelParameter(0.3, "V0");
+            this.rho = new ModelParameter(0.0, "rho");
         }
 
         /// <summary>
@@ -237,6 +247,7 @@ namespace Heston
             parameters.Add(this.k);
             parameters.Add(this.theta);
             parameters.Add(this.sigma);
+            parameters.Add(this.rho);
             return parameters;
         }
 
@@ -389,6 +400,176 @@ namespace Heston
 
         #endregion
 
+        #region IPlainVanillaPricing Members
+
+        /// <summary>
+        /// Calculate the price of a european call option.
+        /// </summary>
+        /// <param name="component">
+        /// The component of the process
+        /// </param>
+        /// <param name="strike">
+        /// The strike of the call option
+        /// <param name="timeToMaturity">
+        /// The time to maturity of the option: T-t
+        /// <param name="additionalInformation">"
+        /// Additional information regarding the call option
+        /// </param>
+        /// <returns>The call price</returns>
+
+        public double Call(int component, double strike, double timeToMaturity, Dictionary<string, object> additionalInformation)
+        {
+            return HestonCall.HestonCallPrice(
+                kappa: this.k.fV(),
+                theta: this.theta.fV(),
+                sigma: this.sigma.fV(),
+                rho: this.rho.fV(),
+                v0: this.V0.fV(),
+                s0: this.S0.fV(),
+                T: timeToMaturity,
+                K: strike,
+                r: this.r.fV(),
+                q: this.q.fV());
+        }
+    
+
+        /// <summary>
+        /// Calculate the price of a european put option.
+        /// </summary>
+        /// <param name="component">
+        /// The component of the process
+        /// </param>
+        /// <param name="strike">
+        /// The strike of the put option
+        /// <param name="timeToMaturity">
+        /// The time to maturity of the option: T-t
+        /// <param name="additionalInformation">"
+        /// Additional information regarding the put option
+        /// </param>
+        /// <returns>The put price</returns>
+        public double Put(int component, double strike, double timeToMaturity, Dictionary<string, object> additionalInformation)
+        {
+            return  HestonCall.HestonPutPrice(
+                kappa: this.k.fV(),
+                theta: this.theta.fV(),
+                sigma: this.sigma.fV(),
+                rho: this.rho.fV(),
+                v0: this.V0.fV(),
+                s0: this.S0.fV(),
+                T: timeToMaturity,
+                K: strike,
+                r: this.r.fV(),
+                q: this.q.fV());
+
+        }
+
+        /// <summary>
+        /// Calculate the price of a european digital call option.
+        /// </summary>
+        /// <param name="component">
+        /// The component of the process
+        /// </param>
+        /// <param name="strike">
+        /// The strike of the digital call option
+        /// <param name="timeToMaturity">
+        /// The time to maturity of the option: T-t
+        /// <param name="additionalInformation">"
+        /// Additional information regarding the digital call option
+        /// </param>
+        /// <returns>The digital call price</returns>
+
+        public double DigitalCall(int component, double strike, double timeToMaturity, Dictionary<string, object> additionalInformation)
+        {
+            return HestonDigital.HestonDigitalCallPrice(
+                kappa: this.k.fV(),
+                theta: this.theta.fV(),
+                sigma: this.sigma.fV(),
+                rho: this.rho.fV(),
+                v0: this.V0.fV(),
+                s0: this.S0.fV(),
+                T: timeToMaturity,
+                K: strike,
+                r: this.r.fV(),
+                q: this.q.fV()
+                );
+        }
+
+        /// <summary>
+        /// Calculate the price of a european digital put option.
+        /// </summary>
+        /// <param name="component">
+        /// The component of the process
+        /// </param>
+        /// <param name="strike">
+        /// The strike of the digital put option
+        /// <param name="timeToMaturity">
+        /// The time to maturity of the option: T-t
+        /// <param name="additionalInformation">"
+        /// Additional information regarding the digital put option
+        /// </param>
+        /// <returns>The digital put price</returns>
+        public double DigitalPut(int component, double strike, double timeToMaturity, Dictionary<string, object> additionalInformation)
+        {
+            return HestonDigital.HestonDigitalPutPrice(kappa: this.k.fV(),
+                theta: this.theta.fV(),
+                sigma: this.sigma.fV(),
+                rho: this.rho.fV(),
+                v0: this.V0.fV(),
+                s0: this.S0.fV(),
+                T: timeToMaturity,
+                K: strike,
+                r: this.r.fV(),
+                q: this.q.fV()
+                );
+        }
+
+        /// <summary>
+        /// Calculate the price of a swap option
+        /// </summary>
+        /// <param name="component">
+        /// The component of the process
+        /// </param>
+        /// <param name="strike">
+        /// The strike of the swap option
+        /// <param name="swapMaturity">
+        /// The time to maturity of the option: T-t
+        /// <param name="additionalInformation">"
+        /// Additional information regarding the swap option
+        /// </param>
+        /// <returns>The swap price</returns>
+        public double Swap(int component, double strike, double swapMaturity, Dictionary<string, object> additionalInformation = null)
+        {
+            throw new NotImplementedException();
+        }
+
+        #endregion
+
+        #region IForwardStartingPricing Members
+        public double FSCall(int component, double strikeFraction, double fsTime, double timeToMaturity, Dictionary<string, object> additionalInformation = null)
+        {
+            throw new NotImplementedException();
+        }
+        public double FSPut(int component, double strikeFraction, double fsTime, double timeToMaturity, Dictionary<string, object> additionalInformation = null)
+        {
+            throw new NotImplementedException();
+        }
+        public double FSDigitalCall(int component, double strikeFraction, double fsTime, double timeToMaturity, Dictionary<string, object> additionalInformation = null)
+        {
+            throw new NotImplementedException();
+        }
+        public double FSDigitalPut(int component, double strikeFraction, double fsTime, double timeToMaturity, Dictionary<string, object> additionalInformation = null)
+        {
+            throw new NotImplementedException();
+        }
+        public double FSSwap(int component, double strikeFraction, double fsTime, double swapMaturity, Dictionary<string, object> additionalInformation = null)
+        {
+            throw new NotImplementedException();
+        }
+
+        #endregion
+
+
+
         /// <summary>
         /// Populate editable fields from name and value vectors
         /// specific to the Heston extended process.
@@ -411,11 +592,15 @@ namespace Heston
             this.r = new ModelParameter(PopulateHelper.GetValue("r", estimate.Names, estimate.Values, out found), this.r.Description);
             this.q = new ModelParameter(PopulateHelper.GetValue("q", estimate.Names, estimate.Values, out found), this.q.Description);
 
+            var rhoEstimate = PopulateHelper.GetValue("rho", estimate.Names, estimate.Values, out found);
+            this.rho = new ModelParameter(rhoEstimate, this.rho.Description);
+
             int index = stocProcess.NoiseIndex;
             ProjectProcess prj = stocProcess.Context as ProjectProcess;
 
             // Updates the correlation.
-            prj.Processes.r.Set(index, index + 1, (RightValue)PopulateHelper.GetValue("rho", estimate.Names, estimate.Values, out found));
+            prj.Processes.r.Set(index, index + 1, (RightValue)rhoEstimate);
+
         }
     }
 }

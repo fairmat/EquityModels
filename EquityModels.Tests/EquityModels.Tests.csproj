@@ -43,6 +43,12 @@
     <Reference Include="Accord.Math.Core, Version=3.8.0.0, Culture=neutral, PublicKeyToken=fa1a88e29555ccf7, processorArchitecture=MSIL">
       <HintPath>..\packages\Accord.Math.3.8.0\lib\net462\Accord.Math.Core.dll</HintPath>
     </Reference>
+    <Reference Include="DVPLDOME">
+      <HintPath>..\..\dvpl\DVPLDOME\bin\Debug\DVPLDOME.dll</HintPath>
+    </Reference>
+    <Reference Include="DVPLI">
+      <HintPath>..\..\dvpl\runtests\bin\Debug\DVPLI.dll</HintPath>
+    </Reference>
     <Reference Include="DVPLUtils">
       <HintPath>..\..\DVPLReferences\DVPLUtils.dll</HintPath>
     </Reference>
@@ -63,9 +69,6 @@
       <HintPath>..\packages\QLNet.1.11.4\lib\netstandard2.0\QLNet.dll</HintPath>
     </Reference>
     <Reference Include="System" />
-    <Reference Include="DVPLI">
-      <HintPath>..\..\DVPLReferences\DVPLI.dll</HintPath>
-    </Reference>
     <Reference Include="DVPLInterfaces">
       <HintPath>..\..\DVPLReferences\DVPLInterfaces.dll</HintPath>
     </Reference>
@@ -74,9 +77,6 @@
     </Reference>
     <Reference Include="DVPLDOM">
       <HintPath>..\..\DVPLReferences\DVPLDOM.dll</HintPath>
-    </Reference>
-    <Reference Include="DVPLDOME">
-      <HintPath>..\..\DVPLReferences\DVPLDOME.dll</HintPath>
     </Reference>
     <Reference Include="CoreExtensions">
       <HintPath>..\..\DVPLReferences\CoreExtensions.dll</HintPath>
@@ -101,6 +101,7 @@
   <ItemGroup>
     <Compile Include="Heston\TestHeston.cs" />
     <Compile Include="Heston\TestHestonCallPrice.cs" />
+    <Compile Include="Heston\TestHestonDigital.cs" />
     <Compile Include="Heston\TestHestonExtended.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Dupire\DupireCalibration.cs" />

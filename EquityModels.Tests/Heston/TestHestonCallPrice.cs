@@ -57,8 +57,7 @@ namespace Heston
             param[2] = sigma;
             param[3] = rho;
             param[4] = v0;
-            HestonCall hestonCall = new HestonCall();
-            double fairmatPrice = hestonCall.HestonCallPrice(param, s0, tau, k, rate, dy);
+            double fairmatPrice = HestonCall.HestonCallPrice(param, s0, tau, k, rate, dy);
             double tol = 1e-3;
             double benchmarkPrice = 0.339537359104676;
 
@@ -66,6 +65,35 @@ namespace Heston
             Console.WriteLine("Theoretical Fairmat    Price = " + fairmatPrice);
 
             Assert.Less(Math.Abs(fairmatPrice - benchmarkPrice), tol);
+        }
+
+
+        [Test]
+        public void TestComparisonCarrMadan()
+        {
+            double k = 0.9;
+            double tau = 2.0;
+
+            double rate = 0.1;
+            double dy = 0.07;
+            double kappa = 2.5;
+            double theta = 0.4;
+            double sigma = 0.2;
+            double s0 = 1.0;
+            double v0 = 0.3;
+            double rho = -0.8;
+
+            // Calculates the theoretical value of the call.
+            
+            double fairmatPrice = HestonCall.HestonCallPrice(kappa: kappa, theta: theta, sigma: sigma, rho: rho, v0: v0, s0: s0, T: tau, K: k, r: rate, q: dy);
+            double carrMadanPrice = HestonCall.HestonCallPriceCarrMadan(kappa: kappa, theta: theta, sigma: sigma, rho: rho, v0: v0, s0: s0, T: tau, K: k, r: rate, q: dy);
+            double tol = 1e-3;
+            
+
+            Console.WriteLine("Theoretical CarrMadan  Price = " + carrMadanPrice);
+            Console.WriteLine("Theoretical Fairmat    Price = " + fairmatPrice);
+
+            Assert.Less(Math.Abs(fairmatPrice - carrMadanPrice), tol);
         }
     }
 }

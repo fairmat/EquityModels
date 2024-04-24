@@ -132,6 +132,7 @@ This algorithm is used for both Heston and Heston time dependent drift processes
 
 \section{Calibration}
 
+
 \subsection{Characteristic function and call price formula}
 
 The characteristic function is defined as
@@ -151,15 +152,45 @@ where
 \end{align}
 The form of the $\phi$ function is not equal to that given in Heston original paper but it is an equivalent one which does not have the continuity problem when integrated to find the price of an european call option. This issue is described in \cite{Albrecher:HestonTrap}.
 
+
+
+
+\subsection{Call price formula}
+
 The price of an european call option with strike $K$ and time to maturity $T$ is given by the formula
+
 \begin{equation}
-C(K,T) = \frac{1}{2}\left[S_0e^{-q T} - Ke^{-r T}\right] + \frac{e^{-r T}}{\pi}\int_0^{\infty}\left[f_1(u) - Kf_2(u)\right]du
+\begin{aligned}
+C(K,T) &= e^{-r T}\left(	\mathbb{E}\left[S_T 1_{S_T \geq K} \right] - K \mathbb{E}\left[1_{S_T \geq K} \right]\right) \\
+&=\frac{1}{2}S_0e^{-q T}+ \frac{e^{-r T}}{\pi}\int_0^{\infty}f_1(u) du  \\
+&- K e^{-r T}  \left[ \frac{1}{2} + \frac{1}{\pi}\int_0^{\infty}f_2(u) du \right] \\
+&=  \frac{1}{2}\left[S_0e^{-q T} - Ke^{-r T}\right] + \frac{e^{-r T}}{\pi}\int_0^{\infty}\left[f_1(u) - Kf_2(u)\right]du
+\end{aligned}
 \end{equation}
 where the two functions $f_1$ and $f_2$ are
 \begin{align}
 f_1(u) & = \mathrm{Re}\left[\frac{\exp(-iu\log K)\phi(u-i,T)}{iu}\right]\\
 f_2(u) & = \mathrm{Re}\left[\frac{\exp(-iu\log K)\phi(u,T)}{iu}\right].
 \end{align}
+
+\subsection{Digital call price formula}
+
+The price of an european digital call option with strike $K$ and time to maturity $T$ is given by the formula
+\begin{equation}
+\begin{aligned}
+DC(K,T) &= e^{-r T} P(S_T \geq K) \\ &=  e^{-r T} \mathbb{E}\left[1_{S_T \geq K}\right] \\
+&= e^{-r T}  \left[ \frac{1}{2} + \frac{1}{\pi}\int_0^{\infty}f_2(u) du \right] 
+\end{aligned}
+\end{equation}
+
+Similarly, the price of an european digital put option with strike $K$ and time to maturity $T$ is given by the formula
+\begin{equation}
+\begin{aligned}
+DP(K,T) &= e^{-r T} P(S_T < K) \\ 
+&= e^{-r T} (1-P(S_T \geq K))  \\ 
+& = e^{-r T}  \left[  \frac{1}{2} - \frac{1}{\pi}\int_0^{\infty}f_2(u) du \right] 
+\end{aligned} 
+\end{equation}
 
 \subsection{Dividend yield calculation}
 

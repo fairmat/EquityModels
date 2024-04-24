@@ -17,8 +17,11 @@
  */
 
 using System;
+using System.Runtime.ExceptionServices;
+using DVPLDOM;
 using DVPLI;
 using Fairmat.Math;
+using Heston;
 
 namespace HestonEstimator
 {
@@ -31,32 +34,32 @@ namespace HestonEstimator
         /// <summary>
         /// Heston volatility mean reversion speed parameter.
         /// </summary>
-        private double kappa;
+        protected double kappa;
 
         /// <summary>
         /// Heston volatility mean reversion level parameter.
         /// </summary>
-        private double theta;
+        protected double theta;
 
         /// <summary>
         /// Heston volatility of volatility parameter.
         /// </summary>
-        private double sigma;
+        protected double sigma;
 
         /// <summary>
         /// Correlation between the two Wiener processes in the Heston dynamics.
         /// </summary>
-        private double rho;
+        protected double rho;
 
         /// <summary>
         /// Starting value for the stock process.
         /// </summary>
-        private double v0;
+        protected double v0;
 
         /// <summary>
         /// Starting value for the volatility process.
         /// </summary>
-        private double s0;
+        protected double s0;
 
         #endregion Model Parameters
 
@@ -121,6 +124,7 @@ namespace HestonEstimator
             hestonPutPrice = new Matrix(problem.callMarketPrice.R, problem.callMarketPrice.C);
         }
 
+
         /// <summary>
         /// Initializes a new instance of the <see cref="HestonEstimator.HestonCall"/> class.
         /// </summary>
@@ -145,7 +149,52 @@ namespace HestonEstimator
                 this.dividend = x[5];
             this.s0 = s0;
         }
-        
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="HestonEstimator.HestonCall"/> class.
+        /// </summary>
+        /// <param name='process'>
+        /// HestonProcess at which call price calculations are to be linked.
+        /// </param>
+        /// <param name='strike'>
+        /// Strike of the option
+        /// </param>
+        /// <param name='timeToMaturity'>
+        /// Time to maturity of the option
+        /// </param>
+        internal HestonCall(HestonProcess process, double strike, double timeToMaturity)
+        {
+            this.kappa = process.k.fV();
+            this.theta = process.theta.fV();
+            this.sigma = process.sigma.fV();
+            this.v0 = process.V0.fV();
+            this.dividend = process.q.fV();
+            this.s0 = process.S0.fV();
+            this.rho = process.rho.fV();
+
+            // call specific parameters 
+            this.K = strike;
+            this.T = timeToMaturity; 
+
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="HestonEstimator.HestonCall"/> class.
+        /// </summary>
+        /// <param name='process'>
+        /// HestonProcess at which call price calculations are to be linked.
+        /// </param>
+        internal HestonCall(HestonProcess process)
+        {
+            this.kappa = process.k.fV();
+            this.theta = process.theta.fV();
+            this.sigma = process.sigma.fV();
+            this.v0 = process.V0.fV();
+            this.dividend = process.q.fV();
+            this.s0 = process.S0.fV();
+            this.rho = process.rho.fV();
+        }
+
         /// <summary>
         /// Calculates the Heston model call price by using local variables.
         /// </summary>
@@ -156,15 +205,27 @@ namespace HestonEstimator
         /// <returns>The price of a call option within the Heston.</returns>
         internal double HestonCallPrice()
         {
-            double F = this.s0 * Math.Exp((this.rate - this.dividend) * this.T);
-            double firstTerm = 0.5 * (F - this.K);
+            return HestonCallPrice(
+                kappa:this.kappa,
+                theta:this.theta, 
+                sigma:this.sigma,
+                rho:this.rho,
+                v0:this.v0,
+                s0:this.s0,
+                T:this.T,
+                K:this.K,
+                r:this.rate,
+                q:this.dividend);
+        }
+
+
+        public static double HestonCallPrice(double kappa, double theta, double rho, double v0, double sigma, double s0, double T, double K, double r, double q)
+        {
+            double F = s0 * Math.Exp((r - q) * T);
+            double firstTerm = 0.5 * (F - K);
             double a = 1E-8;
             double b = 1000.0;
 
-            
-          
-
-           
             // The second term of this expressions approximates the integral in the interval [0,a].
 
             //Uses PerformIntegral instead of AdaptLobatto in order to keep time constant
@@ -172,32 +233,82 @@ namespace HestonEstimator
             //integrate.Tolerance = 10e-8;
             //integrate.MaxRecursionLevel = 4;// 4;
             //double part1 = integrate.AdaptLobatto(a, b);
-            double part1 = PerformIntegral(a, b, IntegrandFunc);
-           
-            
 
-            double integral = part1 + a * IntegrandFunc(a / 2.0);
-            double call = Math.Exp(-this.rate * this.T) * (firstTerm + integral / Math.PI);
-           
+            TAEDelegateFunction1D functionToIntegrate = (double u) => IntegrandFunc(u:u, kappa: kappa, theta: theta, sigma: sigma, rho: rho, v0: v0, s0: s0, r: r, q:q, T: T, K: K);
+            double part1 = PerformIntegral(a, b, functionToIntegrate);
+
+            double integral = part1 + a * functionToIntegrate(a / 2.0);
+
+            double call = Math.Exp(-r * T) * (firstTerm + integral / Math.PI);
+
             return call;
         }
+
+
+
+
+
         /// <summary>
         /// Calculates a put price using the Heston model
         /// </summary>
         /// <returns></returns>
-        internal double HestonPutPrice()
+        internal static double HestonPutPrice(double kappa, double theta, double rho, double v0, double sigma, double s0, double T, double K, double r, double q)
         {
-            double F = this.s0 * Math.Exp((this.rate - this.dividend) * this.T);
-            double firstTerm = 0.5 * (this.K-F);
+            double F = s0 * Math.Exp((r - q) * T);
+            double firstTerm = 0.5 * (K-F);
             double a = 1E-8;
             double b = 1000.0;
 
             // The second term of this expressions approximates the integral in the interval [0,a].
-            double part1 = PerformIntegral(a, b, IntegrandFunc);
-            double integral = part1 + a * IntegrandFunc(a / 2.0);
-            double put = Math.Exp(-this.rate * this.T) * (firstTerm + integral / Math.PI);
+            TAEDelegateFunction1D functionToIntegrate = (double u) => IntegrandFunc(u: u, kappa: kappa, theta: theta, sigma: sigma, rho: rho, v0: v0, s0: s0, r: r, q: q, T: T, K: K);
+            double part1 = PerformIntegral(a, b, functionToIntegrate);
+            double integral = part1 + a * functionToIntegrate(a / 2.0);
+            double put = Math.Exp(-r * T) * (firstTerm + integral / Math.PI);
 
             return put;
+        }
+
+        /// <summary>
+        /// Calculates a put price using the Heston model
+        /// </summary>
+        /// <param name="strike">The strike of the option.</param>
+        /// <param name="timeToMaturity">The time to maturity of the option.</param>
+        /// <returns>The put price</returns>
+        internal double HestonPutPrice(double strike, double timeToMaturity)
+        {
+            this.T = timeToMaturity;
+            this.K = strike;
+
+            return HestonPutPrice();
+        }
+
+
+        internal double HestonPutPrice()
+        {
+            return HestonPutPrice(
+                kappa: this.kappa,
+                theta: this.theta,
+                sigma: this.sigma,
+                rho: this.rho,
+                v0: this.v0,
+                s0: this.s0,
+                T: this.T,
+                K: this.K,
+                r: this.rate,
+                q: this.dividend);
+        }
+
+        /// <summary>
+        /// Calculates a call price using the Heston model
+        /// </summary>
+        /// <param name="strike">The strike of the option.</param>
+        /// <param name="timeToMaturity">The time to maturity of the option.</param>
+        /// <returns>The put price</returns>
+        internal double HestonCallPrice(double strike, double timeToMaturity)
+        {
+            this.T = timeToMaturity;
+            this.K = strike;
+            return HestonCallPrice();
         }
 
         /// <summary>
@@ -227,7 +338,6 @@ namespace HestonEstimator
         }
 
 
-
         /// <summary>
         /// Numerical integral in R+ assuming the integrand
         /// is exponential decaying.
@@ -235,7 +345,7 @@ namespace HestonEstimator
         /// <param name="a">The left bound.</param>
         /// <param name="b">The right bound.</param>
         /// <returns>The integral.</returns>
-        double PerformIntegral(double a, double b,TAEDelegateFunction1D f)
+        public static double PerformIntegral(double a, double b,TAEDelegateFunction1D f)
         {
             double sum = 0;
             double dt = a/10;
@@ -270,22 +380,61 @@ namespace HestonEstimator
         /// <param name="r">Risk free rate.</param>
         /// <param name="q">Dividend yield.</param>
         /// <returns>The price of a call option within the Heston model.</returns>
-        public double HestonCallPrice(Vector x, double s0, double T, double K, double r, double q)
+        public static double HestonCallPrice(Vector x, double s0, double T, double K, double r, double q)
         {
-            this.kappa = x[0];
-            this.theta = x[1];
-            this.sigma = x[2];
-            this.rho = x[3];
-            this.v0 = x[4];
+            var kappa = x[0];
+            var theta = x[1];
+            var sigma = x[2];
+            var rho = x[3];
+            var v0 = x[4];
 
-            this.s0 = s0;
-            this.T = T;
-            this.K = K;
 
-            this.rate = r;
-            this.dividend = q;
+            return HestonCallPrice(
+                kappa: kappa,
+                theta: theta,
+                sigma: sigma,
+                rho: rho,
+                v0: v0,
+                s0: s0,
+                T: T,
+                K: K,
+                r: r,
+                q: q);
+        }
 
-            return HestonCallPrice();
+        /// <summary>
+        /// Calculates the Heston model put price.
+        /// </summary>
+        /// <remarks>
+        /// Note that this function is a wrapper for the other one which sets
+        /// all the variables locally before calling it.</remarks>
+        /// <param name="x">Vector of Heston model parameters.</param>
+        /// <param name="s0">Starting value for the stock process.</param>
+        /// <param name="T">Maturity of the put option which price is to be calculated.</param>
+        /// <param name="K">Strike of the put option which price is to be calculated.</param>
+        /// <param name="r">Risk free rate.</param>
+        /// <param name="q">Dividend yield.</param>
+        /// <returns>The price of a put option within the Heston model.</returns>
+        public static double HestonPutPrice(Vector x, double s0, double T, double K, double r, double q)
+        {
+            var kappa = x[0];
+            var theta = x[1];
+            var sigma = x[2];
+            var rho = x[3];
+            var v0 = x[4];
+
+
+            return HestonPutPrice(
+                kappa: kappa,
+                theta: theta,
+                sigma: sigma,
+                rho: rho,
+                v0: v0,
+                s0: s0,
+                T: T,
+                K: K,
+                r: r,
+                q: q);
         }
 
         /// <summary>
@@ -298,61 +447,130 @@ namespace HestonEstimator
         /// </returns>
         public double IntegrandFunc(double u)
         {
-            Complex I = Complex.I;
-            Complex Iu = Complex.I * u;
-            Complex A = Complex.Exp(-Iu * Math.Log(this.K));
-            Complex complexVal1 = A * Phi(u - I, this.kappa, this.theta, this.sigma, this.rho, this.s0, this.v0, this.rate - this.dividend, this.T) / Iu;
-            Complex complexVal2 = A * Phi(u, this.kappa, this.theta, this.sigma, this.rho, this.s0, this.v0, this.rate - this.dividend, this.T) / Iu;
-            return complexVal1.Re - this.K * complexVal2.Re;
+            // call the static method 
+            return IntegrandFunc(
+                u:u, 
+                kappa:this.kappa,
+                theta:this.theta, 
+                sigma:this.sigma, 
+                rho:this.rho,
+                s0:this.s0,
+                v0:this.v0, 
+                r:this.rate, 
+                q:this.dividend,
+                T:this.T,
+                K:this.K);
         }
+
+
+        /// <summary>
+        /// Calculates value of the integrand function that
+        /// appears in the Heston model call price formula.
+        /// </summary>
+        /// <param name="u"> Value at which the integrand function is to be calculated.</param>
+        /// <returns>
+        /// The value of the integrand function.
+        /// </returns>
+        public static double IntegrandFunc(double u, double kappa, double theta, double rho, double v0, double sigma, double s0, double T, double K, double r, double q)
+        {
+            var int1 = IntegrandFunc1(u:u, kappa:kappa, theta:theta, rho: rho, v0: v0, sigma:sigma, s0:s0, T:T, K:K, r:r, q:q);
+            var int2 = IntegrandFunc2(u:u, kappa:kappa, theta:theta, rho: rho, v0: v0, sigma:sigma, s0:s0, T:T, K:K, r:r, q:q);
+            return int1 - int2;
+        }
+
+
+
+
+        public static double IntegrandFunc1(double u, double kappa, double theta, double rho, double v0, double sigma, double s0, double T, double K, double r, double q)
+        {
+
+            Complex Iu = Complex.I * u;
+            Complex I = Complex.I;
+            Complex A = Complex.Exp(-Iu * Math.Log(K));
+
+            var f1 = Phi(
+               u: u - I,
+               kappa: kappa,
+               theta: theta,
+               sigma: sigma,
+               rho: rho,
+               v0: v0,
+               s0: s0,
+               r: r - q,
+               T: T
+               );
+
+
+            Complex complexVal1 = A * f1 / Iu;
+            return complexVal1.Re;
+
+        }
+
+
+        public static double IntegrandFunc2(double u, double kappa, double theta, double rho, double v0, double sigma, double s0, double T, double K, double r, double q)
+        {
+
+            Complex Iu = Complex.I * u;
+            Complex A = Complex.Exp(-Iu * Math.Log(K));
+
+           
+            var f2 = Phi(
+                u: u,
+               kappa: kappa,
+               theta: theta,
+               sigma: sigma,
+               rho: rho,
+               v0: v0,
+               s0: s0,
+               r: r - q,
+               T: T
+               );
+
+
+            Complex complexVal2 = A * f2 / Iu;
+            return  K * complexVal2.Re;
+
+        }
+
 
         public double PutIntegrandFunc(double u)
         {
             Complex I = Complex.I;
             Complex Iu = Complex.I * u;
             Complex A = Complex.Exp(-Iu * Math.Log(this.K));
-            Complex complexVal1 = A * Phi(u - I, this.kappa, this.theta, this.sigma, this.rho, this.s0, this.v0, this.rate - this.dividend, this.T) / Iu;
-            Complex complexVal2 = A * Phi(u, this.kappa, this.theta, this.sigma, this.rho, this.s0, this.v0, this.rate - this.dividend, this.T) / Iu;
+
+            var f1 = Phi(
+                u: u - I,
+                kappa: this.kappa,
+                theta: this.theta,
+                sigma: this.sigma,
+                rho: this.rho,
+                v0: this.v0,
+                s0: this.s0,
+                r: this.rate - this.dividend,
+                T: this.T
+                );
+
+            var f2 = Phi(
+                u: u,
+                kappa: this.kappa,
+                theta: this.theta,
+                sigma: this.sigma,
+                rho: this.rho,
+                v0: this.v0,
+                s0: this.s0,
+                r: this.rate - this.dividend,
+                T: this.T
+                );
+
+
+            Complex complexVal1 = A * f1 / Iu;
+            Complex complexVal2 = A * f2 / Iu;
+
             return complexVal2.Re - this.K * complexVal1.Re;
         }
 
-
-
-        /// <summary>
-        /// Calculates value of the integrand function that appears
-        /// in the Heston model call price formula.
-        /// </summary>
-        /// <param name="u"> Value at which the integrand function is to be calculated.</param>
-        /// <param name="kappa">Heston volatility mean reversion speed parameter.</param>
-        /// <param name="theta">Heston volatility mean reversion level parameter.</param>
-        /// <param name="sigma">Heston volatility of volatility parameter.</param>
-        /// <param name="rho">
-        /// Correlation between the two Wiener processes in the Heston dynamics.
-        /// </param>
-        /// <param name="s0">Starting value for the stock process.</param>
-        /// <param name="v0">Starting value for the volatility process.</param>
-        /// <param name="rate">Risk free rate.</param>
-        /// <param name="dividend">Dividend yield.</param>
-        /// <param name="T">Maturity of the call option which price is to be calculated.</param>
-        /// <param name="K">Strike of the call option which price is to be calculated.</param>
-        /// <returns>
-        /// The value of the integrand function.
-        /// </returns>
-        public double IntegrandFunc(double u, double kappa, double theta, double sigma, double rho, double s0, double v0, double rate, double dividend, double T, double K)
-        {
-            this.kappa = kappa;
-            this.theta = theta;
-            this.sigma = sigma;
-            this.rho = rho;
-            this.s0 = s0;
-            this.v0 = v0;
-            this.rate = rate;
-            this.dividend = dividend;
-            this.T = T;
-            this.K = K;
-
-            return IntegrandFunc(u);
-        }
+       
 
         /// <summary>
         /// Calculates the Heston characteristic function.
@@ -385,7 +603,7 @@ namespace HestonEstimator
         /// <param name="r">Risk free rate.</param>
         /// <param name="T">Time at which the characteristic function is to be calculated.</param>
         /// <returns>The value of the characteristic function.</returns>
-        public Complex Phi(Complex u, double kappa, double theta, double sigma, double rho, double s0, double v0, double r, double T)
+        public static Complex Phi(Complex u, double kappa, double theta, double sigma, double rho, double v0, double s0, double r, double T)
         {
             Complex d, g, A, B, val;
             Complex I = Complex.I;
@@ -405,6 +623,8 @@ namespace HestonEstimator
             return val;
         }
 
+
+
         /// <summary>
         /// Calculates Heston characteristic function with input u real.
         /// </summary>
@@ -420,10 +640,57 @@ namespace HestonEstimator
         /// <param name="r">Risk free rate.</param>
         /// <param name="T">Time at which the characteristic function is to be calculated.</param>
         /// <returns>The value of the characteristic function.</returns>
-        internal Complex Phi(double u, double kappa, double theta, double sigma, double rho, double v0, double s0, double r, double T)
+        internal static Complex Phi(double u, double kappa, double theta, double sigma, double rho, double v0, double s0, double r, double T)
         {
             Complex Cu = new Complex(u);
             return Phi(Cu, kappa, theta, sigma, rho, v0, s0, r, T);
+        }
+
+
+        public static double HestonCallPriceCarrMadan(double kappa, double theta, double rho, double v0, double sigma, double s0, double T, double K, double r, double q)
+        {
+
+            // Carr Madan Approach to solve the call option price: https://perswww.kuleuven.be/~u0009713/ScSiTi03.pdf
+            double alpha = 0.75;
+            var multiplier = Math.Exp(-alpha * Math.Log(K)) / Math.PI;
+
+            Complex FunctionG(Complex U)
+            {
+                
+                var argumentPhi = U - (alpha + 1) * Complex.I; 
+                var g = Phi(argumentPhi, kappa:kappa, theta:theta, sigma:sigma, rho:rho, v0:v0, s0:s0, r:(r-q), T:T);
+                var denom = alpha * alpha + alpha - U * U + Complex.I * (2 * alpha + 1) * U;
+                return Math.Exp(-r*T) * g / denom; 
+            }
+
+
+            double FunctionToIntegrate(double u)
+            {
+                Complex iu = Complex.I * u;
+                Complex i = Complex.I;
+                Complex U = new Complex(u);
+
+                var g = FunctionG(U);
+                var result = (Complex.Exp(-iu * Math.Log(K)) * g);
+                return result.Re;
+            }
+
+
+            double a = 1E-12;
+            double b = 1000.0;
+            // The second term of this expressions approximates the integral in the interval [0,a].
+
+            //Uses PerformIntegral instead of AdaptLobatto in order to keep time constant
+            //var integrate = new Integrate(this);
+            //integrate.Tolerance = 10e-8;
+            //integrate.MaxRecursionLevel = 4;// 4;
+            //double part1 = integrate.AdaptLobatto(a, b);
+
+            double part1 = PerformIntegral(a, b, FunctionToIntegrate);
+
+            double integral = part1 + a * FunctionToIntegrate(a / 2.0);
+
+            return integral * multiplier; 
         }
     }
 }

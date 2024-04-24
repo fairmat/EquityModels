@@ -128,8 +128,7 @@ namespace Heston
             param[2] = process.sigma.V();
             param[3] = 0.0;
             param[4] = process.V0.V();
-            HestonCall hestonCall = new HestonCall();
-            double theoreticalPrice = hestonCall.HestonCallPrice(param, process.S0.V(),
+            double theoreticalPrice = HestonCall.HestonCallPrice(param, process.S0.V(),
                                                                  tau, strike, rate, dy);
             Console.WriteLine("Theoretical Price = " + theoreticalPrice.ToString());
             Console.WriteLine("Monte Carlo Price = " + samplePrice);
