@@ -125,6 +125,19 @@ namespace HestonEstimator
         /// <returns>The price of the digital call option.</returns>
         public static double HestonDigitalCallPrice(double kappa, double theta, double rho, double v0, double sigma, double s0, double T, double K, double r, double q)
         {
+
+            if (Engine.Verbose > 0)
+            {
+                Console.WriteLine("Pricing a digital call option with Heston model");
+                Console.WriteLine("Heston Parameters");
+                Console.WriteLine("kappa\ttheta\tsigma\trho\tv0");
+                Console.WriteLine("{0}\t{1}\t{2}\t{3}\t{4}", kappa, theta, sigma, rho, v0);
+                Console.WriteLine("Digital Call Option Information");
+                Console.WriteLine("s0\tK\tT\tr\tq");
+                Console.WriteLine("{0}\t{1}\t{2}\t{3}\t{4}", s0, K, T, r, q);
+
+            }
+
             var undiscountedCallPrice = UndiscountedHestonDigitalCallPrice(
                 kappa: kappa,
                 theta: theta,
@@ -138,7 +151,16 @@ namespace HestonEstimator
                 q: q
                 );
 
-            return DiscountFactor(rate: r, T: T) * undiscountedCallPrice;
+            var price =  DiscountFactor(rate: r, T: T) * undiscountedCallPrice;
+
+            if (Engine.Verbose > 0)
+            {
+                Console.WriteLine("Undiscounted Digital Call Price: {0}", undiscountedCallPrice);
+                Console.WriteLine("Digital Call Price: {0}", price);
+            }
+
+
+            return price;
         }
 
         /// <summary>
@@ -172,6 +194,20 @@ namespace HestonEstimator
         public static double HestonDigitalPutPrice(double kappa, double theta, double rho, double v0, double sigma, double s0, double T, double K, double r, double q)
         {
             // Price of the digital put is discountFactor * P(St<K) = discountFactor * (1 - P(St>K))
+
+
+            if (Engine.Verbose > 0)
+            {
+                Console.WriteLine("Pricing a digital put option with Heston model");
+                Console.WriteLine("Heston Parameters");
+                Console.WriteLine("kappa\ttheta\tsigma\trho\tv0");
+                Console.WriteLine("{0}\t{1}\t{2}\t{3}\t{4}", kappa, theta, sigma, rho, v0);
+                Console.WriteLine("Digital Put Option Information");
+                Console.WriteLine("s0\tK\tT\tr\tq");
+                Console.WriteLine("{0}\t{1}\t{2}\t{3}\t{4}", s0, K, T, r, q);
+
+            }
+
             var undiscountedCallPrice = UndiscountedHestonDigitalCallPrice(
                 kappa:kappa, 
                 theta:theta,
@@ -186,7 +222,15 @@ namespace HestonEstimator
                 );
 
             var undiscountedPutPrice = 1.0 - undiscountedCallPrice;
-            return DiscountFactor(rate: r, T:T) * undiscountedPutPrice;
+            var price = DiscountFactor(rate: r, T:T) * undiscountedPutPrice;
+
+            if (Engine.Verbose > 0)
+            {
+                Console.WriteLine("Undiscounted Digital Put Price: {0}", undiscountedPutPrice);
+                Console.WriteLine("Digital Put Price: {0}", price);
+            }
+
+            return price;
         }
 
         /// <summary>

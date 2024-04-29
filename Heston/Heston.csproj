@@ -104,6 +104,7 @@
     <Compile Include="HestonCall.cs" />
     <Compile Include="HestonCallSimulationOptimizationProblem.cs" />
     <Compile Include="HestonChoice.cs" />
+    <Compile Include="HestonForward.cs" />
     <Compile Include="HestonDigital.cs" />
     <Compile Include="HestonEstimationSettings.cs" />
     <Compile Include="HestonExtendedChoice.cs" />
