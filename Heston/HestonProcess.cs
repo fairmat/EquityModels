@@ -419,7 +419,8 @@ namespace Heston
 
         public double Call(int component, double strike, double timeToMaturity, Dictionary<string, object> additionalInformation)
         {
-            return HestonCall.HestonCallPrice(
+            
+            var callPrice = HestonCall.HestonCallPrice(
                 kappa: this.k.fV(),
                 theta: this.theta.fV(),
                 sigma: this.sigma.fV(),
@@ -430,6 +431,54 @@ namespace Heston
                 K: strike,
                 r: this.r.fV(),
                 q: this.q.fV());
+
+            return callPrice;
+
+
+            bool calculateGreeks = AttributesUtility.RetrieveAttributeOrDefaultValue(additionalInformation, "Greeks", false);
+            if (calculateGreeks)
+            {
+                (double delta, double gamma) = HestonCall.DeltaGammaCall(
+                    unBumpedPrice: callPrice,
+                    kappa: this.k.fV(),
+                    theta: this.theta.fV(),
+                    sigma: this.sigma.fV(),
+                    rho: this.rho.fV(),
+                    v0: this.V0.fV(),
+                    s0: this.S0.fV(),
+                    T: timeToMaturity,
+                    K: strike,
+                    r: this.r.fV(),
+                    q: this.q.fV());
+                
+                double rho = HestonCall.RhoCall(
+                    kappa: this.k.fV(),
+                    theta: this.theta.fV(),
+                    sigma: this.sigma.fV(),
+                    rho: this.rho.fV(),
+                    v0: this.V0.fV(),
+                    s0: this.S0.fV(),
+                    T: timeToMaturity,
+                    K: strike,
+                    r: this.r.fV(),
+                    q: this.q.fV());
+
+                double vega = HestonCall.VegaCall(
+                    kappa: this.k.fV(),
+                    theta: this.theta.fV(),
+                    sigma: this.sigma.fV(),
+                    rho: this.rho.fV(),
+                    v0: this.V0.fV(),
+                    s0: this.S0.fV(),
+                    T: timeToMaturity,
+                    K: strike,
+                    r: this.r.fV(),
+                    q: this.q.fV());
+
+            }
+
+
+            
         }
     
 

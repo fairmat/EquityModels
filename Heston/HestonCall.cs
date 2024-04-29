@@ -680,7 +680,7 @@ namespace HestonEstimator
         }
 
 
-        internal (double,double) DeltaGammaCall(double unBumpedPrice, double kappa, double theta, double rho, double v0, double sigma, double s0, double T, double K, double r, double q, double bumpPercentage = 0.01)
+        public static (double,double) DeltaGammaCall(double unBumpedPrice, double kappa, double theta, double rho, double v0, double sigma, double s0, double T, double K, double r, double q, double bumpPercentage = 0.01)
         {
             double deltaS = bumpPercentage * s0;
 
@@ -714,7 +714,7 @@ namespace HestonEstimator
         }
 
 
-        internal double VegaCall(double kappa, double theta, double rho, double v0, double sigma, double s0, double T, double K, double r, double q, double bumpPercentage = 0.01)
+        public static double VegaCall(double kappa, double theta, double rho, double v0, double sigma, double s0, double T, double K, double r, double q, double bumpPercentage = 0.01)
         {
             double deltaV = bumpPercentage * v0;
 
@@ -745,7 +745,7 @@ namespace HestonEstimator
             return (callPriceBumpUp - callPriceBumpDown) / (2 * deltaV);
         }
 
-        internal double RhoCall(double kappa, double theta, double rho, double v0, double sigma, double s0, double T, double K, double r, double q, double bumpPercentage = 0.01)
+        public static double RhoCall(double kappa, double theta, double rho, double v0, double sigma, double s0, double T, double K, double r, double q, double bumpPercentage = 0.01)
         {
             double deltaR = bumpPercentage * r;
 
