@@ -218,7 +218,6 @@ namespace HestonEstimator
                 q:this.dividend);
         }
 
-
         public static double HestonCallPrice(double kappa, double theta, double rho, double v0, double sigma, double s0, double T, double K, double r, double q)
         {
 
@@ -264,9 +263,6 @@ namespace HestonEstimator
 
             return call;
         }
-
-
-
 
 
         /// <summary>
@@ -518,8 +514,6 @@ namespace HestonEstimator
         }
 
 
-
-
         public static double IntegrandFunc1(double u, double kappa, double theta, double rho, double v0, double sigma, double s0, double T, double K, double r, double q)
         {
 
@@ -686,6 +680,107 @@ namespace HestonEstimator
         }
 
 
+        internal (double,double) DeltaGammaCall(double unBumpedPrice, double kappa, double theta, double rho, double v0, double sigma, double s0, double T, double K, double r, double q, double bumpPercentage = 0.01)
+        {
+            double deltaS = bumpPercentage * s0;
+
+            double callPriceBumpUp = HestonCall.HestonCallPrice(
+                kappa:kappa, 
+                theta:theta,
+                sigma:sigma,
+                rho:rho,
+                v0:v0,
+                s0:s0 + deltaS,
+                T:T,
+                K:K,
+                r:r,
+                q:q);
+
+            double callPriceBumpDown = HestonCall.HestonCallPrice(
+                kappa: kappa,
+                theta: theta,
+                sigma: sigma,
+                rho: rho,
+                v0: v0,
+                s0: s0 - deltaS,
+                T: T,
+                K: K,
+                r: r,
+                q: q);
+
+            var delta = (callPriceBumpUp - callPriceBumpDown) / (2 * deltaS);
+            var gamma = (callPriceBumpUp - 2 * unBumpedPrice + callPriceBumpDown) / (deltaS * deltaS);
+            return (delta, gamma);
+        }
+
+
+        internal double VegaCall(double kappa, double theta, double rho, double v0, double sigma, double s0, double T, double K, double r, double q, double bumpPercentage = 0.01)
+        {
+            double deltaV = bumpPercentage * v0;
+
+            double callPriceBumpUp = HestonCall.HestonCallPrice(
+                kappa: kappa,
+                theta: theta,
+                sigma: sigma,
+                rho: rho,
+                v0: v0 + deltaV,
+                s0: s0,
+                T: T,
+                K: K,
+                r: r,
+                q: q);
+
+            double callPriceBumpDown = HestonCall.HestonCallPrice(
+                kappa: kappa,
+                theta: theta,
+                sigma: sigma,
+                rho: rho,
+                v0: v0 - deltaV,
+                s0: s0,
+                T: T,
+                K: K,
+                r: r,
+                q: q);
+
+            return (callPriceBumpUp - callPriceBumpDown) / (2 * deltaV);
+        }
+
+        internal double RhoCall(double kappa, double theta, double rho, double v0, double sigma, double s0, double T, double K, double r, double q, double bumpPercentage = 0.01)
+        {
+            double deltaR = bumpPercentage * r;
+
+            double callPriceBumpUp = HestonCall.HestonCallPrice(
+                kappa: kappa,
+                theta: theta,
+                sigma: sigma,
+                rho: rho,
+                v0: v0 ,
+                s0: s0,
+                T: T,
+                K: K,
+                r: r + deltaR,
+                q: q);
+
+            double callPriceBumpDown = HestonCall.HestonCallPrice(
+                kappa: kappa,
+                theta: theta,
+                sigma: sigma,
+                rho: rho,
+                v0: v0,
+                s0: s0,
+                T: T,
+                K: K,
+                r: r - deltaR,
+                q: q);
+
+            return (callPriceBumpUp - callPriceBumpDown) / (2 * deltaR);
+        }
+
+
+
+
+
+        // ALTERNATIVE IMPLEMENTATION OF THE INTEGRAL
         public static double HestonCallPriceCarrMadan(double kappa, double theta, double rho, double v0, double sigma, double s0, double T, double K, double r, double q)
         {
 
