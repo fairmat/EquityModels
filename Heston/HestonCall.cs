@@ -221,6 +221,19 @@ namespace HestonEstimator
 
         public static double HestonCallPrice(double kappa, double theta, double rho, double v0, double sigma, double s0, double T, double K, double r, double q)
         {
+
+            if (Engine.Verbose > 0)
+            {
+                Console.WriteLine("Pricing a call option with Heston model");
+                Console.WriteLine("Heston Parameters");
+                Console.WriteLine("kappa\ttheta\tsigma\trho\tv0");
+                Console.WriteLine("{0}\t{1}\t{2}\t{3}\t{4}", kappa, theta, sigma, rho, v0);
+                Console.WriteLine("Call Option Information");
+                Console.WriteLine("s0\tK\tT\tr\tq");
+                Console.WriteLine("{0}\t{1}\t{2}\t{3}\t{4}", s0, K, T, r, q);
+
+            }
+
             double F = s0 * Math.Exp((r - q) * T);
             double firstTerm = 0.5 * (F - K);
             double a = 1E-8;
@@ -239,7 +252,15 @@ namespace HestonEstimator
 
             double integral = part1 + a * functionToIntegrate(a / 2.0);
 
-            double call = Math.Exp(-r * T) * (firstTerm + integral / Math.PI);
+            double unDiscountedCall =  (firstTerm + integral / Math.PI);
+
+            double call = Math.Exp(-r * T) * unDiscountedCall;
+
+            if (Engine.Verbose > 0)
+            {
+                Console.WriteLine("Undiscounted Call Price: {0}", unDiscountedCall);
+                Console.WriteLine("Call Price: {0}", call);
+            }
 
             return call;
         }
@@ -254,6 +275,18 @@ namespace HestonEstimator
         /// <returns></returns>
         internal static double HestonPutPrice(double kappa, double theta, double rho, double v0, double sigma, double s0, double T, double K, double r, double q)
         {
+            if (Engine.Verbose > 0)
+            {
+                Console.WriteLine("Pricing a put option with Heston model");
+                Console.WriteLine("Heston Parameters");
+                Console.WriteLine("kappa\ttheta\tsigma\trho\tv0");
+                Console.WriteLine("{0}\t{1}\t{2}\t{3}\t{4}", kappa, theta, sigma, rho, v0);
+                Console.WriteLine("Put Option Information");
+                Console.WriteLine("s0\tK\tT\tr\tq");
+                Console.WriteLine("{0}\t{1}\t{2}\t{3}\t{4}", s0, K, T, r, q);
+
+            }
+
             double F = s0 * Math.Exp((r - q) * T);
             double firstTerm = 0.5 * (K-F);
             double a = 1E-8;
@@ -263,8 +296,13 @@ namespace HestonEstimator
             TAEDelegateFunction1D functionToIntegrate = (double u) => IntegrandFunc(u: u, kappa: kappa, theta: theta, sigma: sigma, rho: rho, v0: v0, s0: s0, r: r, q: q, T: T, K: K);
             double part1 = PerformIntegral(a, b, functionToIntegrate);
             double integral = part1 + a * functionToIntegrate(a / 2.0);
-            double put = Math.Exp(-r * T) * (firstTerm + integral / Math.PI);
-
+            double unDiscountedPut =  (firstTerm + integral / Math.PI);
+            double put = Math.Exp(-r * T) * unDiscountedPut;
+            if (Engine.Verbose > 0)
+            {
+                Console.WriteLine("Undiscounted Put Price: {0}", unDiscountedPut);
+                Console.WriteLine("Put Price: {0}", put);
+            }
             return put;
         }
 
@@ -285,6 +323,7 @@ namespace HestonEstimator
 
         internal double HestonPutPrice()
         {
+
             return HestonPutPrice(
                 kappa: this.kappa,
                 theta: this.theta,

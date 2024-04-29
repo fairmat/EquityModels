@@ -419,7 +419,8 @@ namespace Heston
 
         public double Call(int component, double strike, double timeToMaturity, Dictionary<string, object> additionalInformation)
         {
-            return HestonCall.HestonCallPrice(
+
+            double callPrice = HestonCall.HestonCallPrice(
                 kappa: this.k.fV(),
                 theta: this.theta.fV(),
                 sigma: this.sigma.fV(),
@@ -430,6 +431,40 @@ namespace Heston
                 K: strike,
                 r: this.r.fV(),
                 q: this.q.fV());
+
+            return callPrice;
+        }
+
+
+        public double DeltaCall(double strike, double timeToMaturity, double bumpPercentage = 0.01)
+        {
+            double deltaS = bumpPercentage * this.S0.fV();
+
+            double callPriceBumpUp = HestonCall.HestonCallPrice(
+                kappa: this.k.fV(),
+                theta: this.theta.fV(),
+                sigma: this.sigma.fV(),
+                rho: this.rho.fV(),
+                v0: this.V0.fV(),
+                s0: this.S0.fV() + deltaS,
+                T: timeToMaturity,
+                K: strike,
+                r: this.r.fV(),
+                q: this.q.fV());
+
+            double callPriceBumpDown = HestonCall.HestonCallPrice(
+                kappa: this.k.fV(),
+                theta: this.theta.fV(),
+                sigma: this.sigma.fV(),
+                rho: this.rho.fV(),
+                v0: this.V0.fV(),
+                s0: this.S0.fV() - deltaS,
+                T: timeToMaturity,
+                K: strike,
+                r: this.r.fV(),
+                q: this.q.fV());
+
+            return (callPriceBumpUp - callPriceBumpDown) / (2 * deltaS);
         }
     
 
@@ -548,6 +583,7 @@ namespace Heston
         public double FSCall(int component, double strikeFraction, double fsTime, double timeToMaturity, Dictionary<string, object> additionalInformation = null)
         {
             throw new NotImplementedException();
+
         }
         public double FSPut(int component, double strikeFraction, double fsTime, double timeToMaturity, Dictionary<string, object> additionalInformation = null)
         {
