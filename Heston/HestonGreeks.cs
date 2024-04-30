@@ -7,9 +7,6 @@ using Heston;
 
 namespace HestonEstimator
 {
-
-  
-
     public class HestonNumericalGreeks
     {
         /// <summary>
