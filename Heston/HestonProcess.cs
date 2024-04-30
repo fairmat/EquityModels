@@ -417,96 +417,114 @@ namespace Heston
         /// </param>
         /// <returns>The call price</returns>
 
-        public double Call(int component, double strike, double timeToMaturity, Dictionary<string, object> additionalInformation)
+        public GreeksDerivatives Call(int component, double strike, double timeToMaturity, Dictionary<string, object> additionalInformation)
         {
-            
-            var callPrice = HestonCall.HestonCallPrice(
-                kappa: this.k.fV(),
-                theta: this.theta.fV(),
-                sigma: this.sigma.fV(),
-                rho: this.rho.fV(),
-                v0: this.V0.fV(),
-                s0: this.S0.fV(),
-                T: timeToMaturity,
-                K: strike,
-                r: this.r.fV(),
-                q: this.q.fV());
+            GreeksDerivatives result = new GreeksDerivatives();
 
-            return callPrice;
+            var kappaParam = this.k.fV();
+            var thetaParam = this.theta.fV();
+            var sigmaParam = this.sigma.fV();
+            var rhoParam = this.rho.fV();
+            var v0Param = this.V0.fV();
+            var s0Param = this.S0.fV();
+            var rParam = this.r.fV();
+            var qParam = this.q.fV();
+             
 
 
-            bool calculateGreeks = AttributesUtility.RetrieveAttributeOrDefaultValue(additionalInformation, "Greeks", false);
-            if (calculateGreeks)
+            result.MarkToMarket = HestonCall.HestonCallPrice(
+               kappa: kappaParam,
+               theta: thetaParam,
+               sigma: sigmaParam,
+               rho: rhoParam,
+               v0: v0Param,
+               s0: s0Param,
+               T: timeToMaturity,
+               K: strike,
+               r: rParam,
+               q: qParam);
+
+            if (!AttributesUtility.RetrieveAttributeOrDefaultValue(additionalInformation, "Greeks", false))
+                return result;
+            else
             {
                 // analytical greeks 
                 var delta = HestonDelta.DeltaCall(
-                    kappa: this.k.fV(),
-                    theta: this.theta.fV(),
-                    sigma: this.sigma.fV(),
-                    rho: this.rho.fV(),
-                    v0: this.V0.fV(),
-                    s0: this.S0.fV(),
-                    T: timeToMaturity,
-                    K: strike,
-                    r: this.r.fV(),
-                    q: this.q.fV());
+                   kappa: kappaParam,
+                   theta: thetaParam,
+                   sigma: sigmaParam,
+                   rho: rhoParam,
+                   v0: v0Param,
+                   s0: s0Param,
+                   T: timeToMaturity,
+                   K: strike,
+                   r: rParam,
+                   q: qParam);
 
                 var gamma = HestonGamma.GammaCall(
-                    kappa: this.k.fV(),
-                    theta: this.theta.fV(),
-                    sigma: this.sigma.fV(),
-                    rho: this.rho.fV(),
-                    v0: this.V0.fV(),
-                    s0: this.S0.fV(),
-                    T: timeToMaturity,
-                    K: strike,
-                    r: this.r.fV(),
-                    q: this.q.fV());
+                   kappa: kappaParam,
+                   theta: thetaParam,
+                   sigma: sigmaParam,
+                   rho: rhoParam,
+                   v0: v0Param,
+                   s0: s0Param,
+                   T: timeToMaturity,
+                   K: strike,
+                   r: rParam,
+                   q: qParam);
 
                 var rho = HestonRho.RhoCall(
-                    kappa: this.k.fV(),
-                    theta: this.theta.fV(),
-                    sigma: this.sigma.fV(),
-                    rho: this.rho.fV(),
-                    v0: this.V0.fV(),
-                    s0: this.S0.fV(),
-                    T: timeToMaturity,
-                    K: strike,
-                    r: this.r.fV(),
-                    q: this.q.fV());
+                   kappa: kappaParam,
+                   theta: thetaParam,
+                   sigma: sigmaParam,
+                   rho: rhoParam,
+                   v0: v0Param,
+                   s0: s0Param,
+                   T: timeToMaturity,
+                   K: strike,
+                   r: rParam,
+                   q: qParam);
 
                 // numerical greeks 
 
                 var theta = HestonNumericalGreeks.ThetaCall(
-                    kappa: this.k.fV(),
-                    theta: this.theta.fV(),
-                    sigma: this.sigma.fV(),
-                    rho: this.rho.fV(),
-                    v0: this.V0.fV(),
-                    s0: this.S0.fV(),
-                    T: timeToMaturity,
-                    K: strike,
-                    r: this.r.fV(),
-                    q: this.q.fV());
+                   kappa: kappaParam,
+                   theta: thetaParam,
+                   sigma: sigmaParam,
+                   rho: rhoParam,
+                   v0: v0Param,
+                   s0: s0Param,
+                   T: timeToMaturity,
+                   K: strike,
+                   r: rParam,
+                   q: qParam);
 
                 var vega = HestonNumericalGreeks.VegaCall(
-                    kappa: this.k.fV(),
-                    theta: this.theta.fV(),
-                    sigma: this.sigma.fV(),
-                    rho: this.rho.fV(),
-                    v0: this.V0.fV(),
-                    s0: this.S0.fV(),
-                    T: timeToMaturity,
-                    K: strike,
-                    r: this.r.fV(),
-                    q: this.q.fV());
+                   kappa: kappaParam,
+                   theta: thetaParam,
+                   sigma: sigmaParam,
+                   rho: rhoParam,
+                   v0: v0Param,
+                   s0: s0Param,
+                   T: timeToMaturity,
+                   K: strike,
+                   r: rParam,
+                   q: qParam);
+
+
+                result.Deltas = (Vector)(delta);
+                result.Gammas = (Vector)(gamma);
+                result.Rho = rho;
+                result.Theta = theta;
+                result.Vegas = (Vector)vega;
+                return result;
 
             }
 
 
             
         }
-    
+
 
         /// <summary>
         /// Calculate the price of a european put option.
@@ -522,21 +540,114 @@ namespace Heston
         /// Additional information regarding the put option
         /// </param>
         /// <returns>The put price</returns>
-        public double Put(int component, double strike, double timeToMaturity, Dictionary<string, object> additionalInformation)
+        public GreeksDerivatives Put(int component, double strike, double timeToMaturity, Dictionary<string, object> additionalInformation)
         {
-            return  HestonCall.HestonPutPrice(
-                kappa: this.k.fV(),
-                theta: this.theta.fV(),
-                sigma: this.sigma.fV(),
-                rho: this.rho.fV(),
-                v0: this.V0.fV(),
-                s0: this.S0.fV(),
-                T: timeToMaturity,
-                K: strike,
-                r: this.r.fV(),
-                q: this.q.fV());
+            GreeksDerivatives result = new GreeksDerivatives();
+
+            var kappaParam = this.k.fV();
+            var thetaParam = this.theta.fV();
+            var sigmaParam = this.sigma.fV();
+            var rhoParam = this.rho.fV();
+            var v0Param = this.V0.fV();
+            var s0Param = this.S0.fV();
+            var rParam = this.r.fV();
+            var qParam = this.q.fV();
+
+
+
+            result.MarkToMarket = HestonCall.HestonPutPrice(
+               kappa: kappaParam,
+               theta: thetaParam,
+               sigma: sigmaParam,
+               rho: rhoParam,
+               v0: v0Param,
+               s0: s0Param,
+               T: timeToMaturity,
+               K: strike,
+               r: rParam,
+               q: qParam);
+
+            if (!AttributesUtility.RetrieveAttributeOrDefaultValue(additionalInformation, "Greeks", false))
+                return result;
+            else
+            {
+                // analytical greeks 
+                var delta = HestonDelta.DeltaPut(
+                   kappa: kappaParam,
+                   theta: thetaParam,
+                   sigma: sigmaParam,
+                   rho: rhoParam,
+                   v0: v0Param,
+                   s0: s0Param,
+                   T: timeToMaturity,
+                   K: strike,
+                   r: rParam,
+                   q: qParam);
+
+                var gamma = HestonGamma.GammaPut(
+                   kappa: kappaParam,
+                   theta: thetaParam,
+                   sigma: sigmaParam,
+                   rho: rhoParam,
+                   v0: v0Param,
+                   s0: s0Param,
+                   T: timeToMaturity,
+                   K: strike,
+                   r: rParam,
+                   q: qParam);
+
+                var rho = HestonRho.RhoPut(
+                   kappa: kappaParam,
+                   theta: thetaParam,
+                   sigma: sigmaParam,
+                   rho: rhoParam,
+                   v0: v0Param,
+                   s0: s0Param,
+                   T: timeToMaturity,
+                   K: strike,
+                   r: rParam,
+                   q: qParam);
+
+                // numerical greeks 
+
+                var theta = HestonNumericalGreeks.ThetaPut(
+                   kappa: kappaParam,
+                   theta: thetaParam,
+                   sigma: sigmaParam,
+                   rho: rhoParam,
+                   v0: v0Param,
+                   s0: s0Param,
+                   T: timeToMaturity,
+                   K: strike,
+                   r: rParam,
+                   q: qParam);
+
+                var vega = HestonNumericalGreeks.VegaPut(
+                   kappa: kappaParam,
+                   theta: thetaParam,
+                   sigma: sigmaParam,
+                   rho: rhoParam,
+                   v0: v0Param,
+                   s0: s0Param,
+                   T: timeToMaturity,
+                   K: strike,
+                   r: rParam,
+                   q: qParam);
+
+
+                result.Deltas = (Vector)(delta);
+                result.Gammas = (Vector)(gamma);
+                result.Rho = rho;
+                result.Theta = theta;
+                result.Vegas = (Vector)vega;
+                return result;
+
+            }
+
+
 
         }
+
 
         /// <summary>
         /// Calculate the price of a european digital call option.
@@ -553,20 +664,111 @@ namespace Heston
         /// </param>
         /// <returns>The digital call price</returns>
 
-        public double DigitalCall(int component, double strike, double timeToMaturity, Dictionary<string, object> additionalInformation)
+        public GreeksDerivatives DigitalCall(int component, double strike, double timeToMaturity, Dictionary<string, object> additionalInformation)
         {
-            return HestonDigital.HestonDigitalCallPrice(
-                kappa: this.k.fV(),
-                theta: this.theta.fV(),
-                sigma: this.sigma.fV(),
-                rho: this.rho.fV(),
-                v0: this.V0.fV(),
-                s0: this.S0.fV(),
-                T: timeToMaturity,
-                K: strike,
-                r: this.r.fV(),
-                q: this.q.fV()
-                );
+            GreeksDerivatives result = new GreeksDerivatives();
+
+            var kappaParam = this.k.fV();
+            var thetaParam = this.theta.fV();
+            var sigmaParam = this.sigma.fV();
+            var rhoParam = this.rho.fV();
+            var v0Param = this.V0.fV();
+            var s0Param = this.S0.fV();
+            var rParam = this.r.fV();
+            var qParam = this.q.fV();
+
+
+
+            result.MarkToMarket = HestonDigital.HestonDigitalCallPrice(
+               kappa: kappaParam,
+               theta: thetaParam,
+               sigma: sigmaParam,
+               rho: rhoParam,
+               v0: v0Param,
+               s0: s0Param,
+               T: timeToMaturity,
+               K: strike,
+               r: rParam,
+               q: qParam);
+
+            if (!AttributesUtility.RetrieveAttributeOrDefaultValue(additionalInformation, "Greeks", false))
+                return result;
+            else
+            {
+                // analytical greeks 
+                var delta = HestonDelta.DeltaDigitalCall(
+                   kappa: kappaParam,
+                   theta: thetaParam,
+                   sigma: sigmaParam,
+                   rho: rhoParam,
+                   v0: v0Param,
+                   s0: s0Param,
+                   T: timeToMaturity,
+                   K: strike,
+                   r: rParam,
+                   q: qParam);
+
+                var gamma = HestonGamma.GammaDigitalCall(
+                   kappa: kappaParam,
+                   theta: thetaParam,
+                   sigma: sigmaParam,
+                   rho: rhoParam,
+                   v0: v0Param,
+                   s0: s0Param,
+                   T: timeToMaturity,
+                   K: strike,
+                   r: rParam,
+                   q: qParam);
+
+                var rho = HestonRho.RhoDigitalCall(
+                   kappa: kappaParam,
+                   theta: thetaParam,
+                   sigma: sigmaParam,
+                   rho: rhoParam,
+                   v0: v0Param,
+                   s0: s0Param,
+                   T: timeToMaturity,
+                   K: strike,
+                   r: rParam,
+                   q: qParam);
+
+                // numerical greeks 
+
+                var theta = HestonNumericalGreeks.ThetaDCall(
+                   kappa: kappaParam,
+                   theta: thetaParam,
+                   sigma: sigmaParam,
+                   rho: rhoParam,
+                   v0: v0Param,
+                   s0: s0Param,
+                   T: timeToMaturity,
+                   K: strike,
+                   r: rParam,
+                   q: qParam);
+
+                var vega = HestonNumericalGreeks.VegaDCall(
+                   kappa: kappaParam,
+                   theta: thetaParam,
+                   sigma: sigmaParam,
+                   rho: rhoParam,
+                   v0: v0Param,
+                   s0: s0Param,
+                   T: timeToMaturity,
+                   K: strike,
+                   r: rParam,
+                   q: qParam);
+
+
+                result.Deltas = (Vector)(delta);
+                result.Gammas = (Vector)(gamma);
+                result.Rho = rho;
+                result.Theta = theta;
+                result.Vegas = (Vector)vega;
+                return result;
+
+            }
+
+
         }
 
         /// <summary>
@@ -583,19 +785,110 @@ namespace Heston
         /// Additional information regarding the digital put option
         /// </param>
         /// <returns>The digital put price</returns>
-        public double DigitalPut(int component, double strike, double timeToMaturity, Dictionary<string, object> additionalInformation)
+        public GreeksDerivatives DigitalPut(int component, double strike, double timeToMaturity, Dictionary<string, object> additionalInformation)
         {
-            return HestonDigital.HestonDigitalPutPrice(kappa: this.k.fV(),
-                theta: this.theta.fV(),
-                sigma: this.sigma.fV(),
-                rho: this.rho.fV(),
-                v0: this.V0.fV(),
-                s0: this.S0.fV(),
-                T: timeToMaturity,
-                K: strike,
-                r: this.r.fV(),
-                q: this.q.fV()
-                );
+            GreeksDerivatives result = new GreeksDerivatives();
+
+            var kappaParam = this.k.fV();
+            var thetaParam = this.theta.fV();
+            var sigmaParam = this.sigma.fV();
+            var rhoParam = this.rho.fV();
+            var v0Param = this.V0.fV();
+            var s0Param = this.S0.fV();
+            var rParam = this.r.fV();
+            var qParam = this.q.fV();
+
+
+
+            result.MarkToMarket = HestonDigital.HestonDigitalPutPrice(
+               kappa: kappaParam,
+               theta: thetaParam,
+               sigma: sigmaParam,
+               rho: rhoParam,
+               v0: v0Param,
+               s0: s0Param,
+               T: timeToMaturity,
+               K: strike,
+               r: rParam,
+               q: qParam);
+
+            bool calculateGreeks = AttributesUtility.RetrieveAttributeOrDefaultValue(additionalInformation, "Greeks", false);
+            if (!calculateGreeks)
+                return result;
+            else
+            {
+                // analytical greeks 
+                var delta = HestonDelta.DeltaDigitalPut(
+                   kappa: kappaParam,
+                   theta: thetaParam,
+                   sigma: sigmaParam,
+                   rho: rhoParam,
+                   v0: v0Param,
+                   s0: s0Param,
+                   T: timeToMaturity,
+                   K: strike,
+                   r: rParam,
+                   q: qParam);
+
+                var gamma = HestonGamma.GammaDigitalPut(
+                   kappa: kappaParam,
+                   theta: thetaParam,
+                   sigma: sigmaParam,
+                   rho: rhoParam,
+                   v0: v0Param,
+                   s0: s0Param,
+                   T: timeToMaturity,
+                   K: strike,
+                   r: rParam,
+                   q: qParam);
+
+                var rho = HestonRho.RhoDigitalPut(
+                   kappa: kappaParam,
+                   theta: thetaParam,
+                   sigma: sigmaParam,
+                   rho: rhoParam,
+                   v0: v0Param,
+                   s0: s0Param,
+                   T: timeToMaturity,
+                   K: strike,
+                   r: rParam,
+                   q: qParam);
+
+                // numerical greeks 
+
+                var theta = HestonNumericalGreeks.ThetaDPut(
+                   kappa: kappaParam,
+                   theta: thetaParam,
+                   sigma: sigmaParam,
+                   rho: rhoParam,
+                   v0: v0Param,
+                   s0: s0Param,
+                   T: timeToMaturity,
+                   K: strike,
+                   r: rParam,
+                   q: qParam);
+
+                var vega = HestonNumericalGreeks.VegaDPut(
+                   kappa: kappaParam,
+                   theta: thetaParam,
+                   sigma: sigmaParam,
+                   rho: rhoParam,
+                   v0: v0Param,
+                   s0: s0Param,
+                   T: timeToMaturity,
+                   K: strike,
+                   r: rParam,
+                   q: qParam);
+
+
+                result.Deltas = (Vector)(delta);
+                result.Gammas = (Vector)(gamma);
+                result.Rho = rho;
+                result.Theta = theta;
+                result.Vegas = (Vector)vega;
+                return result;
+
+            }
         }
 
         /// <summary>
@@ -612,7 +905,7 @@ namespace Heston
         /// Additional information regarding the swap option
         /// </param>
         /// <returns>The swap price</returns>
-        public double Swap(int component, double strike, double swapMaturity, Dictionary<string, object> additionalInformation = null)
+        public GreeksDerivatives Swap(int component, double strike, double swapMaturity, Dictionary<string, object> additionalInformation = null)
         {
             throw new NotImplementedException();
         }
@@ -620,9 +913,10 @@ namespace Heston
         #endregion
 
         #region IForwardStartingPricing Members
-        public double FSCall(int component, double strikeFraction, double fsTime, double timeToMaturity, Dictionary<string, object> additionalInformation = null)
+        public GreeksDerivatives FSCall(int component, double strikeFraction, double fsTime, double timeToMaturity, Dictionary<string, object> additionalInformation = null)
         {
-            return HestonForwardApproximated.HestonForwardCallPrice(
+            GreeksDerivatives result = new GreeksDerivatives();
+            result.MarkToMarket = HestonForwardApproximated.HestonForwardCallPrice(
                 kappa:k.fV(),
                 theta: this.theta.fV(),
                 sigma: this.sigma.fV(),
@@ -635,23 +929,24 @@ namespace Heston
                 q: this.q.fV(),
                 T0: fsTime
                 ) ;
-                
-                
+
+            return result;
+                                
                 
         }
-        public double FSPut(int component, double strikeFraction, double fsTime, double timeToMaturity, Dictionary<string, object> additionalInformation = null)
+        public GreeksDerivatives FSPut(int component, double strikeFraction, double fsTime, double timeToMaturity, Dictionary<string, object> additionalInformation = null)
         {
             throw new NotImplementedException();
         }
-        public double FSDigitalCall(int component, double strikeFraction, double fsTime, double timeToMaturity, Dictionary<string, object> additionalInformation = null)
+        public GreeksDerivatives FSDigitalCall(int component, double strikeFraction, double fsTime, double timeToMaturity, Dictionary<string, object> additionalInformation = null)
         {
             throw new NotImplementedException();
         }
-        public double FSDigitalPut(int component, double strikeFraction, double fsTime, double timeToMaturity, Dictionary<string, object> additionalInformation = null)
+        public GreeksDerivatives FSDigitalPut(int component, double strikeFraction, double fsTime, double timeToMaturity, Dictionary<string, object> additionalInformation = null)
         {
             throw new NotImplementedException();
         }
-        public double FSSwap(int component, double strikeFraction, double fsTime, double swapMaturity, Dictionary<string, object> additionalInformation = null)
+        public GreeksDerivatives FSSwap(int component, double strikeFraction, double fsTime, double swapMaturity, Dictionary<string, object> additionalInformation = null)
         {
             throw new NotImplementedException();
         }
