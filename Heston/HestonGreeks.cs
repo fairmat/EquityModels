@@ -1242,6 +1242,7 @@ namespace HestonEstimator
             return ds * (rho1 - T / 2);
 
         }
+        
         public static double RhoDigitalPut(double kappa, double theta, double rho, double v0, double sigma, double s0, double T, double K, double r, double q)
         {
             var ds = HestonDigital.DiscountFactor(rate: r, T: T);
