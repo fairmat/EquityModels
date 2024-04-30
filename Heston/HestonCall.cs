@@ -510,7 +510,7 @@ namespace HestonEstimator
         {
             var int1 = IntegrandFunc1(u:u, kappa:kappa, theta:theta, rho: rho, v0: v0, sigma:sigma, s0:s0, T:T, K:K, r:r, q:q);
             var int2 = IntegrandFunc2(u:u, kappa:kappa, theta:theta, rho: rho, v0: v0, sigma:sigma, s0:s0, T:T, K:K, r:r, q:q);
-            return int1 - int2;
+            return int1 - K*int2;
         }
 
 
@@ -548,7 +548,7 @@ namespace HestonEstimator
 
            
             var f2 = Phi(
-                u: u,
+               u: u,
                kappa: kappa,
                theta: theta,
                sigma: sigma,
@@ -561,7 +561,7 @@ namespace HestonEstimator
 
 
             Complex complexVal2 = A * f2 / Iu;
-            return  K * complexVal2.Re;
+            return  complexVal2.Re;
 
         }
 
@@ -603,7 +603,27 @@ namespace HestonEstimator
             return complexVal2.Re - this.K * complexVal1.Re;
         }
 
-       
+
+        /// <summary>
+        /// Calculates Heston characteristic function with input u real.
+        /// </summary>
+        /// <param name="u"> Value at which the characteristic function is to be calculated.</param>
+        /// <param name="kappa">Heston volatility mean reversion speed parameter.</param>
+        /// <param name="theta">Heston volatility mean reversion level parameter.</param>
+        /// <param name="sigma">Heston volatility of volatility parameter.</param>
+        /// <param name="rho">
+        /// Correlation between the two Wiener processes in the Heston dynamics.
+        /// </param>
+        /// <param name="v0">Starting value for the volatility process.</param>
+        /// <param name="s0">Starting value for the stock process.</param>
+        /// <param name="r">Risk free rate.</param>
+        /// <param name="T">Time at which the characteristic function is to be calculated.</param>
+        /// <returns>The value of the characteristic function.</returns>
+        internal static Complex Phi(double u, double kappa, double theta, double sigma, double rho, double v0, double s0, double r, double T)
+        {
+            Complex Cu = new Complex(u);
+            return Phi(Cu, kappa, theta, sigma, rho, v0, s0, r, T);
+        }
 
         /// <summary>
         /// Calculates the Heston characteristic function.
@@ -656,130 +676,7 @@ namespace HestonEstimator
             return val;
         }
 
-
-
-        /// <summary>
-        /// Calculates Heston characteristic function with input u real.
-        /// </summary>
-        /// <param name="u"> Value at which the characteristic function is to be calculated.</param>
-        /// <param name="kappa">Heston volatility mean reversion speed parameter.</param>
-        /// <param name="theta">Heston volatility mean reversion level parameter.</param>
-        /// <param name="sigma">Heston volatility of volatility parameter.</param>
-        /// <param name="rho">
-        /// Correlation between the two Wiener processes in the Heston dynamics.
-        /// </param>
-        /// <param name="v0">Starting value for the volatility process.</param>
-        /// <param name="s0">Starting value for the stock process.</param>
-        /// <param name="r">Risk free rate.</param>
-        /// <param name="T">Time at which the characteristic function is to be calculated.</param>
-        /// <returns>The value of the characteristic function.</returns>
-        internal static Complex Phi(double u, double kappa, double theta, double sigma, double rho, double v0, double s0, double r, double T)
-        {
-            Complex Cu = new Complex(u);
-            return Phi(Cu, kappa, theta, sigma, rho, v0, s0, r, T);
-        }
-
-
-        public static (double,double) DeltaGammaCall(double unBumpedPrice, double kappa, double theta, double rho, double v0, double sigma, double s0, double T, double K, double r, double q, double bumpPercentage = 0.01)
-        {
-            double deltaS = bumpPercentage * s0;
-
-            double callPriceBumpUp = HestonCall.HestonCallPrice(
-                kappa:kappa, 
-                theta:theta,
-                sigma:sigma,
-                rho:rho,
-                v0:v0,
-                s0:s0 + deltaS,
-                T:T,
-                K:K,
-                r:r,
-                q:q);
-
-            double callPriceBumpDown = HestonCall.HestonCallPrice(
-                kappa: kappa,
-                theta: theta,
-                sigma: sigma,
-                rho: rho,
-                v0: v0,
-                s0: s0 - deltaS,
-                T: T,
-                K: K,
-                r: r,
-                q: q);
-
-            var delta = (callPriceBumpUp - callPriceBumpDown) / (2 * deltaS);
-            var gamma = (callPriceBumpUp - 2 * unBumpedPrice + callPriceBumpDown) / (deltaS * deltaS);
-            return (delta, gamma);
-        }
-
-
-        public static double VegaCall(double kappa, double theta, double rho, double v0, double sigma, double s0, double T, double K, double r, double q, double bumpPercentage = 0.01)
-        {
-            double deltaV = bumpPercentage * v0;
-
-            double callPriceBumpUp = HestonCall.HestonCallPrice(
-                kappa: kappa,
-                theta: theta,
-                sigma: sigma,
-                rho: rho,
-                v0: v0 + deltaV,
-                s0: s0,
-                T: T,
-                K: K,
-                r: r,
-                q: q);
-
-            double callPriceBumpDown = HestonCall.HestonCallPrice(
-                kappa: kappa,
-                theta: theta,
-                sigma: sigma,
-                rho: rho,
-                v0: v0 - deltaV,
-                s0: s0,
-                T: T,
-                K: K,
-                r: r,
-                q: q);
-
-            return (callPriceBumpUp - callPriceBumpDown) / (2 * deltaV);
-        }
-
-        public static double RhoCall(double kappa, double theta, double rho, double v0, double sigma, double s0, double T, double K, double r, double q, double bumpPercentage = 0.01)
-        {
-            double deltaR = bumpPercentage * r;
-
-            double callPriceBumpUp = HestonCall.HestonCallPrice(
-                kappa: kappa,
-                theta: theta,
-                sigma: sigma,
-                rho: rho,
-                v0: v0 ,
-                s0: s0,
-                T: T,
-                K: K,
-                r: r + deltaR,
-                q: q);
-
-            double callPriceBumpDown = HestonCall.HestonCallPrice(
-                kappa: kappa,
-                theta: theta,
-                sigma: sigma,
-                rho: rho,
-                v0: v0,
-                s0: s0,
-                T: T,
-                K: K,
-                r: r - deltaR,
-                q: q);
-
-            return (callPriceBumpUp - callPriceBumpDown) / (2 * deltaR);
-        }
-
-
-
-
-
+        
         // ALTERNATIVE IMPLEMENTATION OF THE INTEGRAL
         public static double HestonCallPriceCarrMadan(double kappa, double theta, double rho, double v0, double sigma, double s0, double T, double K, double r, double q)
         {
@@ -827,4 +724,5 @@ namespace HestonEstimator
             return integral * multiplier; 
         }
     }
+
 }

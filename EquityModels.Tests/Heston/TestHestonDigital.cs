@@ -75,6 +75,118 @@ namespace Heston
             Assert.AreEqual(callPrice + putPrice , 1.0, 1e-6);
         }
 
+        [Test]
+        public void TestGreeksDCall()
+        {
+            double k = 0.9;
+            double tau = 2.0;
+
+            double rate = 0.1;
+            double dy = 0.07;
+            double kappa = 2.5;
+            double theta = 0.4;
+            double sigma = 0.2;
+            double s0 = 1.0;
+            double v0 = 0.3;
+            double rho = -0.8;
+
+            // Calculates the greeks.
+            Engine.Verbose = 0;
+
+            var analyticalDelta = HestonDelta.DeltaDigitalCall(kappa: kappa, theta: theta, sigma: sigma, rho: rho, v0: v0, s0: s0, T: tau, K: k, r: rate, q: dy);
+            var analyticalGamma = HestonGamma.GammaDigitalCall(kappa: kappa, theta: theta, sigma: sigma, rho: rho, v0: v0, s0: s0, T: tau, K: k, r: rate, q: dy);
+            var analyticalRho = HestonRho.RhoDigitalCall(kappa: kappa, theta: theta, sigma: sigma, rho: rho, v0: v0, s0: s0, T: tau, K: k, r: rate, q: dy);
+            var analyticalVega = HestonVega.VegaDigitalCall(kappa: kappa, theta: theta, sigma: sigma, rho: rho, v0: v0, s0: s0, T: tau, K: k, r: rate, q: dy);
+
+
+            (double delta, double gamma) = HestonNumericalGreeks.DeltaGammaDCall(bumpPercentage: 0.001, kappa: kappa, theta: theta, sigma: sigma, rho: rho, v0: v0, s0: s0, T: tau, K: k, r: rate, q: dy);
+            double expectedDelta = 0.362747513586;
+            double expectedGamma = -0.29945856666;
+
+
+            double rhoGreek = HestonNumericalGreeks.RhoDCall(bumpPercentage: 0.001, kappa: kappa, theta: theta, sigma: sigma, rho: rho, v0: v0, s0: s0, T: tau, K: k, r: rate, q: dy);
+            double expectedRho = 0.044689047683;
+
+            double vega = HestonNumericalGreeks.VegaDCall(bumpPercentage: 0.001, kappa: kappa, theta: theta, sigma: sigma, rho: rho, v0: v0, s0: s0, T: tau, K: k, r: rate, q: dy);
+            double expectedVega = -0.052751716997;
+
+            double thetaGreek = HestonNumericalGreeks.ThetaDCall(bumpPercentage: 0.001, kappa: kappa, theta: theta, sigma: sigma, rho: rho, v0: v0, s0: s0, T: tau, K: k, r: rate, q: dy);
+            double expectedTheta = -0.07603626576;
+
+
+            // delta 
+            Assert.AreEqual(expectedDelta, delta, 1e-3);
+            Assert.AreEqual(analyticalDelta, delta, 1e-3);
+            // gamma
+            Assert.AreEqual(expectedGamma, gamma, 1e-3);
+            Assert.AreEqual(analyticalGamma, gamma, 1e-3);
+            //theta 
+            Assert.AreEqual(expectedTheta, thetaGreek, 1e-3);
+            // vega
+            Assert.AreEqual(expectedVega, vega, 1e-3);
+            // Assert.AreEqual(analyticalVega, vega, 1e-3);
+            // rho 
+            Assert.AreEqual(expectedRho, rhoGreek, 1e-3);
+            Assert.AreEqual(analyticalRho, rhoGreek, 1e-3);
+
+        }
+
+        [Test]
+        public void TestGreeksDPut()
+        {
+            double k = 0.9;
+            double tau = 2.0;
+
+            double rate = 0.1;
+            double dy = 0.07;
+            double kappa = 2.5;
+            double theta = 0.4;
+            double sigma = 0.2;
+            double s0 = 1.0;
+            double v0 = 0.3;
+            double rho = -0.8;
+
+            // Calculates the greeks.
+            Engine.Verbose = 0;
+
+            var analyticalDelta = HestonDelta.DeltaDigitalPut(kappa: kappa, theta: theta, sigma: sigma, rho: rho, v0: v0, s0: s0, T: tau, K: k, r: rate, q: dy);
+            var analyticalGamma = HestonGamma.GammaDigitalPut(kappa: kappa, theta: theta, sigma: sigma, rho: rho, v0: v0, s0: s0, T: tau, K: k, r: rate, q: dy);
+            var analyticalRho = HestonRho.RhoDigitalPut(kappa: kappa, theta: theta, sigma: sigma, rho: rho, v0: v0, s0: s0, T: tau, K: k, r: rate, q: dy);
+            var analyticalVega = HestonVega.VegaDigitalPut(kappa: kappa, theta: theta, sigma: sigma, rho: rho, v0: v0, s0: s0, T: tau, K: k, r: rate, q: dy);
+
+
+            (double delta, double gamma) = HestonNumericalGreeks.DeltaGammaDPut(bumpPercentage: 0.001, kappa: kappa, theta: theta, sigma: sigma, rho: rho, v0: v0, s0: s0, T: tau, K: k, r: rate, q: dy);
+            double expectedDelta = -0.362747513586;
+            double expectedGamma = -0.29945856666;
+
+
+            double rhoGreek = HestonNumericalGreeks.RhoDPut(bumpPercentage: 0.001, kappa: kappa, theta: theta, sigma: sigma, rho: rho, v0: v0, s0: s0, T: tau, K: k, r: rate, q: dy);
+            double expectedRho = -1.682150564;
+
+            double vega = HestonNumericalGreeks.VegaDPut(bumpPercentage: 0.001, kappa: kappa, theta: theta, sigma: sigma, rho: rho, v0: v0, s0: s0, T: tau, K: k, r: rate, q: dy);
+            double expectedVega = 0.0527517169;
+
+            double thetaGreek = HestonNumericalGreeks.ThetaDPut(bumpPercentage: 0.001, kappa: kappa, theta: theta, sigma: sigma, rho: rho, v0: v0, s0: s0, T: tau, K: k, r: rate, q: dy);
+            double expectedTheta = -0.00583681009161;
+
+
+            // delta 
+            Assert.AreEqual(expectedDelta, delta, 1e-3);
+            Assert.AreEqual(analyticalDelta, delta, 1e-3);
+            // gamma
+            Assert.AreEqual(expectedGamma, gamma, 1e-3);
+            Assert.AreEqual(analyticalGamma, gamma, 1e-3);
+            //theta 
+            Assert.AreEqual(expectedTheta, thetaGreek, 1e-3);
+            // vega
+            Assert.AreEqual(expectedVega, vega, 1e-3);
+            // Assert.AreEqual(analyticalVega, vega, 1e-3);
+            // rho 
+            Assert.AreEqual(expectedRho, rhoGreek, 1e-3);
+            Assert.AreEqual(analyticalRho, rhoGreek, 1e-3);
+
+        }
+
 
         [TestCase(1,100.0)]
         [TestCase(5, 100.0)]

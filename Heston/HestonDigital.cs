@@ -237,7 +237,7 @@ namespace HestonEstimator
         /// Calculates the undiscounted price of a digital call option using the Heston model.
         /// </summary>
         /// <returns>The undiscounted price of the digital call option.</returns>
-        private static double UndiscountedHestonDigitalCallPrice(double kappa, double theta, double rho, double v0, double sigma, double s0, double T, double K, double r, double q)
+        protected static double UndiscountedHestonDigitalCallPrice(double kappa, double theta, double rho, double v0, double sigma, double s0, double T, double K, double r, double q)
         {
             // the formula to price a digital call is given by 
             //  exp(-r*T) (0.5 +  1/pi * integral from 0 to infinity of Re((exp(-i*ln(K)*u)*phi(u)/(i*u))du )
@@ -246,68 +246,19 @@ namespace HestonEstimator
             double a = 1E-8;
             double b = 1000.0;
 
-            TAEDelegateFunction1D functionToIntegrate = (double u) => IntegrandFunc(u: u, kappa: kappa, theta: theta, sigma: sigma, rho: rho, v0: v0, s0: s0, r: r, q: q, T: T, K: K);
+            TAEDelegateFunction1D functionToIntegrate = (double u) => IntegrandFunc2(u: u, kappa: kappa, theta: theta, sigma: sigma, rho: rho, v0: v0, s0: s0, r: r, q: q, T: T, K: K);
 
             double part1 = PerformIntegral(a, b, functionToIntegrate);
             double integral = part1 + a * functionToIntegrate(a / 2.0);
 
             return (0.5 + 1 / Math.PI * integral);
-
         }
 
         /// <summary>
         /// Calculates the discount factor.
         /// </summary>
         /// <returns>The discount factor.</returns>
-        private static double DiscountFactor(double rate, double T ) { return Math.Exp(-rate * T); }
-
-        /// <summary>
-        /// Calculates the integrand function for the digital option.
-        /// </summary>
-        /// <param name="u">The integration variable.</param>
-        /// <returns>The value of the integrand function at the given u.</returns>
-        private double IntegrandFunc(double u)
-        {
-            return IntegrandFunc(
-               u: u,
-               kappa: this.kappa,
-               theta: this.theta,
-               sigma: this.sigma,
-               rho: this.rho,
-               s0: this.s0,
-               v0: this.v0,
-               r: this.rate,
-               q: this.dividend,
-               T: this.T,
-               K: this.K);
-        }
-
-        public static double IntegrandFunc(double u, double kappa, double theta, double rho, double v0, double sigma, double s0, double T, double K, double r, double q)
-        {
-
-            Complex Iu = Complex.I * u;
-            Complex A = Complex.Exp(-Iu * Math.Log(K));
-            Complex Cu = new Complex(u);
- 
-            var f2 = Phi(
-               u: Cu,
-               kappa: kappa,
-               theta: theta,
-               sigma: sigma,
-               rho: rho,
-               v0: v0,
-               s0: s0,
-               r: r - q,
-               T: T
-               );
-
-
-            Complex complexVal = A * f2 / Iu;
-            return complexVal.Re;
-
-        }
-
-
+        internal static double DiscountFactor(double rate, double T ) { return Math.Exp(-rate * T); }
 
 
 
