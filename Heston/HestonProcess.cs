@@ -438,20 +438,8 @@ namespace Heston
             bool calculateGreeks = AttributesUtility.RetrieveAttributeOrDefaultValue(additionalInformation, "Greeks", false);
             if (calculateGreeks)
             {
-                (double delta, double gamma) = HestonCall.DeltaGammaCall(
-                    unBumpedPrice: callPrice,
-                    kappa: this.k.fV(),
-                    theta: this.theta.fV(),
-                    sigma: this.sigma.fV(),
-                    rho: this.rho.fV(),
-                    v0: this.V0.fV(),
-                    s0: this.S0.fV(),
-                    T: timeToMaturity,
-                    K: strike,
-                    r: this.r.fV(),
-                    q: this.q.fV());
-                
-                double rho = HestonCall.RhoCall(
+                // analytical greeks 
+                var delta = HestonDelta.DeltaCall(
                     kappa: this.k.fV(),
                     theta: this.theta.fV(),
                     sigma: this.sigma.fV(),
@@ -463,7 +451,45 @@ namespace Heston
                     r: this.r.fV(),
                     q: this.q.fV());
 
-                double vega = HestonCall.VegaCall(
+                var gamma = HestonGamma.GammaCall(
+                    kappa: this.k.fV(),
+                    theta: this.theta.fV(),
+                    sigma: this.sigma.fV(),
+                    rho: this.rho.fV(),
+                    v0: this.V0.fV(),
+                    s0: this.S0.fV(),
+                    T: timeToMaturity,
+                    K: strike,
+                    r: this.r.fV(),
+                    q: this.q.fV());
+
+                var rho = HestonRho.RhoCall(
+                    kappa: this.k.fV(),
+                    theta: this.theta.fV(),
+                    sigma: this.sigma.fV(),
+                    rho: this.rho.fV(),
+                    v0: this.V0.fV(),
+                    s0: this.S0.fV(),
+                    T: timeToMaturity,
+                    K: strike,
+                    r: this.r.fV(),
+                    q: this.q.fV());
+
+                // numerical greeks 
+
+                var theta = HestonNumericalGreeks.ThetaCall(
+                    kappa: this.k.fV(),
+                    theta: this.theta.fV(),
+                    sigma: this.sigma.fV(),
+                    rho: this.rho.fV(),
+                    v0: this.V0.fV(),
+                    s0: this.S0.fV(),
+                    T: timeToMaturity,
+                    K: strike,
+                    r: this.r.fV(),
+                    q: this.q.fV());
+
+                var vega = HestonNumericalGreeks.VegaCall(
                     kappa: this.k.fV(),
                     theta: this.theta.fV(),
                     sigma: this.sigma.fV(),
@@ -596,7 +622,22 @@ namespace Heston
         #region IForwardStartingPricing Members
         public double FSCall(int component, double strikeFraction, double fsTime, double timeToMaturity, Dictionary<string, object> additionalInformation = null)
         {
-            throw new NotImplementedException();
+            return HestonForwardApproximated.HestonForwardCallPrice(
+                kappa:k.fV(),
+                theta: this.theta.fV(),
+                sigma: this.sigma.fV(),
+                rho: this.rho.fV(),
+                v0: this.V0.fV(),
+                s0: this.S0.fV(),
+                T: timeToMaturity,
+                K: strikeFraction,
+                r: this.r.fV(),
+                q: this.q.fV(),
+                T0: fsTime
+                ) ;
+                
+                
+                
         }
         public double FSPut(int component, double strikeFraction, double fsTime, double timeToMaturity, Dictionary<string, object> additionalInformation = null)
         {
@@ -651,5 +692,6 @@ namespace Heston
             prj.Processes.r.Set(index, index + 1, (RightValue)rhoEstimate);
 
         }
+
     }
 }

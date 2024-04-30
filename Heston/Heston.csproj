@@ -108,6 +108,7 @@
     <Compile Include="HestonDigital.cs" />
     <Compile Include="HestonEstimationSettings.cs" />
     <Compile Include="HestonExtendedChoice.cs" />
+    <Compile Include="HestonGreeks.cs" />
     <Compile Include="HestonProcess.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="HestonExtendedProcess.cs" />
