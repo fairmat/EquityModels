@@ -155,7 +155,6 @@ namespace HestonEstimator
 
             if (Engine.Verbose > 0)
             {
-                Console.WriteLine("Undiscounted Digital Call Price: {0}", undiscountedCallPrice);
                 Console.WriteLine("Digital Call Price: {0}", price);
             }
 

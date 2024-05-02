@@ -126,6 +126,19 @@ namespace HestonEstimator
 
         public static double ThetaCall(double kappa, double theta, double rho, double v0, double sigma, double s0, double T, double K, double r, double q, double bumpPercentage = 0.01)
         {
+            int verbosity = Engine.Verbose;
+
+            if (verbosity > 0)
+            {
+                Console.WriteLine("Calculating theta with Heston model");
+                Console.WriteLine("Heston Parameters");
+                Console.WriteLine("kappa\ttheta\tsigma\trho\tv0");
+                Console.WriteLine("{0}\t{1}\t{2}\t{3}\t{4}", kappa, theta, sigma, rho, v0);
+                Console.WriteLine("Call Option Information");
+                Console.WriteLine("s0\tK\tT\tr\tq");
+                Console.WriteLine("{0}\t{1}\t{2}\t{3}\t{4}", s0, K, T, r, q);
+
+            }
 
             Func<double, double> callPrice = (double timeToMat) => HestonCall.HestonCallPrice(
                 kappa: kappa,
@@ -139,8 +152,19 @@ namespace HestonEstimator
                 r: r,
                 q: q);
 
-            return GreeksBumper(bumpPercentage, T, callPrice);
+            Engine.Verbose = 0;
+            var thetaGreek = GreeksBumper(bumpPercentage, T, callPrice);
+            Engine.Verbose = verbosity;
+
+            if (verbosity > 0)
+            {
+                Console.WriteLine("Theta");
+                Console.WriteLine(thetaGreek);
+            }
+
+            return thetaGreek;
         }
+
 
         // put option greeks
 
@@ -231,6 +255,19 @@ namespace HestonEstimator
 
         public static double ThetaPut(double kappa, double theta, double rho, double v0, double sigma, double s0, double T, double K, double r, double q, double bumpPercentage = 0.01)
         {
+            int verbosity = Engine.Verbose;
+
+            if (verbosity > 0)
+            {
+                Console.WriteLine("Calculating theta with Heston model");
+                Console.WriteLine("Heston Parameters");
+                Console.WriteLine("kappa\ttheta\tsigma\trho\tv0");
+                Console.WriteLine("{0}\t{1}\t{2}\t{3}\t{4}", kappa, theta, sigma, rho, v0);
+                Console.WriteLine("Call Option Information");
+                Console.WriteLine("s0\tK\tT\tr\tq");
+                Console.WriteLine("{0}\t{1}\t{2}\t{3}\t{4}", s0, K, T, r, q);
+
+            }
 
             Func<double, double> price = (double timeToMat) => HestonCall.HestonPutPrice(
                 kappa: kappa,
@@ -244,7 +281,16 @@ namespace HestonEstimator
                 r: r,
                 q: q);
 
-            return GreeksBumper(bumpPercentage, T, price);
+
+            Engine.Verbose = 0;
+            var thetaGreek = GreeksBumper(bumpPercentage, T, price);
+            Engine.Verbose = verbosity;
+
+            if (verbosity > 0)
+                Console.WriteLine("Theta");
+                Console.WriteLine(thetaGreek);
+
+            return thetaGreek;
         }
 
         // digital option greeks
@@ -409,6 +455,442 @@ namespace HestonEstimator
                 q: q);
 
             return GreeksBumper(bumpPercentage, T, price);
+        }
+
+        public static (double, double) DeltaGammaFSCall(double kappa, double theta, double rho, double v0, double sigma, double s0, double T, double T0, double K, double r, double q, double bumpPercentage = 0.01, double? unBumpedPrice = null)
+        {
+
+            if (!unBumpedPrice.HasValue)
+            {
+                unBumpedPrice = HestonForwardApproximated.HestonForwardCallPrice(
+                    kappa: kappa,
+                    theta: theta,
+                    sigma: sigma,
+                    rho: rho,
+                    v0: v0,
+                    s0: s0,
+                    T: T,
+                    K: K,
+                    r: r,
+                    T0:T0,
+                    q: q);
+            }
+
+            double deltaS = bumpPercentage * s0;
+
+            double callPriceBumpUp = HestonForwardApproximated.HestonForwardCallPrice(
+                kappa: kappa,
+                theta: theta,
+                sigma: sigma,
+                rho: rho,
+                v0: v0,
+                s0: s0 + deltaS,
+                T: T,
+                K: K,
+                T0:T0,
+                r: r,
+                q: q);
+
+            double callPriceBumpDown = HestonForwardApproximated.HestonForwardCallPrice(
+                kappa: kappa,
+                theta: theta,
+                sigma: sigma,
+                rho: rho,
+                v0: v0,
+                T0:T0,
+                s0: s0 - deltaS,
+                T: T,
+                K: K,
+                r: r,
+                q: q);
+
+            var delta = (callPriceBumpUp - callPriceBumpDown) / (2 * deltaS);
+            var gamma = (callPriceBumpUp - 2 * unBumpedPrice.Value + callPriceBumpDown) / (deltaS * deltaS);
+            return (delta, gamma);
+        }
+
+        public static double VegaFSCall(double kappa, double theta, double rho, double v0, double sigma, double s0, double T, double K, double r, double q, double T0, double bumpPercentage = 0.01)
+        {
+
+            Func<double, double> callPrice = (double initialVariance) => HestonForwardApproximated.HestonForwardCallPrice(
+                kappa: kappa,
+                theta: theta,
+                sigma: sigma,
+                rho: rho,
+                v0: initialVariance,
+                s0: s0,
+                T: T,
+                T0:T0,
+                K: K,
+                r: r,
+                q: q);
+
+            return GreeksBumper(bumpPercentage, v0, callPrice);
+        }
+
+        public static double ThetaFSCall(double kappa, double theta, double rho, double v0, double sigma, double s0, double T, double K, double r, double q, double T0, double bumpPercentage = 0.01)
+        {
+
+            Func<double, double> callPrice = (double maturity) => HestonForwardApproximated.HestonForwardCallPrice(
+                kappa: kappa,
+                theta: theta,
+                sigma: sigma,
+                rho: rho,
+                v0: v0,
+                s0: s0,
+                T: maturity,
+                T0: T0,
+                K: K,
+                r: r,
+                q: q);
+
+            return GreeksBumper(bumpPercentage, T, callPrice);
+        }
+
+        public static double RhoFSCall(double kappa, double theta, double rho, double v0, double sigma, double s0, double T, double K, double r, double q, double T0, double bumpPercentage = 0.01)
+        {
+
+            Func<double, double> callPrice = (double interestRate) => HestonForwardApproximated.HestonForwardCallPrice(
+                kappa: kappa,
+                theta: theta,
+                sigma: sigma,
+                rho: rho,
+                v0: v0,
+                s0: s0,
+                T: T,
+                T0: T0,
+                K: K,
+                r: interestRate,
+                q: q);
+
+            return GreeksBumper(bumpPercentage, r, callPrice);
+        }
+
+        public static (double, double) DeltaGammaFSPut(double kappa, double theta, double rho, double v0, double sigma, double s0, double T, double T0, double K, double r, double q, double bumpPercentage = 0.01, double? unBumpedPrice = null)
+        {
+
+            if (!unBumpedPrice.HasValue)
+            {
+                unBumpedPrice = HestonForwardApproximated.HestonForwardPutPrice(
+                    kappa: kappa,
+                    theta: theta,
+                    sigma: sigma,
+                    rho: rho,
+                    v0: v0,
+                    s0: s0,
+                    T: T,
+                    K: K,
+                    r: r,
+                    T0: T0,
+                    q: q);
+            }
+
+            double deltaS = bumpPercentage * s0;
+
+            double putPriceBumpUp = HestonForwardApproximated.HestonForwardPutPrice(
+                kappa: kappa,
+                theta: theta,
+                sigma: sigma,
+                rho: rho,
+                v0: v0,
+                s0: s0 + deltaS,
+                T: T,
+                K: K,
+                T0: T0,
+                r: r,
+                q: q);
+
+            double putPriceBumpDown = HestonForwardApproximated.HestonForwardPutPrice(
+                kappa: kappa,
+                theta: theta,
+                sigma: sigma,
+                rho: rho,
+                v0: v0,
+                T0: T0,
+                s0: s0 - deltaS,
+                T: T,
+                K: K,
+                r: r,
+                q: q);
+
+            var delta = (putPriceBumpUp - putPriceBumpDown) / (2 * deltaS);
+            var gamma = (putPriceBumpUp - 2 * unBumpedPrice.Value + putPriceBumpDown) / (deltaS * deltaS);
+            return (delta, gamma);
+        }
+
+        public static double VegaFSPut(double kappa, double theta, double rho, double v0, double sigma, double s0, double T, double K, double r, double q, double T0, double bumpPercentage = 0.01)
+        {
+
+            Func<double, double> callPrice = (double initialVariance) => HestonForwardApproximated.HestonForwardPutPrice(
+                kappa: kappa,
+                theta: theta,
+                sigma: sigma,
+                rho: rho,
+                v0: initialVariance,
+                s0: s0,
+                T: T,
+                T0: T0,
+                K: K,
+                r: r,
+                q: q);
+
+            return GreeksBumper(bumpPercentage, v0, callPrice);
+        }
+
+        public static double ThetaFSPut(double kappa, double theta, double rho, double v0, double sigma, double s0, double T, double K, double r, double q, double T0, double bumpPercentage = 0.01)
+        {
+
+            Func<double, double> callPrice = (double maturity) => HestonForwardApproximated.HestonForwardPutPrice(
+                kappa: kappa,
+                theta: theta,
+                sigma: sigma,
+                rho: rho,
+                v0: v0,
+                s0: s0,
+                T: maturity,
+                T0: T0,
+                K: K,
+                r: r,
+                q: q);
+
+            return GreeksBumper(bumpPercentage, T, callPrice);
+        }
+
+        public static double RhoFSPut(double kappa, double theta, double rho, double v0, double sigma, double s0, double T, double K, double r, double q, double T0, double bumpPercentage = 0.01)
+        {
+
+            Func<double, double> callPrice = (double interestRate) => HestonForwardApproximated.HestonForwardPutPrice(
+                kappa: kappa,
+                theta: theta,
+                sigma: sigma,
+                rho: rho,
+                v0: v0,
+                s0: s0,
+                T: T,
+                T0: T0,
+                K: K,
+                r: interestRate,
+                q: q);
+
+            return GreeksBumper(bumpPercentage, r, callPrice);
+        }
+
+        public static (double, double) DeltaGammaFSDCall(double kappa, double theta, double rho, double v0, double sigma, double s0, double T, double T0, double K, double r, double q, double bumpPercentage = 0.01, double? unBumpedPrice = null)
+        {
+
+            if (!unBumpedPrice.HasValue)
+            {
+                unBumpedPrice = HestonForwardApproximated.HestonForwardDigitalCallPrice(
+                    kappa: kappa,
+                    theta: theta,
+                    sigma: sigma,
+                    rho: rho,
+                    v0: v0,
+                    s0: s0,
+                    T: T,
+                    K: K,
+                    r: r,
+                    T0: T0,
+                    q: q);
+            }
+
+            double deltaS = bumpPercentage * s0;
+
+            double callPriceBumpUp = HestonForwardApproximated.HestonForwardDigitalCallPrice(
+                kappa: kappa,
+                theta: theta,
+                sigma: sigma,
+                rho: rho,
+                v0: v0,
+                s0: s0 + deltaS,
+                T: T,
+                K: K,
+                T0: T0,
+                r: r,
+                q: q);
+
+            double callPriceBumpDown = HestonForwardApproximated.HestonForwardDigitalCallPrice(
+                kappa: kappa,
+                theta: theta,
+                sigma: sigma,
+                rho: rho,
+                v0: v0,
+                T0: T0,
+                s0: s0 - deltaS,
+                T: T,
+                K: K,
+                r: r,
+                q: q);
+
+            var delta = (callPriceBumpUp - callPriceBumpDown) / (2 * deltaS);
+            var gamma = (callPriceBumpUp - 2 * unBumpedPrice.Value + callPriceBumpDown) / (deltaS * deltaS);
+            return (delta, gamma);
+        }
+
+        public static double VegaFSDCall(double kappa, double theta, double rho, double v0, double sigma, double s0, double T, double K, double r, double q, double T0, double bumpPercentage = 0.01)
+        {
+
+            Func<double, double> callPrice = (double initialVariance) => HestonForwardApproximated.HestonForwardDigitalCallPrice(
+                kappa: kappa,
+                theta: theta,
+                sigma: sigma,
+                rho: rho,
+                v0: initialVariance,
+                s0: s0,
+                T: T,
+                T0: T0,
+                K: K,
+                r: r,
+                q: q);
+
+            return GreeksBumper(bumpPercentage, v0, callPrice);
+        }
+
+        public static double ThetaFSDCall(double kappa, double theta, double rho, double v0, double sigma, double s0, double T, double K, double r, double q, double T0, double bumpPercentage = 0.01)
+        {
+
+            Func<double, double> callPrice = (double maturity) => HestonForwardApproximated.HestonForwardDigitalCallPrice(
+                kappa: kappa,
+                theta: theta,
+                sigma: sigma,
+                rho: rho,
+                v0: v0,
+                s0: s0,
+                T: maturity,
+                T0: T0,
+                K: K,
+                r: r,
+                q: q);
+
+            return GreeksBumper(bumpPercentage, T, callPrice);
+        }
+
+        public static double RhoFSDCall(double kappa, double theta, double rho, double v0, double sigma, double s0, double T, double K, double r, double q, double T0, double bumpPercentage = 0.001)
+        {
+
+            Func<double, double> callPrice = (double interestRate) => HestonForwardApproximated.HestonForwardDigitalCallPrice(
+                kappa: kappa,
+                theta: theta,
+                sigma: sigma,
+                rho: rho,
+                v0: v0,
+                s0: s0,
+                T: T,
+                T0: T0,
+                K: K,
+                r: interestRate,
+                q: q);
+
+            return GreeksBumper(bumpPercentage, r, callPrice);
+        }
+
+        public static (double, double) DeltaGammaFSDPut(double kappa, double theta, double rho, double v0, double sigma, double s0, double T, double T0, double K, double r, double q, double bumpPercentage = 0.01, double? unBumpedPrice = null)
+        {
+
+            if (!unBumpedPrice.HasValue)
+            {
+                unBumpedPrice = HestonForwardApproximated.HestonForwardDigitalPutPrice(
+                    kappa: kappa,
+                    theta: theta,
+                    sigma: sigma,
+                    rho: rho,
+                    v0: v0,
+                    s0: s0,
+                    T: T,
+                    K: K,
+                    r: r,
+                    T0: T0,
+                    q: q);
+            }
+
+            double deltaS = bumpPercentage * s0;
+
+            double putPriceBumpUp = HestonForwardApproximated.HestonForwardDigitalPutPrice(
+                kappa: kappa,
+                theta: theta,
+                sigma: sigma,
+                rho: rho,
+                v0: v0,
+                s0: s0 + deltaS,
+                T: T,
+                K: K,
+                T0: T0,
+                r: r,
+                q: q);
+
+            double putPriceBumpDown = HestonForwardApproximated.HestonForwardDigitalPutPrice(
+                kappa: kappa,
+                theta: theta,
+                sigma: sigma,
+                rho: rho,
+                v0: v0,
+                T0: T0,
+                s0: s0 - deltaS,
+                T: T,
+                K: K,
+                r: r,
+                q: q);
+
+            var delta = (putPriceBumpUp - putPriceBumpDown) / (2 * deltaS);
+            var gamma = (putPriceBumpUp - 2 * unBumpedPrice.Value + putPriceBumpDown) / (deltaS * deltaS);
+            return (delta, gamma);
+        }
+
+        public static double VegaFSDPut(double kappa, double theta, double rho, double v0, double sigma, double s0, double T, double K, double r, double q, double T0, double bumpPercentage = 0.01)
+        {
+
+            Func<double, double> putPrice = (double initialVariance) => HestonForwardApproximated.HestonForwardDigitalPutPrice(
+                kappa: kappa,
+                theta: theta,
+                sigma: sigma,
+                rho: rho,
+                v0: initialVariance,
+                s0: s0,
+                T: T,
+                T0: T0,
+                K: K,
+                r: r,
+                q: q);
+
+            return GreeksBumper(bumpPercentage, v0, putPrice);
+        }
+
+        public static double ThetaFSDPut(double kappa, double theta, double rho, double v0, double sigma, double s0, double T, double K, double r, double q, double T0, double bumpPercentage = 0.01)
+        {
+
+            Func<double, double> putPrice = (double maturity) => HestonForwardApproximated.HestonForwardDigitalPutPrice(
+                kappa: kappa,
+                theta: theta,
+                sigma: sigma,
+                rho: rho,
+                v0: v0,
+                s0: s0,
+                T: maturity,
+                T0: T0,
+                K: K,
+                r: r,
+                q: q);
+
+            return GreeksBumper(bumpPercentage, T, putPrice);
+        }
+
+        public static double RhoFSDPut(double kappa, double theta, double rho, double v0, double sigma, double s0, double T, double K, double r, double q, double T0, double bumpPercentage = 0.001)
+        {
+
+            Func<double, double> putPrice = (double interestRate) => HestonForwardApproximated.HestonForwardDigitalPutPrice(
+                kappa: kappa,
+                theta: theta,
+                sigma: sigma,
+                rho: rho,
+                v0: v0,
+                s0: s0,
+                T: T,
+                T0: T0,
+                K: K,
+                r: interestRate,
+                q: q);
+
+            return GreeksBumper(bumpPercentage, r, putPrice);
         }
 
     }

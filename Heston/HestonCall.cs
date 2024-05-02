@@ -257,7 +257,6 @@ namespace HestonEstimator
 
             if (Engine.Verbose > 0)
             {
-                Console.WriteLine("Undiscounted Call Price: {0}", unDiscountedCall);
                 Console.WriteLine("Call Price: {0}", call);
             }
 
@@ -297,7 +296,6 @@ namespace HestonEstimator
             if (Engine.Verbose > 0)
             {
                 Console.WriteLine("Undiscounted Put Price: {0}", unDiscountedPut);
-                Console.WriteLine("Put Price: {0}", put);
             }
             return put;
         }

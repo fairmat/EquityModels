@@ -233,6 +233,155 @@ namespace Heston
 
         }
 
+        [Test]
+        public void TestGreeksFSCall()
+        {
+            double k = 0.9;
+            double tau = 2.0;
+
+            double rate = 0.1;
+            double dy = 0.07;
+            double kappa = 2.5;
+            double theta = 0.4;
+            double sigma = 0.2;
+            double s0 = 10.0;
+            double v0 = 0.3;
+            double rho = -0.8;
+            double T0 = 1.0;
+
+            // Calculates the greeks.
+            Engine.Verbose = 0;
+
+            (var numericalDelta, var numericalGamma) = HestonNumericalGreeks.DeltaGammaFSCall(kappa: kappa, theta: theta, sigma: sigma, rho: rho, v0: v0, s0: s0, T: tau, T0: T0, K: k, r: rate, q: dy); 
+            var numericalRho = HestonNumericalGreeks.RhoFSCall(kappa: kappa, theta: theta, sigma: sigma, rho: rho, v0: v0, s0: s0, T: tau, T0: T0, K: k, r: rate, q: dy);
+            var numericalVega = HestonNumericalGreeks.VegaFSCall(kappa: kappa, theta: theta, sigma: sigma, rho: rho, v0: v0, s0: s0, T: tau, T0: T0, K: k, r: rate, q: dy);
+            var numericalTheta = HestonNumericalGreeks.ThetaFSCall(kappa: kappa, theta: theta, sigma: sigma, rho: rho, v0: v0, s0: s0, T: tau, T0: T0, K: k, r: rate, q: dy);
+
+
+            var analyticalGreeks = HestonForwardApproximated.HestonForwardCallWithGreeks(kappa: kappa, theta: theta, sigma: sigma, rho: rho, v0: v0, s0: s0, T: tau, T0: T0, K: k, r: rate, q: dy);
+
+
+            Assert.AreEqual(analyticalGreeks.Deltas[0], numericalDelta, 1e-3);
+            Assert.AreEqual(analyticalGreeks.Gammas[0], numericalGamma, 1e-3);
+            Assert.AreEqual(analyticalGreeks.Theta, numericalTheta, 1e-3);
+            Assert.AreEqual(analyticalGreeks.Vegas[0], numericalVega, 1e-3);
+            Assert.AreEqual(analyticalGreeks.Rho, numericalRho, 1e-3);
+
+
+        }
+
+
+        [Test]
+        public void TestGreeksFSPut()
+        {
+            double k = 0.9;
+            double tau = 2.0;
+
+            double rate = 0.1;
+            double dy = 0.07;
+            double kappa = 2.5;
+            double theta = 0.4;
+            double sigma = 0.2;
+            double s0 = 10.0;
+            double v0 = 0.3;
+            double rho = -0.8;
+            double T0 = 1.0;
+
+            // Calculates the greeks.
+            Engine.Verbose = 0;
+
+            (var numericalDelta, var numericalGamma) = HestonNumericalGreeks.DeltaGammaFSPut(kappa: kappa, theta: theta, sigma: sigma, rho: rho, v0: v0, s0: s0, T: tau, T0: T0, K: k, r: rate, q: dy);
+            var numericalRho = HestonNumericalGreeks.RhoFSPut(kappa: kappa, theta: theta, sigma: sigma, rho: rho, v0: v0, s0: s0, T: tau, T0: T0, K: k, r: rate, q: dy);
+            var numericalVega = HestonNumericalGreeks.VegaFSPut(kappa: kappa, theta: theta, sigma: sigma, rho: rho, v0: v0, s0: s0, T: tau, T0: T0, K: k, r: rate, q: dy);
+            var numericalTheta = HestonNumericalGreeks.ThetaFSPut(kappa: kappa, theta: theta, sigma: sigma, rho: rho, v0: v0, s0: s0, T: tau, T0: T0, K: k, r: rate, q: dy);
+
+
+            var analyticalGreeks = HestonForwardApproximated.HestonForwardPutWithGreeks(kappa: kappa, theta: theta, sigma: sigma, rho: rho, v0: v0, s0: s0, T: tau, T0: T0, K: k, r: rate, q: dy);
+
+
+            Assert.AreEqual(analyticalGreeks.Deltas[0], numericalDelta, 1e-3);
+            Assert.AreEqual(analyticalGreeks.Gammas[0], numericalGamma, 1e-3);
+            Assert.AreEqual(analyticalGreeks.Theta, numericalTheta, 1e-3);
+            Assert.AreEqual(analyticalGreeks.Vegas[0], numericalVega, 1e-3);
+            Assert.AreEqual(analyticalGreeks.Rho, numericalRho, 1e-3);
+
+
+        }
+
+        [Test]
+        public void TestGreeksFSDigitalPut()
+        {
+            double k = 0.9;
+            double tau = 2.0;
+
+            double rate = 0.1;
+            double dy = 0.07;
+            double kappa = 2.5;
+            double theta = 0.4;
+            double sigma = 0.2;
+            double s0 = 10.0;
+            double v0 = 0.3;
+            double rho = -0.8;
+            double T0 = 1.0;
+
+            // Calculates the greeks.
+            Engine.Verbose = 0;
+
+            (var numericalDelta, var numericalGamma) = HestonNumericalGreeks.DeltaGammaFSDPut(kappa: kappa, theta: theta, sigma: sigma, rho: rho, v0: v0, s0: s0, T: tau, T0: T0, K: k, r: rate, q: dy);
+            var numericalRho = HestonNumericalGreeks.RhoFSDPut(kappa: kappa, theta: theta, sigma: sigma, rho: rho, v0: v0, s0: s0, T: tau, T0: T0, K: k, r: rate, q: dy);
+            var numericalVega = HestonNumericalGreeks.VegaFSDPut(kappa: kappa, theta: theta, sigma: sigma, rho: rho, v0: v0, s0: s0, T: tau, T0: T0, K: k, r: rate, q: dy);
+            var numericalTheta = HestonNumericalGreeks.ThetaFSDPut(kappa: kappa, theta: theta, sigma: sigma, rho: rho, v0: v0, s0: s0, T: tau, T0: T0, K: k, r: rate, q: dy);
+
+
+            var analyticalGreeks = HestonForwardApproximated.HestonForwardDigitalPutWithGreeks(kappa: kappa, theta: theta, sigma: sigma, rho: rho, v0: v0, s0: s0, T: tau, T0: T0, K: k, r: rate, q: dy);
+
+
+            Assert.AreEqual(analyticalGreeks.Deltas[0], numericalDelta, 1e-3);
+            Assert.AreEqual(analyticalGreeks.Gammas[0], numericalGamma, 1e-3);
+            Assert.AreEqual(analyticalGreeks.Theta, numericalTheta, 1e-3);
+            Assert.AreEqual(analyticalGreeks.Vegas[0], numericalVega, 1e-3);
+            Assert.AreEqual(analyticalGreeks.Rho, numericalRho, 1e-3);
+
+
+        }
+
+        [Test]
+        public void TestGreeksFSDigitalCall()
+        {
+            double k = 0.9;
+            double tau = 2.0;
+
+            double rate = 0.1;
+            double dy = 0.07;
+            double kappa = 2.5;
+            double theta = 0.4;
+            double sigma = 0.2;
+            double s0 = 10.0;
+            double v0 = 0.3;
+            double rho = -0.8;
+            double T0 = 1.0;
+
+            // Calculates the greeks.
+            Engine.Verbose = 0;
+
+            (var numericalDelta, var numericalGamma) = HestonNumericalGreeks.DeltaGammaFSDCall(kappa: kappa, theta: theta, sigma: sigma, rho: rho, v0: v0, s0: s0, T: tau, T0: T0, K: k, r: rate, q: dy);
+            var numericalRho = HestonNumericalGreeks.RhoFSDCall(kappa: kappa, theta: theta, sigma: sigma, rho: rho, v0: v0, s0: s0, T: tau, T0: T0, K: k, r: rate, q: dy);
+            var numericalVega = HestonNumericalGreeks.VegaFSDCall(kappa: kappa, theta: theta, sigma: sigma, rho: rho, v0: v0, s0: s0, T: tau, T0: T0, K: k, r: rate, q: dy);
+            var numericalTheta = HestonNumericalGreeks.ThetaFSDCall(kappa: kappa, theta: theta, sigma: sigma, rho: rho, v0: v0, s0: s0, T: tau, T0: T0, K: k, r: rate, q: dy);
+
+
+            var analyticalGreeks = HestonForwardApproximated.HestonForwardDigitalCallWithGreeks(kappa: kappa, theta: theta, sigma: sigma, rho: rho, v0: v0, s0: s0, T: tau, T0: T0, K: k, r: rate, q: dy);
+
+
+            Assert.AreEqual(analyticalGreeks.Deltas[0], numericalDelta, 1e-3);
+            Assert.AreEqual(analyticalGreeks.Gammas[0], numericalGamma, 1e-3);
+            Assert.AreEqual(analyticalGreeks.Theta, numericalTheta, 1e-3);
+            Assert.AreEqual(analyticalGreeks.Vegas[0], numericalVega, 1e-3);
+            Assert.AreEqual(analyticalGreeks.Rho, numericalRho, 1e-3);
+
+
+        }
+
 
     }
 }

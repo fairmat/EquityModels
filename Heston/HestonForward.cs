@@ -424,6 +424,11 @@ namespace HestonEstimator
             return x0 * Math.Exp(-a * t) + b * (1 - Math.Exp(-a * t));
         }
 
+        public static double derivativeExpectationCIRProcess(double x0, double a, double b, double t)
+        {
+            return Math.Exp(-a * t);
+        }
+
         // we use similar formulas that are used for pricing Forward call options under Black Scholes model
         public static double HestonForwardCallPrice(double kappa, double theta, double rho, double v0, double sigma, double s0, double K, double r, double q, double T, double T0)
         {
@@ -490,7 +495,7 @@ namespace HestonEstimator
             // v follows a CIR process so we take its expectations 
             var v_T0 = ExpectationCIRProcess(v0, kappa, theta, T0);
 
-            var dcall = HestonDigital.HestonDigitalPutPrice(
+            var dcall = HestonDigital.HestonDigitalCallPrice(
                 kappa: kappa,
                 theta: theta,
                 sigma: sigma,
@@ -542,7 +547,7 @@ namespace HestonEstimator
                         r: r,
                         q: q);
 
-            var fsCallVega = s0 * Math.Exp(-q * T0) * HestonNumericalGreeks.VegaCall(
+            var fsCallVega = s0 * Math.Exp(-q * T0) * derivativeExpectationCIRProcess(v0, kappa, theta, T0) * HestonNumericalGreeks.VegaCall(
                         kappa: kappa,
                         theta: theta,
                         sigma: sigma,
@@ -615,7 +620,7 @@ namespace HestonEstimator
                         r: r,
                         q: q);
 
-            var fsPutVega = s0 * Math.Exp(-q * T0) * HestonNumericalGreeks.VegaPut(
+            var fsPutVega = s0 * Math.Exp(-q * T0) * derivativeExpectationCIRProcess(v0, kappa, theta, T0) * HestonNumericalGreeks.VegaPut(
                         kappa: kappa,
                         theta: theta,
                         sigma: sigma,
@@ -688,7 +693,7 @@ namespace HestonEstimator
                         r: r,
                         q: q);
 
-            var fsDPutVega = HestonDigital.DiscountFactor(r, T0) *  HestonNumericalGreeks.VegaDPut(
+            var fsDPutVega = HestonDigital.DiscountFactor(r, T0) * derivativeExpectationCIRProcess(v0, kappa, theta, T0) * HestonNumericalGreeks.VegaDPut(
                         kappa: kappa,
                         theta: theta,
                         sigma: sigma,
@@ -712,7 +717,8 @@ namespace HestonEstimator
                         r: r,
                         q: q);
 
-            fsDPutRho += -r * fsDPutMarkToMarket * HestonDigital.DiscountFactor(r, T0);
+            fsDPutRho += -T0 * fsDPutMarkToMarket;
+
 
             var result = new GreeksDerivatives()
             {
@@ -764,7 +770,7 @@ namespace HestonEstimator
                         r: r,
                         q: q);
 
-            var fsDCallVega = HestonDigital.DiscountFactor(r, T0) * HestonNumericalGreeks.VegaDCall(
+            var fsDCallVega = HestonDigital.DiscountFactor(r, T0) * derivativeExpectationCIRProcess(v0, kappa, theta, T0) * HestonNumericalGreeks.VegaDCall(
                         kappa: kappa,
                         theta: theta,
                         sigma: sigma,
@@ -788,7 +794,9 @@ namespace HestonEstimator
                         r: r,
                         q: q);
 
-            fsDCallRho += -r * fsDCallMarkToMarket * HestonDigital.DiscountFactor(r, T0);
+            fsDCallRho += -T0 * fsDCallMarkToMarket;
+
+
 
             var result = new GreeksDerivatives()
             {
