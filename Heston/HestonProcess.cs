@@ -444,6 +444,7 @@ namespace Heston
                r: rParam,
                q: qParam);
 
+
             if (!AttributesUtility.RetrieveAttributeOrDefaultValue(additionalInformation, "Greeks", false))
                 return result;
             else
