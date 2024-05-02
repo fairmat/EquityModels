@@ -915,36 +915,172 @@ namespace Heston
         #region IForwardStartingPricing Members
         public GreeksDerivatives FSCall(int component, double strikeFraction, double fsTime, double timeToMaturity, Dictionary<string, object> additionalInformation = null)
         {
-            GreeksDerivatives result = new GreeksDerivatives();
-            result.MarkToMarket = HestonForwardApproximated.HestonForwardCallPrice(
-                kappa:k.fV(),
-                theta: this.theta.fV(),
-                sigma: this.sigma.fV(),
-                rho: this.rho.fV(),
-                v0: this.V0.fV(),
-                s0: this.S0.fV(),
-                T: timeToMaturity,
-                K: strikeFraction,
-                r: this.r.fV(),
-                q: this.q.fV(),
-                T0: fsTime
-                ) ;
+            bool calculateGreeks = AttributesUtility.RetrieveAttributeOrDefaultValue(additionalInformation, "Greeks", false);
+            if (!calculateGreeks)
+            {
+                GreeksDerivatives result = new GreeksDerivatives();
+                result.MarkToMarket = HestonForwardApproximated.HestonForwardCallPrice(
+                    kappa: k.fV(),
+                    theta: this.theta.fV(),
+                    sigma: this.sigma.fV(),
+                    rho: this.rho.fV(),
+                    v0: this.V0.fV(),
+                    s0: this.S0.fV(),
+                    T: timeToMaturity,
+                    K: strikeFraction,
+                    r: this.r.fV(),
+                    q: this.q.fV(),
+                    T0: fsTime
+                    );
 
-            return result;
+
+
+                return result;
+            }
+            else
+            {
+                return HestonForwardApproximated.HestonForwardCallWithGreeks(
+                    kappa: k.fV(),
+                    theta: this.theta.fV(),
+                    sigma: this.sigma.fV(),
+                    rho: this.rho.fV(),
+                    v0: this.V0.fV(),
+                    s0: this.S0.fV(),
+                    T: timeToMaturity,
+                    K: strikeFraction,
+                    r: this.r.fV(),
+                    q: this.q.fV(),
+                    T0: fsTime
+                    );                                                                                                                                                                                                             );
+            }
                                 
                 
         }
         public GreeksDerivatives FSPut(int component, double strikeFraction, double fsTime, double timeToMaturity, Dictionary<string, object> additionalInformation = null)
         {
-            throw new NotImplementedException();
+            bool calculateGreeks = AttributesUtility.RetrieveAttributeOrDefaultValue(additionalInformation, "Greeks", false);
+            if (!calculateGreeks)
+            {
+                GreeksDerivatives result = new GreeksDerivatives();
+                result.MarkToMarket = HestonForwardApproximated.HestonForwardPutPrice(
+                    kappa: k.fV(),
+                    theta: this.theta.fV(),
+                    sigma: this.sigma.fV(),
+                    rho: this.rho.fV(),
+                    v0: this.V0.fV(),
+                    s0: this.S0.fV(),
+                    T: timeToMaturity,
+                    K: strikeFraction,
+                    r: this.r.fV(),
+                    q: this.q.fV(),
+                    T0: fsTime
+                    );
+
+
+
+                return result;
+            }
+            else
+            {
+                return HestonForwardApproximated.HestonForwardPutWithGreeks(
+                    kappa: k.fV(),
+                    theta: this.theta.fV(),
+                    sigma: this.sigma.fV(),
+                    rho: this.rho.fV(),
+                    v0: this.V0.fV(),
+                    s0: this.S0.fV(),
+                    T: timeToMaturity,
+                    K: strikeFraction,
+                    r: this.r.fV(),
+                    q: this.q.fV(),
+                    T0: fsTime
+                    );                                                                                                                                                                                                             );
+            }
+
         }
+
+
         public GreeksDerivatives FSDigitalCall(int component, double strikeFraction, double fsTime, double timeToMaturity, Dictionary<string, object> additionalInformation = null)
         {
-            throw new NotImplementedException();
+            bool calculateGreeks = AttributesUtility.RetrieveAttributeOrDefaultValue(additionalInformation, "Greeks", false);
+            if (!calculateGreeks)
+            {
+                GreeksDerivatives result = new GreeksDerivatives();
+                result.MarkToMarket = HestonForwardApproximated.HestonForwardDigitalCallPrice(
+                    kappa: k.fV(),
+                    theta: this.theta.fV(),
+                    sigma: this.sigma.fV(),
+                    rho: this.rho.fV(),
+                    v0: this.V0.fV(),
+                    s0: this.S0.fV(),
+                    T: timeToMaturity,
+                    K: strikeFraction,
+                    r: this.r.fV(),
+                    q: this.q.fV(),
+                    T0: fsTime
+                    );
+
+
+
+                return result;
+            }
+            else
+            {
+                return HestonForwardApproximated.HestonForwardDigitalCallWithGreeks(
+                    kappa: k.fV(),
+                    theta: this.theta.fV(),
+                    sigma: this.sigma.fV(),
+                    rho: this.rho.fV(),
+                    v0: this.V0.fV(),
+                    s0: this.S0.fV(),
+                    T: timeToMaturity,
+                    K: strikeFraction,
+                    r: this.r.fV(),
+                    q: this.q.fV(),
+                    T0: fsTime
+                    );                                                                                                                                                                                                             );
+            }
         }
         public GreeksDerivatives FSDigitalPut(int component, double strikeFraction, double fsTime, double timeToMaturity, Dictionary<string, object> additionalInformation = null)
         {
-            throw new NotImplementedException();
+            bool calculateGreeks = AttributesUtility.RetrieveAttributeOrDefaultValue(additionalInformation, "Greeks", false);
+            if (!calculateGreeks)
+            {
+                GreeksDerivatives result = new GreeksDerivatives();
+                result.MarkToMarket = HestonForwardApproximated.HestonForwardDigitalPutPrice(
+                    kappa: k.fV(),
+                    theta: this.theta.fV(),
+                    sigma: this.sigma.fV(),
+                    rho: this.rho.fV(),
+                    v0: this.V0.fV(),
+                    s0: this.S0.fV(),
+                    T: timeToMaturity,
+                    K: strikeFraction,
+                    r: this.r.fV(),
+                    q: this.q.fV(),
+                    T0: fsTime
+                    );
+
+
+
+                return result;
+            }
+            else
+            {
+                return HestonForwardApproximated.HestonForwardDigitalPutWithGreeks(
+                    kappa: k.fV(),
+                    theta: this.theta.fV(),
+                    sigma: this.sigma.fV(),
+                    rho: this.rho.fV(),
+                    v0: this.V0.fV(),
+                    s0: this.S0.fV(),
+                    T: timeToMaturity,
+                    K: strikeFraction,
+                    r: this.r.fV(),
+                    q: this.q.fV(),
+                    T0: fsTime
+                    );                                                                                                                                                                                                             );
+            }
         }
         public GreeksDerivatives FSSwap(int component, double strikeFraction, double fsTime, double swapMaturity, Dictionary<string, object> additionalInformation = null)
         {

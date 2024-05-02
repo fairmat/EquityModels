@@ -14,6 +14,7 @@ using Fairmat.Math;
 using DVPLI;
 using Fairmat.Math;
 using Heston;
+using System.IO;
 
 
 
@@ -399,27 +400,6 @@ namespace HestonEstimator
 
     public class HestonForwardApproximated
     {
-
-        // we use similar formulas that are used for pricing Forward call options under Black Scholes model
-        public static double HestonForwardCallPrice(double kappa, double theta, double rho, double v0, double sigma, double s0, double K, double r, double q, double T, double T0)
-        {
-            // v follows a CIR process so we take its expectations 
-            var v_T0 = ExpectationCIRProcess(v0, kappa, theta, T0);
-
-            var c = HestonCall.HestonCallPrice(
-                kappa: kappa,
-                theta: theta,
-                sigma: sigma,
-                rho: rho,
-                v0: v_T0,
-                s0: 1.0,
-                T: T - T0,
-                K: K,
-                r: r,
-                q: q);
-
-            return s0 * Math.Exp(-q * T0) * c;
-        }
         public static double HestonForwardCallPrice(Vector x, double s0, double T, double T0, double K, double r, double q)
         {
             var kappa = x[0];
@@ -447,6 +427,387 @@ namespace HestonEstimator
             return x0 * Math.Exp(-a * t) + b * (1 - Math.Exp(-a * t));
         }
 
+        // we use similar formulas that are used for pricing Forward call options under Black Scholes model
+        public static double HestonForwardCallPrice(double kappa, double theta, double rho, double v0, double sigma, double s0, double K, double r, double q, double T, double T0)
+        {
+            // v follows a CIR process so we take its expectations 
+            var v_T0 = ExpectationCIRProcess(v0, kappa, theta, T0);
 
-    }
+            var c = HestonCall.HestonCallPrice(
+                kappa: kappa,
+                theta: theta,
+                sigma: sigma,
+                rho: rho,
+                v0: v_T0,
+                s0: 1.0,
+                T: T - T0,
+                K: K,
+                r: r,
+                q: q);
+
+            return s0 * Math.Exp(-q * T0) * c;
+        }
+
+        public static double HestonForwardPutPrice(double kappa, double theta, double rho, double v0, double sigma, double s0, double K, double r, double q, double T, double T0)
+        {
+            // v follows a CIR process so we take its expectations 
+            var v_T0 = ExpectationCIRProcess(v0, kappa, theta, T0);
+
+            var p = HestonCall.HestonPutPrice(
+                kappa: kappa,
+                theta: theta,
+                sigma: sigma,
+                rho: rho,
+                v0: v_T0,
+                s0: 1.0,
+                T: T - T0,
+                K: K,
+                r: r,
+                q: q);
+
+            return s0 * Math.Exp(-q * T0) * p;
+        }
+
+        public static double HestonForwardDigitalPutPrice(double kappa, double theta, double rho, double v0, double sigma, double s0, double K, double r, double q, double T, double T0)
+        {
+            // v follows a CIR process so we take its expectations 
+            var v_T0 = ExpectationCIRProcess(v0, kappa, theta, T0);
+
+            var dput = HestonDigital.HestonDigitalPutPrice(
+                kappa: kappa,
+                theta: theta,
+                sigma: sigma,
+                rho: rho,
+                v0: v_T0,
+                s0: 1.0,
+                T: T - T0,
+                K: K,
+                r: r,
+                q: q);
+
+            return HestonDigital.DiscountFactor(r, T0) * dput;
+        }
+
+        public static double HestonForwardDigitalCallPrice(double kappa, double theta, double rho, double v0, double sigma, double s0, double K, double r, double q, double T, double T0)
+        {
+            // v follows a CIR process so we take its expectations 
+            var v_T0 = ExpectationCIRProcess(v0, kappa, theta, T0);
+
+            var dcall = HestonDigital.HestonDigitalPutPrice(
+                kappa: kappa,
+                theta: theta,
+                sigma: sigma,
+                rho: rho,
+                v0: v_T0,
+                s0: 1.0,
+                T: T - T0,
+                K: K,
+                r: r,
+                q: q);
+
+            return HestonDigital.DiscountFactor(r, T0) * dcall;
+        }
+
+        #region Greeks
+        public static GreeksDerivatives HestonForwardCallWithGreeks(double kappa, double theta, double rho, double v0, double sigma, double s0, double K, double r, double q, double T, double T0)
+        {
+            // v follows a CIR process so we take its expectations 
+            var v_T0 = ExpectationCIRProcess(v0, kappa, theta, T0);
+
+            var c = HestonCall.HestonCallPrice(
+                kappa: kappa,
+                theta: theta,
+                sigma: sigma,
+                rho: rho,
+                v0: v_T0,
+                s0: 1.0,
+                T: T - T0,
+                K: K,
+                r: r,
+                q: q);
+
+            
+            var fscallMarkToMarket =  s0 * Math.Exp(-q * T0) * c;
+
+            var fsCallDelta = Math.Exp(-q * T0) * c;
+
+            var fsCallGamma = 0.0;
+
+            var fsCallTheta = s0 * Math.Exp(-q * T0) * HestonNumericalGreeks.ThetaCall(
+                        kappa: kappa,
+                        theta: theta,
+                        sigma: sigma,
+                        rho: rho,
+                        v0: v_T0,
+                        s0: 1.0,
+                        T: T - T0,
+                        K: K,
+                        r: r,
+                        q: q);
+
+            var fsCallVega = s0 * Math.Exp(-q * T0) * HestonNumericalGreeks.VegaCall(
+                        kappa: kappa,
+                        theta: theta,
+                        sigma: sigma,
+                        rho: rho,
+                        v0: v_T0,
+                        s0: 1.0,
+                        T: T - T0,
+                        K: K,
+                        r: r,
+                        q: q);
+
+            var rhoGreek = s0 * Math.Exp(-q * T0) * HestonRho.RhoCall(
+                        kappa: kappa,
+                        theta: theta,
+                        sigma: sigma,
+                        rho: rho,
+                        v0: v_T0,
+                        s0: 1.0,
+                        T: T - T0,
+                        K: K,
+                        r: r, q: q);
+
+            var result = new GreeksDerivatives()
+            {
+                Deltas = (Vector)fsCallDelta,
+                Gammas = (Vector)fsCallGamma,
+                Theta = fsCallTheta,
+                Vegas = (Vector)fsCallVega,
+                MarkToMarket = fscallMarkToMarket, 
+                Rho = rhoGreek
+            };
+
+            return result;
+
+        }
+
+        public static GreeksDerivatives HestonForwardPutWithGreeks(double kappa, double theta, double rho, double v0, double sigma, double s0, double K, double r, double q, double T, double T0)
+        {
+            // v follows a CIR process so we take its expectations 
+            var v_T0 = ExpectationCIRProcess(v0, kappa, theta, T0);
+
+            var put = HestonCall.HestonPutPrice(
+                kappa: kappa,
+                theta: theta,
+                sigma: sigma,
+                rho: rho,
+                v0: v_T0,
+                s0: 1.0,
+                T: T - T0,
+                K: K,
+                r: r,
+                q: q);
+
+
+            var fsPutMarkToMarket = s0 * Math.Exp(-q * T0) * put;
+
+            var fsPutDelta = Math.Exp(-q * T0) * put;
+
+            var fsPutGamma = 0.0;
+
+            var fsPutTheta = s0 * Math.Exp(-q * T0) * HestonNumericalGreeks.ThetaPut(
+                        kappa: kappa,
+                        theta: theta,
+                        sigma: sigma,
+                        rho: rho,
+                        v0: v_T0,
+                        s0: 1.0,
+                        T: T - T0,
+                        K: K,
+                        r: r,
+                        q: q);
+
+            var fsPutVega = s0 * Math.Exp(-q * T0) * HestonNumericalGreeks.VegaPut(
+                        kappa: kappa,
+                        theta: theta,
+                        sigma: sigma,
+                        rho: rho,
+                        v0: v_T0,
+                        s0: 1.0,
+                        T: T - T0,
+                        K: K,
+                        r: r,
+                        q: q);
+
+            var rhoGreek = s0 * Math.Exp(-q * T0) * HestonRho.RhoPut(
+                        kappa: kappa,
+                        theta: theta,
+                        sigma: sigma,
+                        rho: rho,
+                        v0: v_T0,
+                        s0: 1.0,
+                        T: T - T0,
+                        K: K,
+                        r: r, q: q);
+
+            var result = new GreeksDerivatives()
+            {
+                Deltas = (Vector)fsPutDelta,
+                Gammas = (Vector)fsPutGamma,
+                Theta = fsPutTheta,
+                Vegas = (Vector)fsPutVega,
+                MarkToMarket = fsPutMarkToMarket,
+                Rho = rhoGreek
+            };
+
+            return result;
+
+        }
+
+        public static GreeksDerivatives HestonForwardDigitalPutWithGreeks(double kappa, double theta, double rho, double v0, double sigma, double s0, double K, double r, double q, double T, double T0)
+        {
+            // v follows a CIR process so we take its expectations 
+            var v_T0 = ExpectationCIRProcess(v0, kappa, theta, T0);
+
+            var dPut = HestonDigital.HestonDigitalPutPrice(
+                kappa: kappa,
+                theta: theta,
+                sigma: sigma,
+                rho: rho,
+                v0: v_T0,
+                s0: 1.0,
+                T: T - T0,
+                K: K,
+                r: r,
+                q: q);
+
+
+            var fsDPutMarkToMarket = HestonDigital.DiscountFactor(r, T0) * dPut;
+
+            var fsDPutDelta = 0.0;
+
+            var fsDPutGamma = 0.0;
+
+            var fsDPutTheta = HestonDigital.DiscountFactor(r, T0) * HestonNumericalGreeks.ThetaDPut(
+                        kappa: kappa,
+                        theta: theta,
+                        sigma: sigma,
+                        rho: rho,
+                        v0: v_T0,
+                        s0: 1.0,
+                        T: T - T0,
+                        K: K,
+                        r: r,
+                        q: q);
+
+            var fsDPutVega = HestonDigital.DiscountFactor(r, T0) *  HestonNumericalGreeks.VegaDPut(
+                        kappa: kappa,
+                        theta: theta,
+                        sigma: sigma,
+                        rho: rho,
+                        v0: v_T0,
+                        s0: 1.0,
+                        T: T - T0,
+                        K: K,
+                        r: r,
+                        q: q);
+
+            var fsDPutRho = HestonDigital.DiscountFactor(r, T0) * HestonRho.RhoDigitalPut(
+                        kappa: kappa,
+                        theta: theta,
+                        sigma: sigma,
+                        rho: rho,
+                        v0: v_T0,
+                        s0: 1.0,
+                        T: T - T0,
+                        K: K,
+                        r: r,
+                        q: q);
+
+            fsDPutRho += -r * fsDPutMarkToMarket * HestonDigital.DiscountFactor(r, T0);
+
+            var result = new GreeksDerivatives()
+            {
+                Deltas = (Vector)fsDPutDelta,
+                Gammas = (Vector)fsDPutGamma,
+                Theta = fsDPutTheta,
+                Vegas = (Vector)fsDPutVega,
+                MarkToMarket = fsDPutMarkToMarket,
+                Rho = fsDPutRho
+            };
+
+            return result;
+
+        }
+
+        public static GreeksDerivatives HestonForwardDigitalCallWithGreeks(double kappa, double theta, double rho, double v0, double sigma, double s0, double K, double r, double q, double T, double T0)
+        {
+            // v follows a CIR process so we take its expectations 
+            var v_T0 = ExpectationCIRProcess(v0, kappa, theta, T0);
+
+            var dCall = HestonDigital.HestonDigitalCallPrice(
+                kappa: kappa,
+                theta: theta,
+                sigma: sigma,
+                rho: rho,
+                v0: v_T0,
+                s0: 1.0,
+                T: T - T0,
+                K: K,
+                r: r,
+                q: q);
+
+
+            var fsDCallMarkToMarket = HestonDigital.DiscountFactor(r, T0) * dCall;
+
+            var fsCallDelta = 0.0;
+
+            var fsDCallGamma = 0.0;
+
+            var fsDCallTheta = HestonDigital.DiscountFactor(r, T0) * HestonNumericalGreeks.ThetaDCall(
+                        kappa: kappa,
+                        theta: theta,
+                        sigma: sigma,
+                        rho: rho,
+                        v0: v_T0,
+                        s0: 1.0,
+                        T: T - T0,
+                        K: K,
+                        r: r,
+                        q: q);
+
+            var fsDCallVega = HestonDigital.DiscountFactor(r, T0) * HestonNumericalGreeks.VegaDCall(
+                        kappa: kappa,
+                        theta: theta,
+                        sigma: sigma,
+                        rho: rho,
+                        v0: v_T0,
+                        s0: 1.0,
+                        T: T - T0,
+                        K: K,
+                        r: r,
+                        q: q);
+
+            var fsDCallRho = HestonDigital.DiscountFactor(r, T0) * HestonRho.RhoDigitalCall(
+                        kappa: kappa,
+                        theta: theta,
+                        sigma: sigma,
+                        rho: rho,
+                        v0: v_T0,
+                        s0: 1.0,
+                        T: T - T0,
+                        K: K,
+                        r: r,
+                        q: q);
+
+            fsDCallRho += -r * fsDCallMarkToMarket * HestonDigital.DiscountFactor(r, T0);
+
+            var result = new GreeksDerivatives()
+            {
+                Deltas = (Vector)fsCallDelta,
+                Gammas = (Vector)fsDCallGamma,
+                Theta = fsDCallTheta,
+                Vegas = (Vector)fsDCallVega,
+                MarkToMarket = fsDCallMarkToMarket,
+                Rho = fsDCallRho
+            };
+
+            return result;
+        }
+
+        #endregion
+
+
+        }
 }
