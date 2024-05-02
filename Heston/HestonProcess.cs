@@ -299,7 +299,7 @@ namespace Heston
             b[1] = this.sigma.fV() * m;
         }
 
-        public void ab(int i, double* x, double* a,double* b)
+        public void ab(int i, double* x, double* a, double* b)
         {
             double m = Math.Max(0, x[1]);
             double radqM = Math.Sqrt(m);
@@ -429,7 +429,7 @@ namespace Heston
             var s0Param = this.S0.fV();
             var rParam = this.r.fV();
             var qParam = this.q.fV();
-             
+
 
 
             result.MarkToMarket = HestonCall.HestonCallPrice(
@@ -522,7 +522,7 @@ namespace Heston
             }
 
 
-            
+
         }
 
 
@@ -939,7 +939,7 @@ namespace Heston
             }
             else
             {
-                return HestonForwardApproximated.HestonForwardCallWithGreeks(
+                var result = HestonForwardApproximated.HestonForwardCallWithGreeks(
                     kappa: k.fV(),
                     theta: this.theta.fV(),
                     sigma: this.sigma.fV(),
@@ -950,12 +950,12 @@ namespace Heston
                     K: strikeFraction,
                     r: this.r.fV(),
                     q: this.q.fV(),
-                    T0: fsTime
-                    );                                                                                                                                                                                                             );
+                    T0: fsTime);       
+                return result;
             }
-                                
-                
         }
+
+
         public GreeksDerivatives FSPut(int component, double strikeFraction, double fsTime, double timeToMaturity, Dictionary<string, object> additionalInformation = null)
         {
             bool calculateGreeks = AttributesUtility.RetrieveAttributeOrDefaultValue(additionalInformation, "Greeks", false);
@@ -982,7 +982,7 @@ namespace Heston
             }
             else
             {
-                return HestonForwardApproximated.HestonForwardPutWithGreeks(
+                var result = HestonForwardApproximated.HestonForwardPutWithGreeks(
                     kappa: k.fV(),
                     theta: this.theta.fV(),
                     sigma: this.sigma.fV(),
@@ -994,7 +994,9 @@ namespace Heston
                     r: this.r.fV(),
                     q: this.q.fV(),
                     T0: fsTime
-                    );                                                                                                                                                                                                             );
+                    );
+
+                return result;
             }
 
         }
@@ -1026,7 +1028,7 @@ namespace Heston
             }
             else
             {
-                return HestonForwardApproximated.HestonForwardDigitalCallWithGreeks(
+                var result = HestonForwardApproximated.HestonForwardDigitalCallWithGreeks(
                     kappa: k.fV(),
                     theta: this.theta.fV(),
                     sigma: this.sigma.fV(),
@@ -1037,8 +1039,9 @@ namespace Heston
                     K: strikeFraction,
                     r: this.r.fV(),
                     q: this.q.fV(),
-                    T0: fsTime
-                    );                                                                                                                                                                                                             );
+                    T0: fsTime);
+
+                return result;
             }
         }
         public GreeksDerivatives FSDigitalPut(int component, double strikeFraction, double fsTime, double timeToMaturity, Dictionary<string, object> additionalInformation = null)
@@ -1067,7 +1070,7 @@ namespace Heston
             }
             else
             {
-                return HestonForwardApproximated.HestonForwardDigitalPutWithGreeks(
+                var result = HestonForwardApproximated.HestonForwardDigitalPutWithGreeks(
                     kappa: k.fV(),
                     theta: this.theta.fV(),
                     sigma: this.sigma.fV(),
@@ -1079,7 +1082,8 @@ namespace Heston
                     r: this.r.fV(),
                     q: this.q.fV(),
                     T0: fsTime
-                    );                                                                                                                                                                                                             );
+                    );
+                return result;
             }
         }
         public GreeksDerivatives FSSwap(int component, double strikeFraction, double fsTime, double swapMaturity, Dictionary<string, object> additionalInformation = null)
