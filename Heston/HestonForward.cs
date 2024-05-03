@@ -432,9 +432,24 @@ namespace HestonEstimator
         // we use similar formulas that are used for pricing Forward call options under Black Scholes model
         public static double HestonForwardCallPrice(double kappa, double theta, double rho, double v0, double sigma, double s0, double K, double r, double q, double T, double T0)
         {
+            int verbosity = Engine.Verbose;
+
+            if (verbosity > 0)
+            {
+                Console.WriteLine("Calculating price of a FS call with Heston model");
+                Console.WriteLine("Heston Parameters");
+                Console.WriteLine("kappa\ttheta\tsigma\trho\tv0");
+                Console.WriteLine($"{kappa}\t{theta}\t{sigma}\t{rho}\t{v0}");
+                Console.WriteLine("Call Option Information");
+                Console.WriteLine("s0\tK\tT\tT0\tr\tq");
+                Console.WriteLine($"{s0}\t{K}\t{T}\t{T0}\t{r}\t{q}");
+
+            }
+
             // v follows a CIR process so we take its expectations 
             var v_T0 = ExpectationCIRProcess(v0, kappa, theta, T0);
 
+            Engine.Verbose = 0;
             var c = HestonCall.HestonCallPrice(
                 kappa: kappa,
                 theta: theta,
@@ -446,15 +461,38 @@ namespace HestonEstimator
                 K: K,
                 r: r,
                 q: q);
+            Engine.Verbose = verbosity;
 
-            return s0 * Math.Exp(-q * T0) * c;
+            var price = s0 * Math.Exp(-q * T0) * c;
+            
+            if (verbosity > 0)
+            {
+                Console.WriteLine($"Price of the Forward Starting Call Option is {price}");
+            }
+            
+            return price;
         }
 
         public static double HestonForwardPutPrice(double kappa, double theta, double rho, double v0, double sigma, double s0, double K, double r, double q, double T, double T0)
         {
+            int verbosity = Engine.Verbose;
+
+            if (verbosity > 0)
+            {
+                Console.WriteLine("Calculating price of a FS put with Heston model");
+                Console.WriteLine("Heston Parameters");
+                Console.WriteLine("kappa\ttheta\tsigma\trho\tv0");
+                Console.WriteLine($"{kappa}\t{theta}\t{sigma}\t{rho}\t{v0}");
+                Console.WriteLine("Call Option Information");
+                Console.WriteLine("s0\tK\tT\tT0\tr\tq");
+                Console.WriteLine($"{s0}\t{K}\t{T}\t{T0}\t{r}\t{q}");
+
+            }
+
             // v follows a CIR process so we take its expectations 
             var v_T0 = ExpectationCIRProcess(v0, kappa, theta, T0);
 
+            Engine.Verbose = 0;
             var p = HestonCall.HestonPutPrice(
                 kappa: kappa,
                 theta: theta,
@@ -466,15 +504,39 @@ namespace HestonEstimator
                 K: K,
                 r: r,
                 q: q);
+            Engine.Verbose = verbosity;
 
-            return s0 * Math.Exp(-q * T0) * p;
+            var price = s0 * Math.Exp(-q * T0) * p;
+
+            if (verbosity > 0)
+            {
+                Console.WriteLine($"Price of the Forward Starting Put Option is {price}");
+            }
+
+            return price;
         }
 
         public static double HestonForwardDigitalPutPrice(double kappa, double theta, double rho, double v0, double sigma, double s0, double K, double r, double q, double T, double T0)
         {
+
+            int verbosity = Engine.Verbose;
+
+            if (verbosity > 0)
+            {
+                Console.WriteLine("Calculating price of a FS Digital Put with Heston model");
+                Console.WriteLine("Heston Parameters");
+                Console.WriteLine("kappa\ttheta\tsigma\trho\tv0");
+                Console.WriteLine($"{kappa}\t{theta}\t{sigma}\t{rho}\t{v0}");
+                Console.WriteLine("Call Option Information");
+                Console.WriteLine("s0\tK\tT\tT0\tr\tq");
+                Console.WriteLine($"{s0}\t{K}\t{T}\t{T0}\t{r}\t{q}");
+
+            }
+            
             // v follows a CIR process so we take its expectations 
             var v_T0 = ExpectationCIRProcess(v0, kappa, theta, T0);
 
+            Engine.Verbose = 0;
             var dput = HestonDigital.HestonDigitalPutPrice(
                 kappa: kappa,
                 theta: theta,
@@ -486,15 +548,38 @@ namespace HestonEstimator
                 K: K,
                 r: r,
                 q: q);
+            Engine.Verbose = verbosity;
 
-            return HestonDigital.DiscountFactor(r, T0) * dput;
+            var digitalPrice = HestonDigital.DiscountFactor(r, T0) * dput;
+
+            if (verbosity > 0)
+            {
+                Console.WriteLine($"Price of the Forward Starting Digital Put Option is {digitalPrice}");
+            }
+
+            return digitalPrice;
         }
 
         public static double HestonForwardDigitalCallPrice(double kappa, double theta, double rho, double v0, double sigma, double s0, double K, double r, double q, double T, double T0)
         {
+            int verbosity = Engine.Verbose;
+
+            if (verbosity > 0)
+            {
+                Console.WriteLine("Calculating price of a FS Digital Call with Heston model");
+                Console.WriteLine("Heston Parameters");
+                Console.WriteLine("kappa\ttheta\tsigma\trho\tv0");
+                Console.WriteLine($"{kappa}\t{theta}\t{sigma}\t{rho}\t{v0}");
+                Console.WriteLine("Call Option Information");
+                Console.WriteLine("s0\tK\tT\tT0\tr\tq");
+                Console.WriteLine($"{s0}\t{K}\t{T}\t{T0}\t{r}\t{q}");
+
+            }
+
             // v follows a CIR process so we take its expectations 
             var v_T0 = ExpectationCIRProcess(v0, kappa, theta, T0);
 
+            Engine.Verbose = 0;
             var dcall = HestonDigital.HestonDigitalCallPrice(
                 kappa: kappa,
                 theta: theta,
@@ -506,15 +591,40 @@ namespace HestonEstimator
                 K: K,
                 r: r,
                 q: q);
+            Engine.Verbose = verbosity;
 
-            return HestonDigital.DiscountFactor(r, T0) * dcall;
+            var digitalPrice = HestonDigital.DiscountFactor(r, T0) * dcall;
+            
+            if (verbosity > 0)
+            {
+                Console.WriteLine($"Price of the Forward Starting Digital Call Option is {digitalPrice}");
+            }
+            
+            return digitalPrice;
         }
 
         #region Greeks
         public static GreeksDerivatives HestonForwardCallWithGreeks(double kappa, double theta, double rho, double v0, double sigma, double s0, double K, double r, double q, double T, double T0)
         {
+
+
+            int verbosity = Engine.Verbose;
+
+            if (verbosity > 0)
+            {
+                Console.WriteLine("Calculating price and greeks of a FS Call with Heston model");
+                Console.WriteLine("Heston Parameters");
+                Console.WriteLine("kappa\ttheta\tsigma\trho\tv0");
+                Console.WriteLine($"{kappa}\t{theta}\t{sigma}\t{rho}\t{v0}");
+                Console.WriteLine("Call Option Information");
+                Console.WriteLine("s0\tK\tT\tT0\tr\tq");
+                Console.WriteLine($"{s0}\t{K}\t{T}\t{T0}\t{r}\t{q}");
+            }
+
             // v follows a CIR process so we take its expectations 
             var v_T0 = ExpectationCIRProcess(v0, kappa, theta, T0);
+
+            Engine.Verbose = 0;
 
             var c = HestonCall.HestonCallPrice(
                 kappa: kappa,
@@ -570,6 +680,9 @@ namespace HestonEstimator
                         K: K,
                         r: r, q: q);
 
+            Engine.Verbose = verbosity;
+
+
             var result = new GreeksDerivatives()
             {
                 Deltas = (Vector)fsCallDelta,
@@ -580,12 +693,34 @@ namespace HestonEstimator
                 Rho = rhoGreek
             };
 
+            if (verbosity > 0)
+            {
+                Console.WriteLine("Price and Greeks of the Forward Starting Call Option");
+                Console.WriteLine("Delta\tGamma\tTheta\tVega\tRho\tPrice");
+                Console.WriteLine($"{result.Deltas[0]}\t{result.Gammas[0]}\t{result.Theta}\t{result.Vegas[0]}\t{result.Rho}\t{result.MarkToMarket}");
+            }
+
+
             return result;
 
         }
 
         public static GreeksDerivatives HestonForwardPutWithGreeks(double kappa, double theta, double rho, double v0, double sigma, double s0, double K, double r, double q, double T, double T0)
         {
+            int verbosity = Engine.Verbose;
+
+            if (verbosity > 0)
+            {
+                Console.WriteLine("Calculating price and greeks of a FS Put with Heston model");
+                Console.WriteLine("Heston Parameters");
+                Console.WriteLine("kappa\ttheta\tsigma\trho\tv0");
+                Console.WriteLine($"{kappa}\t{theta}\t{sigma}\t{rho}\t{v0}");
+                Console.WriteLine("Call Option Information");
+                Console.WriteLine("s0\tK\tT\tT0\tr\tq");
+                Console.WriteLine($"{s0}\t{K}\t{T}\t{T0}\t{r}\t{q}");
+            }
+
+            Engine.Verbose = 0;
             // v follows a CIR process so we take its expectations 
             var v_T0 = ExpectationCIRProcess(v0, kappa, theta, T0);
 
@@ -643,6 +778,8 @@ namespace HestonEstimator
                         K: K,
                         r: r, q: q);
 
+            Engine.Verbose = verbosity;
+
             var result = new GreeksDerivatives()
             {
                 Deltas = (Vector)fsPutDelta,
@@ -653,12 +790,33 @@ namespace HestonEstimator
                 Rho = rhoGreek
             };
 
+            if (verbosity > 0)
+            {
+                Console.WriteLine("Price and Greeks of the Forward Starting Put Option");
+                Console.WriteLine("Delta\tGamma\tTheta\tVega\tRho\tPrice");
+                Console.WriteLine($"{result.Deltas[0]}\t{result.Gammas[0]}\t{result.Theta}\t{result.Vegas[0]}\t{result.Rho}\t{result.MarkToMarket}");
+            }
+
             return result;
 
         }
 
         public static GreeksDerivatives HestonForwardDigitalPutWithGreeks(double kappa, double theta, double rho, double v0, double sigma, double s0, double K, double r, double q, double T, double T0)
         {
+            int verbosity = Engine.Verbose;
+
+            if (verbosity > 0)
+            {
+                Console.WriteLine("Calculating price and greeks of a FS Digital Put with Heston model");
+                Console.WriteLine("Heston Parameters");
+                Console.WriteLine("kappa\ttheta\tsigma\trho\tv0");
+                Console.WriteLine($"{kappa}\t{theta}\t{sigma}\t{rho}\t{v0}");
+                Console.WriteLine("Call Option Information");
+                Console.WriteLine("s0\tK\tT\tT0\tr\tq");
+                Console.WriteLine($"{s0}\t{K}\t{T}\t{T0}\t{r}\t{q}");
+            }
+
+            Engine.Verbose = 0;
             // v follows a CIR process so we take its expectations 
             var v_T0 = ExpectationCIRProcess(v0, kappa, theta, T0);
 
@@ -718,6 +876,7 @@ namespace HestonEstimator
                         q: q);
 
             fsDPutRho += -T0 * fsDPutMarkToMarket;
+            Engine.Verbose = verbosity;
 
 
             var result = new GreeksDerivatives()
@@ -730,12 +889,34 @@ namespace HestonEstimator
                 Rho = fsDPutRho
             };
 
+            if (verbosity > 0)
+            {
+                Console.WriteLine("Price and Greeks of the Forward Starting Digital Put Option");
+                Console.WriteLine("Delta\tGamma\tTheta\tVega\tRho\tPrice");
+                Console.WriteLine($"{result.Deltas[0]}\t{result.Gammas[0]}\t{result.Theta}\t{result.Vegas[0]}\t{result.Rho}\t{result.MarkToMarket}");
+            }
+
             return result;
 
         }
 
         public static GreeksDerivatives HestonForwardDigitalCallWithGreeks(double kappa, double theta, double rho, double v0, double sigma, double s0, double K, double r, double q, double T, double T0)
         {
+            int verbosity = Engine.Verbose;
+
+            if (verbosity > 0)
+            {
+                Console.WriteLine("Calculating price and greeks of a FS Digital Call with Heston model");
+                Console.WriteLine("Heston Parameters");
+                Console.WriteLine("kappa\ttheta\tsigma\trho\tv0");
+                Console.WriteLine($"{kappa}\t{theta}\t{sigma}\t{rho}\t{v0}");
+                Console.WriteLine("Call Option Information");
+                Console.WriteLine("s0\tK\tT\tT0\tr\tq");
+                Console.WriteLine($"{s0}\t{K}\t{T}\t{T0}\t{r}\t{q}");
+            }
+
+            Engine.Verbose = 0;
+
             // v follows a CIR process so we take its expectations 
             var v_T0 = ExpectationCIRProcess(v0, kappa, theta, T0);
 
@@ -796,7 +977,7 @@ namespace HestonEstimator
 
             fsDCallRho += -T0 * fsDCallMarkToMarket;
 
-
+            Engine.Verbose = verbosity;
 
             var result = new GreeksDerivatives()
             {
@@ -807,6 +988,13 @@ namespace HestonEstimator
                 MarkToMarket = fsDCallMarkToMarket,
                 Rho = fsDCallRho
             };
+
+            if (verbosity > 0)
+            {
+                Console.WriteLine("Price and Greeks of the Forward Starting Digital Call Option");
+                Console.WriteLine("Delta\tGamma\tTheta\tVega\tRho\tPrice");
+                Console.WriteLine($"{result.Deltas[0]}\t{result.Gammas[0]}\t{result.Theta}\t{result.Vegas[0]}\t{result.Rho}\t{result.MarkToMarket}");
+            }
 
             return result;
         }

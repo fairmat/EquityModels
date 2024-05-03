@@ -90,7 +90,20 @@ namespace HestonEstimator
 
         public static double VegaCall(double kappa, double theta, double rho, double v0, double sigma, double s0, double T, double K, double r, double q, double bumpPercentage = 0.01)
         {
+            int verbosity = Engine.Verbose;
 
+            if (verbosity > 0)
+            {
+                Console.WriteLine("Calculating vega with Heston model");
+                Console.WriteLine("Heston Parameters");
+                Console.WriteLine("kappa\ttheta\tsigma\trho\tv0");
+                Console.WriteLine("{0}\t{1}\t{2}\t{3}\t{4}", kappa, theta, sigma, rho, v0);
+                Console.WriteLine("Call Option Information");
+                Console.WriteLine("s0\tK\tT\tr\tq");
+                Console.WriteLine("{0}\t{1}\t{2}\t{3}\t{4}", s0, K, T, r, q);
+            }
+
+            
             Func<double, double> callPrice = (double initialVariance) => HestonCall.HestonCallPrice(
                 kappa: kappa,
                 theta: theta,
@@ -103,11 +116,32 @@ namespace HestonEstimator
                 r: r,
                 q: q);
 
-            return GreeksBumper(bumpPercentage, v0, callPrice);
+            Engine.Verbose = 0;
+            var vega = GreeksBumper(bumpPercentage, v0, callPrice);
+            Engine.Verbose = verbosity;
+
+            if (verbosity > 0)
+            {
+                Console.WriteLine("Vega");
+                Console.WriteLine(vega);
+            }
+            return vega;
         }
 
         public static double RhoCall(double kappa, double theta, double rho, double v0, double sigma, double s0, double T, double K, double r, double q, double bumpPercentage = 0.01)
         {
+            int verbosity = Engine.Verbose;
+
+            if (verbosity > 0)
+            {
+                Console.WriteLine("Calculating rho with Heston model");
+                Console.WriteLine("Heston Parameters");
+                Console.WriteLine("kappa\ttheta\tsigma\trho\tv0");
+                Console.WriteLine("{0}\t{1}\t{2}\t{3}\t{4}", kappa, theta, sigma, rho, v0);
+                Console.WriteLine("Call Option Information");
+                Console.WriteLine("s0\tK\tT\tr\tq");
+                Console.WriteLine("{0}\t{1}\t{2}\t{3}\t{4}", s0, K, T, r, q);
+            }
 
             Func<double, double> callPrice = (double interestRate) => HestonCall.HestonCallPrice(
                 kappa: kappa,
@@ -121,7 +155,17 @@ namespace HestonEstimator
                 r: interestRate,
                 q: q);
 
-            return GreeksBumper(bumpPercentage, r, callPrice);
+            Engine.Verbose = 0;
+            var rhoGreek = GreeksBumper(bumpPercentage, r, callPrice);
+            Engine.Verbose = verbosity;
+
+            if (verbosity > 0)
+            {
+                Console.WriteLine("Rho");
+                Console.WriteLine(rhoGreek);
+            }
+
+            return rhoGreek;
         }
 
         public static double ThetaCall(double kappa, double theta, double rho, double v0, double sigma, double s0, double T, double K, double r, double q, double bumpPercentage = 0.01)
@@ -137,7 +181,6 @@ namespace HestonEstimator
                 Console.WriteLine("Call Option Information");
                 Console.WriteLine("s0\tK\tT\tr\tq");
                 Console.WriteLine("{0}\t{1}\t{2}\t{3}\t{4}", s0, K, T, r, q);
-
             }
 
             Func<double, double> callPrice = (double timeToMat) => HestonCall.HestonCallPrice(
@@ -219,6 +262,18 @@ namespace HestonEstimator
 
         public static double VegaPut(double kappa, double theta, double rho, double v0, double sigma, double s0, double T, double K, double r, double q, double bumpPercentage = 0.01)
         {
+            int verbosity = Engine.Verbose;
+
+            if (verbosity > 0)
+            {
+                Console.WriteLine("Calculating vega with Heston model");
+                Console.WriteLine("Heston Parameters");
+                Console.WriteLine("kappa\ttheta\tsigma\trho\tv0");
+                Console.WriteLine("{0}\t{1}\t{2}\t{3}\t{4}", kappa, theta, sigma, rho, v0);
+                Console.WriteLine("Call Option Information");
+                Console.WriteLine("s0\tK\tT\tr\tq");
+                Console.WriteLine("{0}\t{1}\t{2}\t{3}\t{4}", s0, K, T, r, q);
+            }
 
             Func<double, double> price = (double initialVariance) => HestonCall.HestonPutPrice(
                 kappa: kappa,
@@ -232,11 +287,34 @@ namespace HestonEstimator
                 r: r,
                 q: q);
 
-            return GreeksBumper(bumpPercentage, v0, price);
+
+            Engine.Verbose = 0;
+            var vega = GreeksBumper(bumpPercentage, v0, price);
+            Engine.Verbose = verbosity;
+
+            if (verbosity > 0)
+            {
+                Console.WriteLine("Vega");
+                Console.WriteLine(vega);
+            }
+            
+            return vega;
         }
 
         public static double RhoPut(double kappa, double theta, double rho, double v0, double sigma, double s0, double T, double K, double r, double q, double bumpPercentage = 0.01)
         {
+            int verbosity = Engine.Verbose;
+
+            if (verbosity > 0)
+            {
+                Console.WriteLine("Calculating rho with Heston model");
+                Console.WriteLine("Heston Parameters");
+                Console.WriteLine("kappa\ttheta\tsigma\trho\tv0");
+                Console.WriteLine("{0}\t{1}\t{2}\t{3}\t{4}", kappa, theta, sigma, rho, v0);
+                Console.WriteLine("Call Option Information");
+                Console.WriteLine("s0\tK\tT\tr\tq");
+                Console.WriteLine("{0}\t{1}\t{2}\t{3}\t{4}", s0, K, T, r, q);
+            }
 
             Func<double, double> price = (double interestRate) => HestonCall.HestonPutPrice(
                 kappa: kappa,
@@ -250,7 +328,17 @@ namespace HestonEstimator
                 r: interestRate,
                 q: q);
 
-            return GreeksBumper(bumpPercentage, r, price);
+            Engine.Verbose = 0;
+            var rhoGreek = GreeksBumper(bumpPercentage, r, price);
+            Engine.Verbose = verbosity;
+
+            if (verbosity > 0)
+            {
+                Console.WriteLine("Rho");
+                Console.WriteLine(rhoGreek);
+            }
+
+            return rhoGreek;
         }
 
         public static double ThetaPut(double kappa, double theta, double rho, double v0, double sigma, double s0, double T, double K, double r, double q, double bumpPercentage = 0.01)
@@ -351,6 +439,18 @@ namespace HestonEstimator
 
         public static double VegaDCall(double kappa, double theta, double rho, double v0, double sigma, double s0, double T, double K, double r, double q, double bumpPercentage = 0.01)
         {
+            int verbosity = Engine.Verbose;
+
+            if (verbosity > 0)
+            {
+                Console.WriteLine("Calculating vega with Heston model");
+                Console.WriteLine("Heston Parameters");
+                Console.WriteLine("kappa\ttheta\tsigma\trho\tv0");
+                Console.WriteLine("{0}\t{1}\t{2}\t{3}\t{4}", kappa, theta, sigma, rho, v0);
+                Console.WriteLine("Call Option Information");
+                Console.WriteLine("s0\tK\tT\tr\tq");
+                Console.WriteLine("{0}\t{1}\t{2}\t{3}\t{4}", s0, K, T, r, q);
+            }
 
             Func<double, double> price = (double initialVariance) => HestonDigital.HestonDigitalCallPrice(
                 kappa: kappa,
@@ -364,11 +464,33 @@ namespace HestonEstimator
                 r: r,
                 q: q);
 
-            return GreeksBumper(bumpPercentage, v0, price);
+            Engine.Verbose = 0;
+            var vega = GreeksBumper(bumpPercentage, v0, price);
+            Engine.Verbose = verbosity;
+
+            if (verbosity > 0)
+            {
+                Console.WriteLine("Vega");
+                Console.WriteLine(vega);
+            }
+
+            return vega;
         }
 
         public static double VegaDPut(double kappa, double theta, double rho, double v0, double sigma, double s0, double T, double K, double r, double q, double bumpPercentage = 0.01)
         {
+            int verbosity = Engine.Verbose;
+
+            if (verbosity > 0)
+            {
+                Console.WriteLine("Calculating vega with Heston model");
+                Console.WriteLine("Heston Parameters");
+                Console.WriteLine("kappa\ttheta\tsigma\trho\tv0");
+                Console.WriteLine("{0}\t{1}\t{2}\t{3}\t{4}", kappa, theta, sigma, rho, v0);
+                Console.WriteLine("Call Option Information");
+                Console.WriteLine("s0\tK\tT\tr\tq");
+                Console.WriteLine("{0}\t{1}\t{2}\t{3}\t{4}", s0, K, T, r, q);
+            }
 
             Func<double, double> price = (double initialVariance) => HestonDigital.HestonDigitalPutPrice(
                 kappa: kappa,
@@ -382,11 +504,33 @@ namespace HestonEstimator
                 r: r,
                 q: q);
 
-            return GreeksBumper(bumpPercentage, v0, price);
+            Engine.Verbose = 0;
+            var vega = GreeksBumper(bumpPercentage, v0, price);
+            Engine.Verbose = verbosity;
+
+            if (verbosity > 0)
+            {
+                Console.WriteLine("Vega");
+                Console.WriteLine(vega);
+            }
+
+            return vega;
         }
 
         public static double RhoDCall(double kappa, double theta, double rho, double v0, double sigma, double s0, double T, double K, double r, double q, double bumpPercentage = 0.01)
         {
+            int verbosity = Engine.Verbose;
+
+            if (verbosity > 0)
+            {
+                Console.WriteLine("Calculating rho with Heston model");
+                Console.WriteLine("Heston Parameters");
+                Console.WriteLine("kappa\ttheta\tsigma\trho\tv0");
+                Console.WriteLine("{0}\t{1}\t{2}\t{3}\t{4}", kappa, theta, sigma, rho, v0);
+                Console.WriteLine("Call Option Information");
+                Console.WriteLine("s0\tK\tT\tr\tq");
+                Console.WriteLine("{0}\t{1}\t{2}\t{3}\t{4}", s0, K, T, r, q);
+            }
 
             Func<double, double> price = (double interestRate) => HestonDigital.HestonDigitalCallPrice(
                 kappa: kappa,
@@ -400,11 +544,33 @@ namespace HestonEstimator
                 r: interestRate,
                 q: q);
 
-            return GreeksBumper(bumpPercentage, r, price);
+            Engine.Verbose = 0;
+            var rhoGreek = GreeksBumper(bumpPercentage, r, price);
+            Engine.Verbose = verbosity;
+
+            if (verbosity > 0)
+            {
+                Console.WriteLine("Rho");
+                Console.WriteLine(rhoGreek);
+            }
+
+            return rhoGreek;
         }
 
         public static double RhoDPut(double kappa, double theta, double rho, double v0, double sigma, double s0, double T, double K, double r, double q, double bumpPercentage = 0.01)
         {
+            int verbosity = Engine.Verbose;
+
+            if (verbosity > 0)
+            {
+                Console.WriteLine("Calculating rho with Heston model");
+                Console.WriteLine("Heston Parameters");
+                Console.WriteLine("kappa\ttheta\tsigma\trho\tv0");
+                Console.WriteLine("{0}\t{1}\t{2}\t{3}\t{4}", kappa, theta, sigma, rho, v0);
+                Console.WriteLine("Call Option Information");
+                Console.WriteLine("s0\tK\tT\tr\tq");
+                Console.WriteLine("{0}\t{1}\t{2}\t{3}\t{4}", s0, K, T, r, q);
+            }
 
             Func<double, double> price = (double interestRate) => HestonDigital.HestonDigitalPutPrice(
                 kappa: kappa,
@@ -418,11 +584,33 @@ namespace HestonEstimator
                 r: interestRate,
                 q: q);
 
-            return GreeksBumper(bumpPercentage, r, price);
+            Engine.Verbose = 0;
+            var rhoGreek = GreeksBumper(bumpPercentage, r, price);
+            Engine.Verbose = verbosity;
+
+            if (verbosity > 0)
+            {
+                Console.WriteLine("Rho");
+                Console.WriteLine(rhoGreek);
+            }
+
+            return rhoGreek;
         }
 
         public static double ThetaDCall(double kappa, double theta, double rho, double v0, double sigma, double s0, double T, double K, double r, double q, double bumpPercentage = 0.01)
         {
+
+            int verbosity = Engine.Verbose;
+            if (verbosity > 0)
+            {
+                Console.WriteLine("Calculating theta with Heston model");
+                Console.WriteLine("Heston Parameters");
+                Console.WriteLine("kappa\ttheta\tsigma\trho\tv0");
+                Console.WriteLine("{0}\t{1}\t{2}\t{3}\t{4}", kappa, theta, sigma, rho, v0);
+                Console.WriteLine("Call Option Information");
+                Console.WriteLine("s0\tK\tT\tr\tq");
+                Console.WriteLine("{0}\t{1}\t{2}\t{3}\t{4}", s0, K, T, r, q);
+            }
 
             Func<double, double> price = (double timeToMat) => HestonDigital.HestonDigitalCallPrice(
                 kappa: kappa,
@@ -436,11 +624,33 @@ namespace HestonEstimator
                 r: r,
                 q: q);
 
-            return GreeksBumper(bumpPercentage, T, price);
+
+            Engine.Verbose = 0;
+            var thetaGreek = GreeksBumper(bumpPercentage, T, price);
+            Engine.Verbose = verbosity;
+
+            if (verbosity > 0)
+            {
+                Console.WriteLine("Theta");
+                Console.WriteLine(thetaGreek);
+            }
+
+            return thetaGreek;
         }
 
         public static double ThetaDPut(double kappa, double theta, double rho, double v0, double sigma, double s0, double T, double K, double r, double q, double bumpPercentage = 0.01)
         {
+            int verbosity = Engine.Verbose;
+            if (verbosity > 0)
+            {
+                Console.WriteLine("Calculating theta with Heston model");
+                Console.WriteLine("Heston Parameters");
+                Console.WriteLine("kappa\ttheta\tsigma\trho\tv0");
+                Console.WriteLine("{0}\t{1}\t{2}\t{3}\t{4}", kappa, theta, sigma, rho, v0);
+                Console.WriteLine("Call Option Information");
+                Console.WriteLine("s0\tK\tT\tr\tq");
+                Console.WriteLine("{0}\t{1}\t{2}\t{3}\t{4}", s0, K, T, r, q);
+            }
 
             Func<double, double> price = (double timeToMat) => HestonDigital.HestonDigitalPutPrice(
                 kappa: kappa,
@@ -454,7 +664,17 @@ namespace HestonEstimator
                 r: r,
                 q: q);
 
-            return GreeksBumper(bumpPercentage, T, price);
+            Engine.Verbose = 0;
+            var thetaGreek = GreeksBumper(bumpPercentage, T, price);
+            Engine.Verbose = verbosity;
+
+            if (verbosity > 0)
+            {
+                Console.WriteLine("Theta");
+                Console.WriteLine(thetaGreek);
+            }
+
+            return thetaGreek;
         }
 
         public static (double, double) DeltaGammaFSCall(double kappa, double theta, double rho, double v0, double sigma, double s0, double T, double T0, double K, double r, double q, double bumpPercentage = 0.01, double? unBumpedPrice = null)
@@ -511,6 +731,17 @@ namespace HestonEstimator
 
         public static double VegaFSCall(double kappa, double theta, double rho, double v0, double sigma, double s0, double T, double K, double r, double q, double T0, double bumpPercentage = 0.01)
         {
+            int verbosity = Engine.Verbose;
+            if (verbosity > 0)
+            {
+                Console.WriteLine("Calculating vega with Heston model");
+                Console.WriteLine("Heston Parameters");
+                Console.WriteLine("kappa\ttheta\tsigma\trho\tv0");
+                Console.WriteLine("{0}\t{1}\t{2}\t{3}\t{4}", kappa, theta, sigma, rho, v0);
+                Console.WriteLine("Call Option Information");
+                Console.WriteLine("s0\tK\tT\tr\tq");
+                Console.WriteLine("{0}\t{1}\t{2}\t{3}\t{4}", s0, K, T, r, q);
+            }
 
             Func<double, double> callPrice = (double initialVariance) => HestonForwardApproximated.HestonForwardCallPrice(
                 kappa: kappa,
@@ -525,11 +756,32 @@ namespace HestonEstimator
                 r: r,
                 q: q);
 
-            return GreeksBumper(bumpPercentage, v0, callPrice);
+            Engine.Verbose = 0;
+            var vegaGreek = GreeksBumper(bumpPercentage, v0, callPrice);
+            Engine.Verbose = verbosity;
+
+            if (verbosity > 0)
+            {
+                Console.WriteLine("Vega");
+                Console.WriteLine(vegaGreek);
+            }
+
+            return vegaGreek;
         }
 
         public static double ThetaFSCall(double kappa, double theta, double rho, double v0, double sigma, double s0, double T, double K, double r, double q, double T0, double bumpPercentage = 0.01)
         {
+            int verbosity = Engine.Verbose;
+            if (verbosity > 0)
+            {
+                Console.WriteLine("Calculating theta with Heston model");
+                Console.WriteLine("Heston Parameters");
+                Console.WriteLine("kappa\ttheta\tsigma\trho\tv0");
+                Console.WriteLine("{0}\t{1}\t{2}\t{3}\t{4}", kappa, theta, sigma, rho, v0);
+                Console.WriteLine("Call Option Information");
+                Console.WriteLine("s0\tK\tT\tr\tq");
+                Console.WriteLine("{0}\t{1}\t{2}\t{3}\t{4}", s0, K, T, r, q);
+            }
 
             Func<double, double> callPrice = (double maturity) => HestonForwardApproximated.HestonForwardCallPrice(
                 kappa: kappa,
@@ -544,11 +796,32 @@ namespace HestonEstimator
                 r: r,
                 q: q);
 
-            return GreeksBumper(bumpPercentage, T, callPrice);
+            Engine.Verbose = 0;
+            var thetaGreek = GreeksBumper(bumpPercentage, T, callPrice);
+            Engine.Verbose = verbosity;
+
+            if (verbosity > 0)
+            {
+                Console.WriteLine("Theta");
+                Console.WriteLine(thetaGreek);
+            }
+
+            return thetaGreek;
         }
 
         public static double RhoFSCall(double kappa, double theta, double rho, double v0, double sigma, double s0, double T, double K, double r, double q, double T0, double bumpPercentage = 0.01)
         {
+            int verbosity = Engine.Verbose;
+            if (verbosity > 0)
+            {
+                Console.WriteLine("Calculating rho with Heston model");
+                Console.WriteLine("Heston Parameters");
+                Console.WriteLine("kappa\ttheta\tsigma\trho\tv0");
+                Console.WriteLine("{0}\t{1}\t{2}\t{3}\t{4}", kappa, theta, sigma, rho, v0);
+                Console.WriteLine("Call Option Information");
+                Console.WriteLine("s0\tK\tT\tr\tq");
+                Console.WriteLine("{0}\t{1}\t{2}\t{3}\t{4}", s0, K, T, r, q);
+            }
 
             Func<double, double> callPrice = (double interestRate) => HestonForwardApproximated.HestonForwardCallPrice(
                 kappa: kappa,
@@ -563,7 +836,17 @@ namespace HestonEstimator
                 r: interestRate,
                 q: q);
 
-            return GreeksBumper(bumpPercentage, r, callPrice);
+            Engine.Verbose = 0;
+            var rhoGreek = GreeksBumper(bumpPercentage, r, callPrice);
+            Engine.Verbose = verbosity;
+
+            if (verbosity > 0)
+            {
+                Console.WriteLine("Rho");
+                Console.WriteLine(rhoGreek);
+            }
+
+            return rhoGreek;
         }
 
         public static (double, double) DeltaGammaFSPut(double kappa, double theta, double rho, double v0, double sigma, double s0, double T, double T0, double K, double r, double q, double bumpPercentage = 0.01, double? unBumpedPrice = null)
@@ -620,8 +903,19 @@ namespace HestonEstimator
 
         public static double VegaFSPut(double kappa, double theta, double rho, double v0, double sigma, double s0, double T, double K, double r, double q, double T0, double bumpPercentage = 0.01)
         {
+            int verbosity = Engine.Verbose;
+            if (verbosity > 0)
+            {
+                Console.WriteLine("Calculating vega with Heston model");
+                Console.WriteLine("Heston Parameters");
+                Console.WriteLine("kappa\ttheta\tsigma\trho\tv0");
+                Console.WriteLine("{0}\t{1}\t{2}\t{3}\t{4}", kappa, theta, sigma, rho, v0);
+                Console.WriteLine("Call Option Information");
+                Console.WriteLine("s0\tK\tT\tr\tq");
+                Console.WriteLine("{0}\t{1}\t{2}\t{3}\t{4}", s0, K, T, r, q);
+            }
 
-            Func<double, double> callPrice = (double initialVariance) => HestonForwardApproximated.HestonForwardPutPrice(
+            Func<double, double> putPrice = (double initialVariance) => HestonForwardApproximated.HestonForwardPutPrice(
                 kappa: kappa,
                 theta: theta,
                 sigma: sigma,
@@ -634,13 +928,35 @@ namespace HestonEstimator
                 r: r,
                 q: q);
 
-            return GreeksBumper(bumpPercentage, v0, callPrice);
+            Engine.Verbose = 0;
+            var vegaGreek = GreeksBumper(bumpPercentage, v0, putPrice);
+            Engine.Verbose = verbosity;
+
+            if (verbosity > 0)
+            {
+                Console.WriteLine("Vega");
+                Console.WriteLine(vegaGreek);
+            }
+
+            return vegaGreek;
+
         }
 
         public static double ThetaFSPut(double kappa, double theta, double rho, double v0, double sigma, double s0, double T, double K, double r, double q, double T0, double bumpPercentage = 0.01)
         {
+            int verbosity = Engine.Verbose;
+            if (verbosity > 0)
+            {
+                Console.WriteLine("Calculating theta with Heston model");
+                Console.WriteLine("Heston Parameters");
+                Console.WriteLine("kappa\ttheta\tsigma\trho\tv0");
+                Console.WriteLine("{0}\t{1}\t{2}\t{3}\t{4}", kappa, theta, sigma, rho, v0);
+                Console.WriteLine("Call Option Information");
+                Console.WriteLine("s0\tK\tT\tr\tq");
+                Console.WriteLine("{0}\t{1}\t{2}\t{3}\t{4}", s0, K, T, r, q);
+            }
 
-            Func<double, double> callPrice = (double maturity) => HestonForwardApproximated.HestonForwardPutPrice(
+            Func<double, double> putPrice = (double maturity) => HestonForwardApproximated.HestonForwardPutPrice(
                 kappa: kappa,
                 theta: theta,
                 sigma: sigma,
@@ -653,11 +969,32 @@ namespace HestonEstimator
                 r: r,
                 q: q);
 
-            return GreeksBumper(bumpPercentage, T, callPrice);
+            Engine.Verbose = 0;
+            var thetaGreek = GreeksBumper(bumpPercentage, T, putPrice);
+            Engine.Verbose = verbosity;
+
+            if (verbosity > 0)
+            {
+                Console.WriteLine("Theta");
+                Console.WriteLine(thetaGreek);
+            }
+
+            return thetaGreek;
         }
 
         public static double RhoFSPut(double kappa, double theta, double rho, double v0, double sigma, double s0, double T, double K, double r, double q, double T0, double bumpPercentage = 0.01)
         {
+            int verbosity = Engine.Verbose;
+            if (verbosity > 0)
+            {
+                Console.WriteLine("Calculating rho with Heston model");
+                Console.WriteLine("Heston Parameters");
+                Console.WriteLine("kappa\ttheta\tsigma\trho\tv0");
+                Console.WriteLine("{0}\t{1}\t{2}\t{3}\t{4}", kappa, theta, sigma, rho, v0);
+                Console.WriteLine("Call Option Information");
+                Console.WriteLine("s0\tK\tT\tr\tq");
+                Console.WriteLine("{0}\t{1}\t{2}\t{3}\t{4}", s0, K, T, r, q);
+            }
 
             Func<double, double> callPrice = (double interestRate) => HestonForwardApproximated.HestonForwardPutPrice(
                 kappa: kappa,
@@ -672,7 +1009,17 @@ namespace HestonEstimator
                 r: interestRate,
                 q: q);
 
-            return GreeksBumper(bumpPercentage, r, callPrice);
+            Engine.Verbose = 0;
+            var rhoGreek = GreeksBumper(bumpPercentage, r, callPrice);
+            Engine.Verbose = verbosity;
+
+            if (verbosity > 0)
+            {
+                Console.WriteLine("Rho");
+                Console.WriteLine(rhoGreek);
+            }
+
+            return rhoGreek;
         }
 
         public static (double, double) DeltaGammaFSDCall(double kappa, double theta, double rho, double v0, double sigma, double s0, double T, double T0, double K, double r, double q, double bumpPercentage = 0.01, double? unBumpedPrice = null)
@@ -729,6 +1076,17 @@ namespace HestonEstimator
 
         public static double VegaFSDCall(double kappa, double theta, double rho, double v0, double sigma, double s0, double T, double K, double r, double q, double T0, double bumpPercentage = 0.01)
         {
+            int verbosity = Engine.Verbose;
+            if (verbosity > 0)
+            {
+                Console.WriteLine("Calculating vega with Heston model");
+                Console.WriteLine("Heston Parameters");
+                Console.WriteLine("kappa\ttheta\tsigma\trho\tv0");
+                Console.WriteLine($"{kappa}\t{theta}\t{sigma}\t{rho}\t{v0}");
+                Console.WriteLine("Call Option Information");
+                Console.WriteLine("s0\tK\tT\tT0\tr\tq");
+                Console.WriteLine($"{s0}\t{K}\t{T}\t{T0}\t{r}\t{q}");
+            }
 
             Func<double, double> callPrice = (double initialVariance) => HestonForwardApproximated.HestonForwardDigitalCallPrice(
                 kappa: kappa,
@@ -743,11 +1101,33 @@ namespace HestonEstimator
                 r: r,
                 q: q);
 
-            return GreeksBumper(bumpPercentage, v0, callPrice);
+            Engine.Verbose = 0;
+            var vega = GreeksBumper(bumpPercentage, v0, callPrice);
+            Engine.Verbose = verbosity;
+
+            if (verbosity > 0)
+            {
+                Console.WriteLine("Vega");
+                Console.WriteLine(vega);
+            }
+
+            return vega;
         }
 
         public static double ThetaFSDCall(double kappa, double theta, double rho, double v0, double sigma, double s0, double T, double K, double r, double q, double T0, double bumpPercentage = 0.01)
         {
+            int verbosity = Engine.Verbose;
+            if (verbosity > 0)
+            {
+                Console.WriteLine("Calculating theta with Heston model");
+                Console.WriteLine("Heston Parameters");
+                Console.WriteLine("kappa\ttheta\tsigma\trho\tv0");
+                Console.WriteLine($"{kappa}\t{theta}\t{sigma}\t{rho}\t{v0}");
+                Console.WriteLine("Call Option Information");
+                Console.WriteLine("s0\tK\tT\tT0\tr\tq");
+                Console.WriteLine($"{s0}\t{K}\t{T}\t{T0}\t{r}\t{q}");
+            }
+
 
             Func<double, double> callPrice = (double maturity) => HestonForwardApproximated.HestonForwardDigitalCallPrice(
                 kappa: kappa,
@@ -762,11 +1142,32 @@ namespace HestonEstimator
                 r: r,
                 q: q);
 
-            return GreeksBumper(bumpPercentage, T, callPrice);
+            Engine.Verbose = 0;
+            var thetaGreek = GreeksBumper(bumpPercentage, T, callPrice);
+            Engine.Verbose = verbosity;
+
+            if (verbosity > 0)
+            {
+                Console.WriteLine("Theta");
+                Console.WriteLine(thetaGreek);
+            }
+
+            return thetaGreek;
         }
 
         public static double RhoFSDCall(double kappa, double theta, double rho, double v0, double sigma, double s0, double T, double K, double r, double q, double T0, double bumpPercentage = 0.001)
         {
+            int verbosity = Engine.Verbose;
+            if (verbosity > 0)
+            {
+                Console.WriteLine("Calculating rho with Heston model");
+                Console.WriteLine("Heston Parameters");
+                Console.WriteLine("kappa\ttheta\tsigma\trho\tv0");
+                Console.WriteLine($"{kappa}\t{theta}\t{sigma}\t{rho}\t{v0}");
+                Console.WriteLine("Call Option Information");
+                Console.WriteLine("s0\tK\tT\tT0\tr\tq");
+                Console.WriteLine($"{s0}\t{K}\t{T}\t{T0}\t{r}\t{q}");
+            }
 
             Func<double, double> callPrice = (double interestRate) => HestonForwardApproximated.HestonForwardDigitalCallPrice(
                 kappa: kappa,
@@ -781,7 +1182,17 @@ namespace HestonEstimator
                 r: interestRate,
                 q: q);
 
-            return GreeksBumper(bumpPercentage, r, callPrice);
+            Engine.Verbose = 0;
+            var rhoGreek = GreeksBumper(bumpPercentage, r, callPrice);
+            Engine.Verbose = verbosity;
+
+            if (verbosity > 0)
+            {
+                Console.WriteLine("Rho");
+                Console.WriteLine(rhoGreek);
+            }
+            
+            return rhoGreek;
         }
 
         public static (double, double) DeltaGammaFSDPut(double kappa, double theta, double rho, double v0, double sigma, double s0, double T, double T0, double K, double r, double q, double bumpPercentage = 0.01, double? unBumpedPrice = null)
@@ -838,6 +1249,17 @@ namespace HestonEstimator
 
         public static double VegaFSDPut(double kappa, double theta, double rho, double v0, double sigma, double s0, double T, double K, double r, double q, double T0, double bumpPercentage = 0.01)
         {
+            int verbosity = Engine.Verbose;
+            if (verbosity > 0)
+            {
+                Console.WriteLine("Calculating vega with Heston model");
+                Console.WriteLine("Heston Parameters");
+                Console.WriteLine("kappa\ttheta\tsigma\trho\tv0");
+                Console.WriteLine($"{kappa}\t{theta}\t{sigma}\t{rho}\t{v0}");
+                Console.WriteLine("Call Option Information");
+                Console.WriteLine("s0\tK\tT\tT0\tr\tq");
+                Console.WriteLine($"{s0}\t{K}\t{T}\t{T0}\t{r}\t{q}");
+            }
 
             Func<double, double> putPrice = (double initialVariance) => HestonForwardApproximated.HestonForwardDigitalPutPrice(
                 kappa: kappa,
@@ -852,11 +1274,32 @@ namespace HestonEstimator
                 r: r,
                 q: q);
 
-            return GreeksBumper(bumpPercentage, v0, putPrice);
+            Engine.Verbose = 0;
+            var vegaGreek = GreeksBumper(bumpPercentage, v0, putPrice);
+            Engine.Verbose = verbosity;
+
+            if (verbosity > 0)
+            {
+                Console.WriteLine("Vega");
+                Console.WriteLine(vegaGreek);
+            }
+
+            return vegaGreek;
         }
 
         public static double ThetaFSDPut(double kappa, double theta, double rho, double v0, double sigma, double s0, double T, double K, double r, double q, double T0, double bumpPercentage = 0.01)
         {
+            int verbosity = Engine.Verbose;
+            if (verbosity > 0)
+            {
+                Console.WriteLine("Calculating theta with Heston model");
+                Console.WriteLine("Heston Parameters");
+                Console.WriteLine("kappa\ttheta\tsigma\trho\tv0");
+                Console.WriteLine($"{kappa}\t{theta}\t{sigma}\t{rho}\t{v0}");
+                Console.WriteLine("Call Option Information");
+                Console.WriteLine("s0\tK\tT\tT0\tr\tq");
+                Console.WriteLine($"{s0}\t{K}\t{T}\t{T0}\t{r}\t{q}");
+            }
 
             Func<double, double> putPrice = (double maturity) => HestonForwardApproximated.HestonForwardDigitalPutPrice(
                 kappa: kappa,
@@ -871,11 +1314,32 @@ namespace HestonEstimator
                 r: r,
                 q: q);
 
-            return GreeksBumper(bumpPercentage, T, putPrice);
+            Engine.Verbose = 0;
+            var thetaGreek = GreeksBumper(bumpPercentage, T, putPrice);
+            Engine.Verbose = verbosity;
+
+            if (verbosity > 0)
+            {
+                Console.WriteLine("Theta");
+                Console.WriteLine(thetaGreek);
+            }
+
+            return thetaGreek;
         }
 
         public static double RhoFSDPut(double kappa, double theta, double rho, double v0, double sigma, double s0, double T, double K, double r, double q, double T0, double bumpPercentage = 0.001)
         {
+            int verbosity = Engine.Verbose;
+            if (verbosity > 0)
+            {
+                Console.WriteLine("Calculating rho with Heston model");
+                Console.WriteLine("Heston Parameters");
+                Console.WriteLine("kappa\ttheta\tsigma\trho\tv0");
+                Console.WriteLine($"{kappa}\t{theta}\t{sigma}\t{rho}\t{v0}");
+                Console.WriteLine("Call Option Information");
+                Console.WriteLine("s0\tK\tT\tT0\tr\tq");
+                Console.WriteLine($"{s0}\t{K}\t{T}\t{T0}\t{r}\t{q}");
+            }
 
             Func<double, double> putPrice = (double interestRate) => HestonForwardApproximated.HestonForwardDigitalPutPrice(
                 kappa: kappa,
@@ -890,7 +1354,17 @@ namespace HestonEstimator
                 r: interestRate,
                 q: q);
 
-            return GreeksBumper(bumpPercentage, r, putPrice);
+            Engine.Verbose = 0;
+            var rhoGreek = GreeksBumper(bumpPercentage, r, putPrice);
+            Engine.Verbose = verbosity;
+
+            if (verbosity > 0)
+            {
+                Console.WriteLine("Rho");
+                Console.WriteLine(rhoGreek);
+            }
+
+            return rhoGreek;
         }
 
     }
@@ -1235,7 +1709,6 @@ namespace HestonEstimator
 
         public static double GammaPut(double kappa, double theta, double rho, double v0, double sigma, double s0, double T, double K, double r, double q)
         {
-
             return GammaCall(
                 kappa: kappa,
                 theta: theta,
@@ -1252,6 +1725,7 @@ namespace HestonEstimator
 
         private static double GammaDigital(double kappa, double theta, double rho, double v0, double sigma, double s0, double T, double K, double r, double q)
         {
+
             // the formula to price a digital call is given by 
             //  exp(-r*T) (0.5 +  1/pi * integral from 0 to infinity of Re((exp(-i*ln(K)*u)*phi(u)/(i*u))du )
 
@@ -1269,8 +1743,25 @@ namespace HestonEstimator
 
         public static double GammaDigitalCall(double kappa, double theta, double rho, double v0, double sigma, double s0, double T, double K, double r, double q)
         {
+            int verbosity = Engine.Verbose;
+            if (verbosity > 0)
+            {
+                Console.WriteLine("Calculating gamma with Heston model");
+                Console.WriteLine("Heston Parameters");
+                Console.WriteLine("kappa\ttheta\tsigma\trho\tv0");
+                Console.WriteLine($"{kappa}\t{theta}\t{sigma}\t{rho}\t{v0}");
+                Console.WriteLine("Call Option Information");
+                Console.WriteLine("s0\tK\tT\tr\tq");
+                Console.WriteLine($"{s0}\t{K}\t{T}\t{r}\t{q}");
+            }
 
             var gamma = HestonDigital.DiscountFactor(rate: r, T: T) * GammaDigital(kappa: kappa, theta: theta, rho: rho, v0: v0, sigma: sigma, s0: s0, T, K, r, q);
+            
+            if (verbosity > 0)
+            {
+                Console.WriteLine("Gamma");
+                Console.WriteLine(gamma);
+            }
             return gamma;
         }
 
@@ -1505,7 +1996,26 @@ namespace HestonEstimator
 
         public static double VegaDigitalCall(double kappa, double theta, double rho, double v0, double sigma, double s0, double T, double K, double r, double q)
         {
+            if (Engine.Verbose > 0)
+            {
+                Console.WriteLine("Calculating vega with Heston model");
+                Console.WriteLine("Heston Parameters");
+                Console.WriteLine("kappa\ttheta\tsigma\trho\tv0");
+                Console.WriteLine("{0}\t{1}\t{2}\t{3}\t{4}", kappa, theta, sigma, rho, v0);
+                Console.WriteLine("Call Option Information");
+                Console.WriteLine("s0\tK\tT\tr\tq");
+                Console.WriteLine("{0}\t{1}\t{2}\t{3}\t{4}", s0, K, T, r, q);
+
+            }
+
             var vega = HestonDigital.DiscountFactor(rate: r, T: T) * VegaDigital(kappa: kappa, theta: theta, rho: rho, v0: v0, sigma: sigma, s0: s0, T, K, r, q);
+            
+            if (Engine.Verbose > 0)
+            {
+                Console.WriteLine("Vega");
+                Console.WriteLine(vega);
+            }
+            
             return vega;
         }
 
@@ -1719,17 +2229,58 @@ namespace HestonEstimator
 
         public static double RhoDigitalCall(double kappa, double theta, double rho, double v0, double sigma, double s0, double T, double K, double r, double q)
         {
+            if (Engine.Verbose > 0)
+            {
+                Console.WriteLine("Calculating rho of a digital call with Heston model");
+                Console.WriteLine("Heston Parameters");
+                Console.WriteLine("kappa\ttheta\tsigma\trho\tv0");
+                Console.WriteLine("{0}\t{1}\t{2}\t{3}\t{4}", kappa, theta, sigma, rho, v0);
+                Console.WriteLine("Call Option Information");
+                Console.WriteLine("s0\tK\tT\tr\tq");
+                Console.WriteLine("{0}\t{1}\t{2}\t{3}\t{4}", s0, K, T, r, q);
+
+            }
+
             var ds = HestonDigital.DiscountFactor(rate: r, T: T);
             var rho1 = RhoDigital(kappa: kappa, theta: theta, rho: rho, v0: v0, sigma: sigma, s0: s0, T, K, r, q);
-            return ds * (rho1 - T / 2);
+            var rhoGreek = ds * (rho1 - T / 2);
+
+            if (Engine.Verbose > 0)
+            {
+                Console.WriteLine("Rho");
+                Console.WriteLine(rhoGreek);
+            }
+
+            return rhoGreek;
 
         }
         
         public static double RhoDigitalPut(double kappa, double theta, double rho, double v0, double sigma, double s0, double T, double K, double r, double q)
         {
+            if (Engine.Verbose > 0)
+            {
+                Console.WriteLine("Calculating rho of a digital put with Heston model");
+                Console.WriteLine("Heston Parameters");
+                Console.WriteLine("kappa\ttheta\tsigma\trho\tv0");
+                Console.WriteLine("{0}\t{1}\t{2}\t{3}\t{4}", kappa, theta, sigma, rho, v0);
+                Console.WriteLine("Call Option Information");
+                Console.WriteLine("s0\tK\tT\tr\tq");
+                Console.WriteLine("{0}\t{1}\t{2}\t{3}\t{4}", s0, K, T, r, q);
+
+            }
+
             var ds = HestonDigital.DiscountFactor(rate: r, T: T);
             var rho1 = RhoDigital(kappa: kappa, theta: theta, rho: rho, v0: v0, sigma: sigma, s0: s0, T, K, r, q);
-            return ds * (-rho1 - T / 2);
+            var rhoGreek = ds * (-rho1 - T / 2);
+
+            if (Engine.Verbose > 0)
+            {
+                Console.WriteLine("Rho");
+                Console.WriteLine(rhoGreek);
+            }
+
+
+            return rhoGreek;
         }
 
     }
