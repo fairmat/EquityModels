@@ -102,27 +102,14 @@ namespace HestonEstimator
         {
             //No need to used constant values. In the optimization procedure we can use the term structure
             //as it is.
-
-
-            /*
-             //equityCalData.dyFunc= LeastSquaresDividendCalibration(equityCalData.Hdata, equityCalData.zrFunc);
-
-            if (settings != null) //uses settings if provided.
-            {
-                var localSettings = (HestonEstimationSettings)settings;
-
-                equityCalData.SetToSpecificMaturity(localSettings.Maturity);
-            }
-            else
-                equityCalData.SetToSpecificMaturity(1);
-            */
             DY(equityCalData);
             return;
         }
 
         double DY(EquityCalibrationData equityCalData)
         {
-           double dy= 0.5*(equityCalData.dyFunc.Evaluate(1) + equityCalData.dyFunc.Evaluate(2));
+            // calculate call put parity implied dividend
+            double dy = 0.5*(equityCalData.dyFunc.Evaluate(1) + equityCalData.dyFunc.Evaluate(2));
             Console.WriteLine("Call/Put Parity Dividend\t" + dy);
             return dy;
         }
@@ -135,8 +122,9 @@ namespace HestonEstimator
             param[0] = spotPrice.Value;
             param[Range.New(1, 5)] = solution.x[Range.New(0, 4)];
             param[6] = equityCalData.zrFunc.Evaluate(TheoreticalModelsSettings.ConstantDYRFMaturity);
+
             if (impliedDividends)
-                param[7] = solution.x[Range.End];// equityCalData.dyFunc.Evaluate(TheoreticalModelsSettings.ConstantDYRFMaturity); 
+                param[7] = solution.x[Range.End];
             else
                 param[7] = DY(equityCalData);
             

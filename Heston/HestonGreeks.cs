@@ -7,6 +7,7 @@ using Heston;
 
 namespace HestonEstimator
 {
+    // class that calculates the Heston greeks numerically
     public class HestonNumericalGreeks
     {
         /// <summary>
@@ -37,7 +38,7 @@ namespace HestonEstimator
                 return (fun(init + deltaX) - fun(init - deltaX)) / (2 * deltaX);
         }
 
-        // call option greeks
+        #region call options numerical greeks
 
         public static (double, double) DeltaGammaCall(double kappa, double theta, double rho, double v0, double sigma, double s0, double T, double K, double r, double q, double bumpPercentage = 0.01, double? unBumpedPrice = null)
         {
@@ -208,8 +209,9 @@ namespace HestonEstimator
             return thetaGreek;
         }
 
+        #endregion 
 
-        // put option greeks
+        #region put options numerical greeks
 
         public static (double, double) DeltaGammaPut(double kappa, double theta, double rho, double v0, double sigma, double s0, double T, double K, double r, double q, double bumpPercentage = 0.01, double? unBumpedPrice = null)
         {
@@ -381,7 +383,10 @@ namespace HestonEstimator
             return thetaGreek;
         }
 
-        // digital option greeks
+        #endregion
+
+        #region digital options numerical greeks
+
         public static (double, double) DeltaGammaDCall(double kappa, double theta, double rho, double v0, double sigma, double s0, double T, double K, double r, double q, double bumpPercentage = 0.01, double? unBumpedPrice = null)
         {
 
@@ -676,6 +681,11 @@ namespace HestonEstimator
 
             return thetaGreek;
         }
+
+        #endregion
+
+        #region forward starting options numerical greeks
+
 
         public static (double, double) DeltaGammaFSCall(double kappa, double theta, double rho, double v0, double sigma, double s0, double T, double T0, double K, double r, double q, double bumpPercentage = 0.01, double? unBumpedPrice = null)
         {
@@ -1367,11 +1377,14 @@ namespace HestonEstimator
             return rhoGreek;
         }
 
+        #endregion
+
     }
 
+
+    // class that calculates the analytical delta of options with the Heston model
     public class HestonDelta : HestonCall
     {
-
         public static Complex Phi(Complex u, double kappa, double theta, double sigma, double rho, double v0, double s0, double r, double T)
         {
             Complex I = Complex.I;
@@ -1572,6 +1585,8 @@ namespace HestonEstimator
 
     }
 
+
+    // class that calculates the analytical gamma of options with the Heston model
     public class HestonGamma : HestonCall
     {
 
@@ -1605,7 +1620,6 @@ namespace HestonEstimator
             var int2 = IntegrandFunc2(u: u, kappa: kappa, theta: theta, rho: rho, v0: v0, sigma: sigma, s0: s0, T: T, K: K, r: r, q: q);
             return int1 - K * int2;
         }
-
 
         public static double IntegrandFunc1(double u, double kappa, double theta, double rho, double v0, double sigma, double s0, double T, double K, double r, double q)
         {
@@ -1662,7 +1676,6 @@ namespace HestonEstimator
             return complexVal2.Re;
 
         }
-
 
         public static double GammaCall(double kappa, double theta, double rho, double v0, double sigma, double s0, double T, double K, double r, double q)
         {
@@ -1772,9 +1785,10 @@ namespace HestonEstimator
 
     }
 
+
+    // class that calculates the analytical vega of options with the Heston model
     public class HestonVega : HestonCall
     {
-
         internal static Complex Phi(double u, double kappa, double theta, double sigma, double rho, double v0, double s0, double r, double T)
         {
             Complex Cu = new Complex(u);
@@ -2027,9 +2041,10 @@ namespace HestonEstimator
 
     }
 
+
+    // class that calculates the analytical rho of options with the Heston model
     public class HestonRho : HestonCall
     {
-
         public static Complex Phi(Complex u, double kappa, double theta, double sigma, double rho, double v0, double s0, double r, double T)
         {
             Complex I = Complex.I;

@@ -76,8 +76,7 @@ namespace HestonEstimator
             public double K;
         }
 
-        
-
+       
         public static Complex s1(Complex u, double kappa, double theta, double rho, double v0, double sigma, double s0, double K, double r, double q, double T, double T0)
         {
             var iu = Complex.I * u;
@@ -144,6 +143,7 @@ namespace HestonEstimator
                 
 
         }
+        
         public static Complex G1Hat(double sigma, double kappa, double tau, Complex lambda)
         {
             var sigma2 = (sigma * sigma);
@@ -153,7 +153,6 @@ namespace HestonEstimator
             return preMult * Complex.Log(argumentNumerator / argumentDenominator);
 
         }
-
 
         public static Complex s2Hat(Complex u, double tau0, double rho, double sigma, Complex s1, Complex s2, double kappa, double t)
         {
@@ -220,6 +219,7 @@ namespace HestonEstimator
 
 
         }
+        
         public static double IntegrandP2(double u, double kappa, double theta, double rho, double v0, double sigma, double s0, double K, double r, double q, double T, double T0)
         {
             var uComp = new Complex(u);
@@ -275,10 +275,6 @@ namespace HestonEstimator
             return s0 * ( p1 - B_T_T0 * K * p2);
         }
 
-       
-
-
-
         public static double HestonForwardCallPrice(Vector x, double s0, double T, double T0, double K, double r, double q)
         {
             var kappa = x[0];
@@ -303,9 +299,9 @@ namespace HestonEstimator
         }
 
 
-
     }
 
+    
     // this solution follows the solution of lucic 
     // http://www.untag-smd.ac.id/files/Perpustakaan_Digital_1/FINANCE%20The%20Best%20of%20Wilmott%20Vol.1%20Incorporating%20the%20Quantitative%20Finance%20Review.pdf#page=426
     public class HestonForwardLucic
@@ -333,8 +329,6 @@ namespace HestonEstimator
             return lambda + rho * eta * (m - 2 + Theta_tau(tau, T0:T0, T:T) * (2 - m - j));
         }
 
-
-        
         public static double Theta_tau(double x, double T, double T0)
         {
             var tau = T - T0;
@@ -919,7 +913,7 @@ namespace HestonEstimator
 
             // v follows a CIR process so we take its expectations 
             var v_T0 = ExpectationCIRProcess(v0, kappa, theta, T0);
-
+            
             var dCall = HestonDigital.HestonDigitalCallPrice(
                 kappa: kappa,
                 theta: theta,
