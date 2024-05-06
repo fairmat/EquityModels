@@ -27,6 +27,11 @@
     <Product>Heston</Product>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Remove="Refs\**" />
+    <EmbeddedResource Remove="Refs\**" />
+    <None Remove="Refs\**" />
+  </ItemGroup>
+  <ItemGroup>
     <Reference Include="CoreExtensions">
       <HintPath>..\..\DVPLReferences\CoreExtensions.dll</HintPath>
     </Reference>
@@ -49,9 +54,6 @@
     <Reference Include="Fairmat.Optimization">
       <HintPath>..\..\DVPLReferences\Fairmat.Optimization.dll</HintPath>
       <Private>False</Private>
-    </Reference>
-    <Reference Include="GBMEstimation">
-      <HintPath>..\..\DVPLReferences\Plugins\GBMEstimation.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
