@@ -239,16 +239,17 @@ namespace Heston
         /// </returns>
         public List<IExportable> ExportObjects(bool recursive)
         {
-            List<IExportable> parameters = new List<IExportable>();
-            parameters.Add(this.S0);
-            parameters.Add(this.V0);
-            parameters.Add(this.r);
-            parameters.Add(this.q);
-            parameters.Add(this.k);
-            parameters.Add(this.theta);
-            parameters.Add(this.sigma);
-            parameters.Add(this.rho);
-            return parameters;
+            return new List<IExportable>
+            {
+                this.S0,
+                this.V0,
+                this.r,
+                this.q,
+                this.k,
+                this.theta,
+                this.sigma,
+                this.rho
+            };
         }
 
         #endregion
@@ -265,7 +266,7 @@ namespace Heston
         {
             get
             {
-                return new DynamicInfo(false, true, false, true);
+                return new DynamicInfo(p_a_td: false, p_a_sd: true, p_b_td: false, p_b_sd: true);
             }
         }
 
@@ -278,6 +279,7 @@ namespace Heston
         /// <param name="i">The time step of the simulation.</param>
         /// <param name="x">The state vector at the previous state.</param>
         /// <param name="a">The output of the function.</param>
+        [Obsolete("This method is obsolete, use the ab method instead.")]
         public void a(int i, double* x, double* a)
         {
             double m = Math.Max(0, x[1]);
@@ -292,6 +294,7 @@ namespace Heston
         /// <param name="i">The parameter is not used.</param>
         /// <param name="x">The state vector at the previous state.</param>
         /// <param name="b">The output of the function.</param>
+        [Obsolete("This method is obsolete, use the ab method instead.")]
         public void b(int i, double* x, double* b)
         {
             double m = Math.Sqrt(Math.Max(0, x[1]));
@@ -301,12 +304,12 @@ namespace Heston
 
         public void ab(int i, double* x, double* a, double* b)
         {
-            double m = Math.Max(0, x[1]);
-            double radqM = Math.Sqrt(m);
-            a[0] = this.r.fV() - this.q.fV() - 0.5 * m;
-            a[1] = this.k.fV() * (this.theta.fV() - m);
-            b[0] = radqM;
-            b[1] = this.sigma.fV() * radqM;
+            double V = Math.Max(0, x[1]);
+            double radqV = Math.Sqrt(V);
+            a[0] = this.r.fV() - this.q.fV() - 0.5 * V;
+            a[1] = this.k.fV() * (this.theta.fV() - V);
+            b[0] = radqV;
+            b[1] = this.sigma.fV() * radqV;
         }
 
 
@@ -430,8 +433,7 @@ namespace Heston
             var rParam = this.r.fV();
             var qParam = this.q.fV();
 
-
-
+            // calculate call price 
             result.MarkToMarket = HestonCall.HestonCallPrice(
                kappa: kappaParam,
                theta: thetaParam,
@@ -444,7 +446,7 @@ namespace Heston
                r: rParam,
                q: qParam);
 
-
+            // if greeks are not required, return the result otherwise calculate them
             if (!AttributesUtility.RetrieveAttributeOrDefaultValue(additionalInformation, "Greeks", false))
                 return result;
             else
@@ -914,6 +916,23 @@ namespace Heston
         #endregion
 
         #region IForwardStartingPricing Members
+
+        /// <summary>
+        /// Calculate the price of a forward starting call option.
+        /// </summary>
+        /// <param name="component">
+        /// The component of the process
+        /// </param>
+        /// <param name="strikeFraction">
+        /// The strike percentage of the option
+        /// <param name="fsTime">
+        /// The strike fixing date of the option 
+        /// <param name="timeToMaturity">
+        /// The time to maturity of the option: T-t
+        /// <param name="additionalInformation">"
+        /// Additional information regarding option
+        /// </param>
+        /// <returns>The option price</returns>
         public GreeksDerivatives FSCall(int component, double strikeFraction, double fsTime, double timeToMaturity, Dictionary<string, object> additionalInformation = null)
         {
             bool calculateGreeks = AttributesUtility.RetrieveAttributeOrDefaultValue(additionalInformation, "Greeks", false);
@@ -956,7 +975,22 @@ namespace Heston
             }
         }
 
-
+        /// <summary>
+        /// Calculate the price of a forward starting put option.
+        /// </summary>
+        /// <param name="component">
+        /// The component of the process
+        /// </param>
+        /// <param name="strikeFraction">
+        /// The strike percentage of the option
+        /// <param name="fsTime">
+        /// The strike fixing date of the option 
+        /// <param name="timeToMaturity">
+        /// The time to maturity of the option: T-t
+        /// <param name="additionalInformation">"
+        /// Additional information regarding option
+        /// </param>
+        /// <returns>The option price</returns>
         public GreeksDerivatives FSPut(int component, double strikeFraction, double fsTime, double timeToMaturity, Dictionary<string, object> additionalInformation = null)
         {
             bool calculateGreeks = AttributesUtility.RetrieveAttributeOrDefaultValue(additionalInformation, "Greeks", false);
@@ -1002,7 +1036,22 @@ namespace Heston
 
         }
 
-
+        /// <summary>
+        /// Calculate the price of a forward starting digital call option.
+        /// </summary>
+        /// <param name="component">
+        /// The component of the process
+        /// </param>
+        /// <param name="strikeFraction">
+        /// The strike percentage of the option
+        /// <param name="fsTime">
+        /// The strike fixing date of the option 
+        /// <param name="timeToMaturity">
+        /// The time to maturity of the option: T-t
+        /// <param name="additionalInformation">"
+        /// Additional information regarding option
+        /// </param>
+        /// <returns>The option price</returns>
         public GreeksDerivatives FSDigitalCall(int component, double strikeFraction, double fsTime, double timeToMaturity, Dictionary<string, object> additionalInformation = null)
         {
             bool calculateGreeks = AttributesUtility.RetrieveAttributeOrDefaultValue(additionalInformation, "Greeks", false);
@@ -1045,6 +1094,23 @@ namespace Heston
                 return result;
             }
         }
+
+        /// <summary>
+        /// Calculate the price of a forward starting digital put option.
+        /// </summary>
+        /// <param name="component">
+        /// The component of the process
+        /// </param>
+        /// <param name="strikeFraction">
+        /// The strike percentage of the option
+        /// <param name="fsTime">
+        /// The strike fixing date of the option 
+        /// <param name="timeToMaturity">
+        /// The time to maturity of the option: T-t
+        /// <param name="additionalInformation">"
+        /// Additional information regarding option
+        /// </param>
+        /// <returns>The option price</returns>
         public GreeksDerivatives FSDigitalPut(int component, double strikeFraction, double fsTime, double timeToMaturity, Dictionary<string, object> additionalInformation = null)
         {
             bool calculateGreeks = AttributesUtility.RetrieveAttributeOrDefaultValue(additionalInformation, "Greeks", false);
@@ -1087,14 +1153,29 @@ namespace Heston
                 return result;
             }
         }
+
+        /// <summary>
+        /// Calculate the price of a forward starting swap option.
+        /// </summary>
+        /// <param name="component">
+        /// The component of the process
+        /// </param>
+        /// <param name="strikeFraction">
+        /// The strike percentage of the option
+        /// <param name="fsTime">
+        /// The strike fixing date of the option 
+        /// <param name="timeToMaturity">
+        /// The time to maturity of the option: T-t
+        /// <param name="additionalInformation">"
+        /// Additional information regarding option
+        /// </param>
+        /// <returns>The option price</returns>
         public GreeksDerivatives FSSwap(int component, double strikeFraction, double fsTime, double swapMaturity, Dictionary<string, object> additionalInformation = null)
         {
             throw new NotImplementedException();
         }
 
         #endregion
-
-
 
         /// <summary>
         /// Populate editable fields from name and value vectors

@@ -36,7 +36,6 @@ namespace HestonEstimator
     {
         
 
-
         #region IEstimator Members
 
         /// <summary>
@@ -101,10 +100,12 @@ namespace HestonEstimator
         {
             DateTime t0 = DateTime.Now;
             var interestDataSet = (CurveMarketData)marketData[0];
+            // call price data
             CallPriceMarketData callDataSet = (CallPriceMarketData)marketData[1];
+            // equity calibration data
             EquityCalibrationData equityCalData = new EquityCalibrationData(callDataSet, interestDataSet);
+            // spot level 
             var spotPrice = (DVPLI.MarketDataTypes.Scalar)marketData[2];
-
 
             Setup(equityCalData, settings);
 
@@ -118,6 +119,7 @@ namespace HestonEstimator
 
 
             var calSettings = settings as HestonCalibrationSettings;
+            
             // Creates the context.
             Document doc = new Document();
             ProjectROV prj = new ProjectROV(doc);
@@ -136,30 +138,27 @@ namespace HestonEstimator
             else
             {
                 //use defaults
-                matBound[0] = 1.0 / 12;// .25;
-                matBound[1] = 6;// 10; //Up to 6Y maturities
+                matBound[0] = 1.0 / 12;
+                matBound[1] = 6; //Up to 6Y maturities
                 strikeBound[0] = 0.4;
                 strikeBound[1] = 1.6;
             }
+
+
             Console.WriteLine(callDataSet);
-            /*
-            //CBA TEST
-            matBound[0] = 1;// .25;
-            matBound[1] = 3.5;// 10; //Up to 6Y maturities
-            strikeBound[0] = 0.5;// 0.5;
-            strikeBound[1] = 2;//1.5;
-            */
+            
             HestonCallOptimizationProblem problem = NewOptimizationProblem(equityCalData, matBound, strikeBound);
             int totalOpts = problem.numCall + problem.numPut;
             Console.WriteLine("Calibration based on "+totalOpts+ " options. (" + problem.numCall + " call options and "+problem.numPut+" put options).");
 
-            IOptimizationAlgorithm solver = new  QADE();
-            //IOptimizationAlgorithm solver = new MultiLevelSingleLinkage();
-            IOptimizationAlgorithm solver2 = new SteepestDescent();
+            // DifferentialEvolution optimizer (stochastic optimization)
+            IOptimizationAlgorithm stochasticOptimizer = new  QADE();
+            // SteepestDescent optimizer (deterministic optimization)
+            IOptimizationAlgorithm deterministicOptimizer = new SteepestDescent();
 
+            // set up the optimization
             DESettings o = new DESettings();
             o.controller = controller;
-            
             // If true the optimization algorithm will operate in parallel.
             o.Parallel = Engine.MultiThread;
             o.h = 10e-8;
@@ -173,53 +172,54 @@ namespace HestonEstimator
                 o.Repeatable = true;
             }
 
+            // initialize the solution
             SolutionInfo solution = null;
 
             double minObj=double.MaxValue;
             Vector minX= null;
             int Z = 1;
-            //if (problem.GetType() == typeof(Heston.HestonCallSimulationOptimizationProblem))
-            //    Z = 2;
-
             for(int z=0;z<Z;z++)
             {
                 o.NP = AttributesUtility.RetrieveAttributeOrDefaultValue<int>(properties, "NP", 50);
                 o.MaxIter = AttributesUtility.RetrieveAttributeOrDefaultValue<int>(properties, "MaxIter", 25);
 
-                if (solver.GetType() == typeof(MultiLevelSingleLinkage))
+                if (stochasticOptimizer.GetType() == typeof(MultiLevelSingleLinkage))
                 {
                     o.MaxGamma = 6;       
                 }
                
                 o.Verbosity = 1;
-            Vector x0 = null;// new Vector(new double[] { 0.5, 0.5, 0.8, -0.5, 0.05 });
+                Vector x0 = null;
 
-            // GA
-            solution = solver.Minimize(problem, o, x0);
-            if (solution.errors)
-                return null;
+                solution = stochasticOptimizer.Minimize(problem, o, x0);
+                // if we have errors, we return null
+                if (solution.errors)
+                    return null;
             
-            o.options = "qn";
-            o.MaxIter = 500;// 1000;
+                o.options = "qn";
+                o.MaxIter = 500;// 1000;
 
-            if (solution != null)
-                solution = solver2.Minimize(problem, o, solution.x);
-            else
-            {
-                solution = solver2.Minimize(problem, o, x0);
+                if (solution != null)
+                    // we use the solution found by the stochastic optimizer as starting point for the deterministic optimizer
+                    solution = deterministicOptimizer.Minimize(problem, o, solution.x);
+                else
+                {
+                    // if the stochastic optimizer did not find a solution, we start from the initial guess
+                    solution = deterministicOptimizer.Minimize(problem, o, x0);
+                }
+
+                // if we have errors, we return null
+                if (solution.errors)
+                    return null;
+
+                if (solution.obj < minObj)
+                {
+                    minObj = solution.obj;
+                    minX = solution.x.Clone();
+                }
             }
-            if (solution.errors)
-                return null;
-
-            if (solution.obj < minObj)
-            {
-                minObj = solution.obj;
-                minX = solution.x.Clone();
-            }
-            }
 
 
-            
             solution.obj = minObj;
             solution.x = minX;
 

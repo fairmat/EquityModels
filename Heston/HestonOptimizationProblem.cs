@@ -33,6 +33,15 @@ using Fairmat.Optimization;
 
 namespace HestonEstimator
 {
+
+    enum EWeighting
+    {
+        CONSTANT = 0,
+        LINEAR = 1,
+        LOG = 2
+    }
+
+
     /// <summary>
     /// Describes the time-dependent Heston optimization problem.
     /// </summary>
@@ -98,7 +107,7 @@ namespace HestonEstimator
         static double pricingMin = 0.0001;
         static internal bool displayObjInfo = false;
         static internal double optionThreshold = 0.000;
-        static internal int weighting = 2;  //Option weighting 0=constant w. //1=linear //2 log
+        static internal EWeighting weighting = EWeighting.LOG;  
         internal static bool calibrateOnCallOptions = true;
         internal static bool calibrateOnPutOptions = true;
 
@@ -160,7 +169,6 @@ namespace HestonEstimator
                          equityCalData.CallMatrixDividendYield, equityCalData.Hdata.S0);
 
            
-
             displayObjInfo = false;
         }
 
@@ -226,22 +234,18 @@ namespace HestonEstimator
         {
             this.s0 = s0;
 
-            //var rf = new PFunction(maturity, rate);
             var dy = new PFunction(maturity, dividendYield);
-            //var rfF = new Fairmat.Math.Integrate(x => rf.Evaluate(x));
             var dyF = new Fairmat.Math.Integrate(x => dy.Evaluate(x));
 
             this.rate = new Vector(maturity.Length);
             this.dividendYield = new Vector(maturity.Length);
             for (int z = 0; z < maturity.Length; z++)
             {
-                //this.rate[z] = rfF.AdaptLobatto(0, maturity[z]) / maturity[z];
                 this.dividendYield[z] = dyF.AdaptLobatto(0, maturity[z]) / maturity[z];
             }
-            this.rate = rate;
 
+            this.rate = rate;
             this.maturity = maturity;
-            //this.drift = this.rate - this.dividendYield;
             this.strike = strike;
             this.callMarketPrice = callMarketPrice;
             this.numCall = 0;
@@ -251,10 +255,12 @@ namespace HestonEstimator
 
             for (int r = 0; r < this.callMarketPrice.R; r++)
             {
+                // if the maturity is within the bounds then we can calibrate on it
                 if (this.maturity[r] >= matBound[0] && this.maturity[r]<= matBound[1])
                 {
                     for (int c = 0; c < this.callMarketPrice.C; c++)
                     {
+                        // if the strike is within the bounds then we can calibrate on it
                         if (this.strike[c] >= s0 * strikeBound[0] && this.strike[c] <= s0 * strikeBound[1])
                         {
                             if (calibrateOnCallOptions)
@@ -283,7 +289,6 @@ namespace HestonEstimator
             {
                 //Rows maturities, columns strikes
                 vLastMin = 0.5 * Math.Pow(this.cpmd.Volatility.Min().Min(), 2);
-
                 v0Min = 0.99 * Math.Pow(this.cpmd.Volatility[0, Range.All].Min().Min(), 2);
                 v0Max = 1.01 * Math.Pow(this.cpmd.Volatility[0, Range.All].Max().Max(), 2);
             }
@@ -370,7 +375,7 @@ namespace HestonEstimator
         /// <returns>Null as it's unused.</returns>
         public DVPLI.Vector G(DVPLI.Vector x)
         {
-            return null;
+            throw new NotImplementedException();
         }
 
         /// <summary>
@@ -479,8 +484,6 @@ namespace HestonEstimator
                             {
                                 if (this.callMarketPrice[r, c] > s0 * optionThreshold && this.cpmd.CallVolume[r, c] > 0)
                                     avgPricingError += Math.Abs(pricingErrors[r, c]);
-                                //if (this.cpmd.PutPrice[r, c] > s0 * optionThreshold && this.cpmd.PutVolume[r, c] > 0)
-                                //    avgPricingError += Math.Abs(pricingErrors[r, c]);
                             }
                         }
                         avgPricingError /= numCall;
@@ -519,54 +522,8 @@ namespace HestonEstimator
         /// </param>
         private void CalculateSingleRow(object context)
         {
+            // use the interpolation to calculate the prices
             CalculateSingleRowWithInterpolation(context);
-            return;
-
-            HestonCall hc = context as HestonCall;
-          
-            int r = hc.row;
-            for (int c = 0; c < this.callMarketPrice.C; c++)
-            {
-                bool callCondition=this.callMarketPrice[r, c] > s0*optionThreshold && this.cpmd.CallVolume[r,c]>0;
-                bool putCondition=this.cpmd.PutPrice[r, c] > s0*optionThreshold && this.cpmd.PutVolume[r,c]>0;
-                if (callCondition)//||putCondition)
-                {
-                    hc.K = this.strike[c];
-                    var callPut=hc.HestonCallPutPrice();
-                    hc.hestonCallPrice[r, c] = callPut[0];
-                    hc.hestonPutPrice[r, c] = callPut[1];
-
-                    if (callCondition)
-                    {
-                        if (HestonCallOptimizationProblem.optimizeRelativeError)
-                        {
-                            double mkt = pricingMin + this.callMarketPrice[r, c];
-                            double model = pricingMin + hc.hestonCallPrice[r, c];
-                            hc.sum += callWeight[r,c] * Math.Pow((model - mkt) / mkt, 2);
-                        }
-                        else
-                        {
-                            hc.sum += callWeight[r,c] * Math.Pow(hc.hestonCallPrice[r, c] - this.callMarketPrice[r, c], 2);
-                        }
-                    }
-                    /*
-                    if (putCondition)
-                    {
-                        if (HestonCallOptimizationProblem.optimizeRelativeError)
-                        {
-                            double mkt = pricingMin + this.cpmd.PutPrice[r, c];
-                            double model = pricingMin + hc.hestonPutPrice[r, c];
-                            hc.sum += putWeight[r,c] * Math.Pow((model - mkt) / mkt, 2);
-                        }
-                        else
-                        {
-                            hc.sum += putWeight[r,c]* Math.Pow(hc.hestonPutPrice[r, c] - this.cpmd.PutPrice[r, c], 2);
-                        }
-                    }
-                     */
-                }
-
-            }
             return;
         }
 
@@ -594,7 +551,7 @@ namespace HestonEstimator
                 }
             }
 
-
+            // initialize variables 
              var strikes = new List<double>();
              var calls = new List<double>();
              var puts = new List<double>();
@@ -621,16 +578,12 @@ namespace HestonEstimator
                 }
             }
             
-            // Builds interpolated call and put values.
 
-            var callFun = new PFunction((Vector)strikes.ToArray(), (Vector)calls.ToArray());
-            callFun.m_Function.iType = DVPLUtils.EInterpolationType.SPLINE;
-           
-            var putFun = new PFunction((Vector)strikes.ToArray(), (Vector)puts.ToArray());
-            putFun.m_Function.iType = DVPLUtils.EInterpolationType.SPLINE;
+            // Builds interpolated call and put values.
+            var callFun = BuildInterpolationObject(strikes, calls);
+            var putFun = BuildInterpolationObject(strikes, puts);
             
             // Evaluates at the requested strikes
-
             for (int c = 0; c < this.callMarketPrice.C; c++)
             {
                 bool callCondition = this.callMarketPrice[r, c] > s0 * optionThreshold && this.cpmd.CallVolume[r, c] > 0;
@@ -672,6 +625,13 @@ namespace HestonEstimator
             return;
         }
 
+
+        static PFunction BuildInterpolationObject(List<double> strike, List<double> price, DVPLUtils.EInterpolationType interpolationType = DVPLUtils.EInterpolationType.SPLINE)
+        {
+            PFunction fun = new PFunction((Vector)strike.ToArray(), (Vector)price.ToArray());
+            fun.m_Function.iType = interpolationType;
+            return fun;
+        }
 
         #endregion
 
@@ -754,11 +714,11 @@ namespace HestonEstimator
         {
             switch (weighting)
             {
-                case 0://constant
+                case EWeighting.CONSTANT:
                     return 1;//no-volume information
-                case 1://linear
+                case EWeighting.LINEAR:
                     return volume;
-                case 2://log
+                case EWeighting.LOG:
                     if (volume > 0)
                         return Math.Log(volume) + 1;
                     else
