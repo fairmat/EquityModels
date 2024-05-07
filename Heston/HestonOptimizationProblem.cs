@@ -164,9 +164,15 @@ namespace HestonEstimator
             this.cpmd = equityCalData.Hdata;
             this.matBound = matBound;
             this.strikeBound = strikeBound;
-            SetVariables(equityCalData.Hdata.CallPrice, equityCalData.Hdata.Maturity,
-                         equityCalData.Hdata.Strike, equityCalData.CallMatrixRiskFreeRate,
-                         equityCalData.CallMatrixDividendYield, equityCalData.Hdata.S0);
+            var strike = equityCalData.Hdata.Strikes.GetRowReference(0).Clone();
+
+            SetVariables(
+                callMarketPrice: equityCalData.Hdata.CallPrice,
+                maturity: equityCalData.Hdata.Maturity,
+                strike: strike,
+                rate: equityCalData.CallMatrixRiskFreeRate,
+                s0: equityCalData.Hdata.S0,
+                dividendYield: equityCalData.CallMatrixDividendYield); 
 
            
             displayObjInfo = false;
