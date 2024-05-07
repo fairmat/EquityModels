@@ -172,9 +172,9 @@ namespace HestonEstimator
                 strike: strike,
                 rate: equityCalData.CallMatrixRiskFreeRate,
                 s0: equityCalData.Hdata.S0,
-                dividendYield: equityCalData.CallMatrixDividendYield); 
+                dividendYield: equityCalData.CallMatrixDividendYield);
 
-           
+
             displayObjInfo = false;
         }
 
