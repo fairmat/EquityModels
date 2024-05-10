@@ -438,8 +438,50 @@ namespace HestonEstimator
 
         public static (double, double) DeltaGammaDPut(double kappa, double theta, double rho, double v0, double sigma, double s0, double T, double K, double r, double q, double bumpPercentage = 0.01, double? unBumpedPrice = null)
         {
-            (double delta, double gamma) = DeltaGammaDCall(kappa, theta, rho, v0, sigma, s0, T, K, r, q, bumpPercentage, unBumpedPrice);
-            return (-delta, gamma);
+            if (!unBumpedPrice.HasValue)
+            {
+                unBumpedPrice = HestonDigital.HestonDigitalPutPrice(
+                    kappa: kappa,
+                    theta: theta,
+                    sigma: sigma,
+                    rho: rho,
+                    v0: v0,
+                    s0: s0,
+                    T: T,
+                    K: K,
+                    r: r,
+                    q: q);
+            }
+
+            double deltaS = bumpPercentage * s0;
+
+            double PriceBumpUp = HestonDigital.HestonDigitalPutPrice(
+                kappa: kappa,
+                theta: theta,
+                sigma: sigma,
+                rho: rho,
+                v0: v0,
+                s0: s0 + deltaS,
+                T: T,
+                K: K,
+                r: r,
+                q: q);
+
+            double PriceBumpDown = HestonDigital.HestonDigitalPutPrice(
+                kappa: kappa,
+                theta: theta,
+                sigma: sigma,
+                rho: rho,
+                v0: v0,
+                s0: s0 - deltaS,
+                T: T,
+                K: K,
+                r: r,
+                q: q);
+
+            var delta = (PriceBumpUp - PriceBumpDown) / (2 * deltaS);
+            var gamma = (PriceBumpUp - 2 * unBumpedPrice.Value + PriceBumpDown) / (deltaS * deltaS);
+            return (delta, gamma);
         }
 
         public static double VegaDCall(double kappa, double theta, double rho, double v0, double sigma, double s0, double T, double K, double r, double q, double bumpPercentage = 0.01)
@@ -1780,7 +1822,7 @@ namespace HestonEstimator
 
         public static double GammaDigitalPut(double kappa, double theta, double rho, double v0, double sigma, double s0, double T, double K, double r, double q)
         {
-            return GammaDigitalCall(kappa: kappa, theta: theta, rho: rho, v0: v0, sigma: sigma, s0: s0, T, K, r, q);
+            return - GammaDigitalCall(kappa: kappa, theta: theta, rho: rho, v0: v0, sigma: sigma, s0: s0, T, K, r, q);
         }
 
     }

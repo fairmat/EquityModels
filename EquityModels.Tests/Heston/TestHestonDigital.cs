@@ -157,7 +157,7 @@ namespace Heston
 
             (double delta, double gamma) = HestonNumericalGreeks.DeltaGammaDPut(bumpPercentage: 0.001, kappa: kappa, theta: theta, sigma: sigma, rho: rho, v0: v0, s0: s0, T: tau, K: k, r: rate, q: dy);
             double expectedDelta = -0.362747513586;
-            double expectedGamma = -0.29945856666;
+            double expectedGamma = 0.29945856666;
 
 
             double rhoGreek = HestonNumericalGreeks.RhoDPut(bumpPercentage: 0.001, kappa: kappa, theta: theta, sigma: sigma, rho: rho, v0: v0, s0: s0, T: tau, K: k, r: rate, q: dy);
