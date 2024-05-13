@@ -1943,8 +1943,6 @@ namespace HestonEstimator
 
             }
 
-            double F = s0 * Math.Exp((r - q) * T);
-            double firstTerm = 0.5 * (F - K);
             double a = 1E-8;
             double b = 1000.0;
 
@@ -1961,7 +1959,7 @@ namespace HestonEstimator
 
             double integral = part1 + a * functionToIntegrate(a / 2.0);
 
-            double v = (firstTerm + integral / Math.PI);
+            double v = integral / Math.PI ;
 
             double adjustedVega = Math.Exp(-r * T) * v;
 

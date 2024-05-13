@@ -502,7 +502,7 @@ namespace Heston
                    r: rParam,
                    q: qParam);
 
-                var vega = HestonNumericalGreeks.VegaCall(
+                var vega = HestonVega.VegaCall(
                    kappa: kappaParam,
                    theta: thetaParam,
                    sigma: sigmaParam,
@@ -625,7 +625,7 @@ namespace Heston
                    r: rParam,
                    q: qParam);
 
-                var vega = HestonNumericalGreeks.VegaPut(
+                var vega = HestonVega.VegaPut(
                    kappa: kappaParam,
                    theta: thetaParam,
                    sigma: sigmaParam,
@@ -749,7 +749,7 @@ namespace Heston
                    r: rParam,
                    q: qParam);
 
-                var vega = HestonNumericalGreeks.VegaDCall(
+                var vega =  HestonVega.VegaDigitalCall(
                    kappa: kappaParam,
                    theta: thetaParam,
                    sigma: sigmaParam,
@@ -871,7 +871,7 @@ namespace Heston
                    r: rParam,
                    q: qParam);
 
-                var vega = HestonNumericalGreeks.VegaDPut(
+                var vega = HestonVega.VegaDigitalPut(
                    kappa: kappaParam,
                    theta: thetaParam,
                    sigma: sigmaParam,

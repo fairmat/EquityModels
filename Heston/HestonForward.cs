@@ -651,7 +651,7 @@ namespace HestonEstimator
                         r: r,
                         q: q);
 
-            var fsCallVega = s0 * Math.Exp(-q * T0) * derivativeExpectationCIRProcess(v0, kappa, theta, T0) * HestonNumericalGreeks.VegaCall(
+            var fsCallVega = s0 * Math.Exp(-q * T0) * derivativeExpectationCIRProcess(v0, kappa, theta, T0) * HestonVega.VegaCall(
                         kappa: kappa,
                         theta: theta,
                         sigma: sigma,
@@ -749,7 +749,7 @@ namespace HestonEstimator
                         r: r,
                         q: q);
 
-            var fsPutVega = s0 * Math.Exp(-q * T0) * derivativeExpectationCIRProcess(v0, kappa, theta, T0) * HestonNumericalGreeks.VegaPut(
+            var fsPutVega = s0 * Math.Exp(-q * T0) * derivativeExpectationCIRProcess(v0, kappa, theta, T0) * HestonVega.VegaPut(
                         kappa: kappa,
                         theta: theta,
                         sigma: sigma,
@@ -845,7 +845,7 @@ namespace HestonEstimator
                         r: r,
                         q: q);
 
-            var fsDPutVega = HestonDigital.DiscountFactor(r, T0) * derivativeExpectationCIRProcess(v0, kappa, theta, T0) * HestonNumericalGreeks.VegaDPut(
+            var fsDPutVega = HestonDigital.DiscountFactor(r, T0) * derivativeExpectationCIRProcess(v0, kappa, theta, T0) * HestonVega.VegaDigitalPut(
                         kappa: kappa,
                         theta: theta,
                         sigma: sigma,
@@ -945,7 +945,7 @@ namespace HestonEstimator
                         r: r,
                         q: q);
 
-            var fsDCallVega = HestonDigital.DiscountFactor(r, T0) * derivativeExpectationCIRProcess(v0, kappa, theta, T0) * HestonNumericalGreeks.VegaDCall(
+            var fsDCallVega = HestonDigital.DiscountFactor(r, T0) * derivativeExpectationCIRProcess(v0, kappa, theta, T0) * HestonVega.VegaDigitalCall(
                         kappa: kappa,
                         theta: theta,
                         sigma: sigma,

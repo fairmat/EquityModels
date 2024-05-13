@@ -132,10 +132,10 @@ This kind of discretization entails no discretization error in the stock price p
 
 This algorithm is used for both Heston and Heston time dependent drift processes.
 
-\section{Calibration}
 
+\section{Pricing of european options}
 
-\subsection{Characteristic function and call price formula}
+\subsection{Characteristic function }
 
 The characteristic function is defined as
 \begin{equation}
@@ -195,6 +195,64 @@ DP(K,T) &= e^{-r T} P(S_T < K) \\
 \end{aligned} 
 \end{equation}
 
+
+\section{Pricing of forward starting options}
+In this section we describe how the pricing of forward starting options can be done in the context of Heston's model. 
+
+\subsection{Ahlpi and Rutkowski approach}
+The approach undertaken to price forward starting options is taken from \cite{ahlip2009forward}.
+
+
+\subsection{Approximated approach}
+To describe the approximate approach, let us consider a forward starting call options, with maturity $T$, strike date $T_0$, and strike percentage $\tilde{K}$. 
+The pricing problem, at time $t$, consists in determining the following expectation
+$$
+FS(\tilde{K}, T, T_0)  = e^{-r (T-t)}\mathbb{E}_t   \left[\left(S_T - \tilde{K} S_{T_0}\right)^+\right] \ .
+$$
+In the case of $t \in [T_0, T)$ this option corresponds to a vanilla call options and it can be priced using the formula derived in \ref{call}. 
+In the case of $t \in [0, T_0)$ we can use an approximated approach taken from the Black-Scholes framework. 
+Indeed, in the Black-Scholes framework the price of a forward starting call options can be done as follows:
+$$
+\begin{aligned}
+FS^{BS}(\tilde{K}, T, T_0) 
+&= e^{-r (T_0-t)} \mathbb{E}_t   \left[  S_{T_0}  e^{-r (T-T_0)} \mathbb{E}_{T_0} \left[ \left( \frac{S_T}{S_{T_0}} - \tilde{K}\right)^+\right]       \right]
+\\
+&=
+e^{-r (T_0-t)} \mathbb{E}_t \left[ S_{T_0}  C^{BS}(1; \tilde{K}, T-T_0) \right] 
+\\ &=S_0 e^{-q (T_0-t)}   C^{BS}(S_0 : 1,  \sigma :  \sigma; \tilde{K}, T-T_0) \ , 
+\end{aligned}
+$$
+where $C^{BS}(S_0 : 1,  \sigma :  \sigma; \tilde{K}, T-T_0)$ is the price of a call option under the Black-Scholes framework, with initial underlying value equal to $1$, strike $\tilde{K}$ and time to maturity $T-T_0$.
+In the context of the Heston framework, it is possible to undertake the following approximation
+$$
+\begin{aligned}
+FS^{H}(\tilde{K}, T, T_0) = 
+&= e^{-r (T_0-t)} \mathbb{E}_t   \left[  S_{T_0}  e^{-r (T-T_0)} \mathbb{E}_{T_0} \left[ \left( \frac{S_T}{S_{T_0}} - \tilde{K}\right)^+\right]       \right]
+\\
+&\approx e^{-r (T_0-t)} \mathbb{E}_t   \left[  S_{T_0}  \right] \times \mathbb{E}_t \left[ e^{-r (T-T_0)} \mathbb{E}_{T_0} \left[ \left( \frac{S_T}{S_{T_0}} - \tilde{K}\right)^+\right]       \right]
+\\ 
+&=
+S_0 e^{-q (T_0-t)}   C^{H}(S_0 : 1,  V_0 : \tilde{V}   ; \tilde{K}, T-T_0) \ , 
+\end{aligned}
+$$
+with
+\begin{equation}
+\label{vol-cir-exp}
+\tilde{V} = \mathbb{E}_t[ V_{T_0} ] = V_t  e^{-\kappa  (T_0 -t) } + \theta \left(1 - e^{-\kappa   (T_0 -t) }\right) \ ,
+\end{equation}
+where $C^{H}(S_0 : 1,  V_0 : \tilde{V}   ; \tilde{K}, T-T_0) $ represents the price of a call option under the Heston framework, with initial underlying value equal to $1$, initial variance equal to $\tilde{V}$, strike $\tilde{K}$ and time to maturity $T-T_0$.
+It should be stressed that this approach represents an approximation based on the assumption of absence of correlation between the stock process and the variance process. 
+
+
+
+
+
+
+
+
+
+\section{Calibration}
+
 \subsection{Dividend yield calculation}
 
 To estimate the function $\mu(t)$ it is necessary to have the zero coupon curve and a curve describing the expected dividend yield at future dates. The zero coupon curve can be calculated from cash rates and swap rates observed in the market and will be denoted with $ZR(t)$. Expected dividend yields can be calculated through put-call parity relation. In the case of continuous constant dividend yield this relation states that
@@ -223,7 +281,7 @@ To calibrate the constant drift version you need the same market data and you al
 
 
 
-\subsection{Greeks}
+\section{Greeks}
 In this section, we describe how the calculation of the Greeks can be computed in the framework of the Heston model. 
 
 %%%%%%%%%%%%%%%%%% CALL OPTION %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

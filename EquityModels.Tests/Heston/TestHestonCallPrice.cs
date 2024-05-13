@@ -170,7 +170,7 @@ namespace Heston
             double vega = HestonNumericalGreeks.VegaCall(bumpPercentage: 0.001, kappa: kappa, theta: theta, sigma: sigma, rho: rho, v0: v0, s0: s0, T: tau, K: k, r: rate, q: dy);
             double expectedVega = 0.06372181708;
             Assert.AreEqual(expectedVega, vega, 1e-3);
-            // Assert.AreEqual(analyticalVega, vega, 1e-3);
+            Assert.AreEqual(analyticalVega, vega, 1e-3);
 
 
             double thetaGreek = HestonNumericalGreeks.ThetaCall(bumpPercentage: 0.001, kappa: kappa, theta: theta, sigma: sigma, rho: rho, v0: v0, s0: s0, T: tau, K: k, r: rate, q: dy);  
@@ -223,7 +223,7 @@ namespace Heston
             double vega = HestonNumericalGreeks.VegaPut(bumpPercentage: 0.001, kappa: kappa, theta: theta, sigma: sigma, rho: rho, v0: v0, s0: s0, T: tau, K: k, r: rate, q: dy);
             double expectedVega = 0.06372181708;
             Assert.AreEqual(expectedVega, vega, 1e-3);
-            // Assert.AreEqual(analyticalVega, vega, 1e-3);
+            Assert.AreEqual(analyticalVega, vega, 1e-3);
 
 
             double thetaGreek = HestonNumericalGreeks.ThetaPut(bumpPercentage: 0.001, kappa: kappa, theta: theta, sigma: sigma, rho: rho, v0: v0, s0: s0, T: tau, K: k, r: rate, q: dy);
@@ -331,8 +331,6 @@ namespace Heston
             var numericalRho = HestonNumericalGreeks.RhoFSDPut(kappa: kappa, theta: theta, sigma: sigma, rho: rho, v0: v0, s0: s0, T: tau, T0: T0, K: k, r: rate, q: dy);
             var numericalVega = HestonNumericalGreeks.VegaFSDPut(kappa: kappa, theta: theta, sigma: sigma, rho: rho, v0: v0, s0: s0, T: tau, T0: T0, K: k, r: rate, q: dy);
             var numericalTheta = HestonNumericalGreeks.ThetaFSDPut(kappa: kappa, theta: theta, sigma: sigma, rho: rho, v0: v0, s0: s0, T: tau, T0: T0, K: k, r: rate, q: dy);
-
-
             var analyticalGreeks = HestonForwardApproximated.HestonForwardDigitalPutWithGreeks(kappa: kappa, theta: theta, sigma: sigma, rho: rho, v0: v0, s0: s0, T: tau, T0: T0, K: k, r: rate, q: dy);
 
 
