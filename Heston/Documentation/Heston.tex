@@ -72,7 +72,7 @@ The Heston model is used to describe the evolution of a stock price (or an index
 & dV(t) = k(\theta - V(t))dt + \sigma\sqrt{V(t)}dW_2(t)\\
 & \mathbb{E}[dW_1(t)dW_2(t)] = \rho dt
 \end{align}
-where $S$ represents the price process, $V$ represents the volatility process and $dW_1, dW_2$ are correlated Wiener processes with instantaneous correlation $\rho$.
+where $S$ represents the price process, $V$ represents the volatility process and $W_1, W_2$ are correlated Wiener processes with instantaneous correlation $\rho$.
 
 The price process follows a geometric brownian motion with a stochastic volatility while the volatility follows a square root mean reverting process. Usually $\rho$ is negative, so that a lowering in the stock price is correlated with an increase in the volatility.
 
