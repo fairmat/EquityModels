@@ -13,9 +13,7 @@ This plug-in implements the Heston model. Once installed the plug-in offers the 
 \section{How to use the plug-in}
 
 \subsection{Heston process}
-
-In the Fairmat user interface when you create a new stochastic process you will find the additional option ``Heston''.
-
+in the fairmat user interface, while adding a new stochastic process, Heston model can be used.
 The stochastic process is defined by the parameters shown in table below:
 \begin{center}
 \begin{tabular}{|l|c|}
@@ -36,12 +34,10 @@ rho & $\rho$ \\
 \end{center}
 $S_0$ and $V_0$ are the starting values for the stock process and the volatility process, the others are parameters regulating the model dynamic.
 
-You can edit the model values shown in the table above directly on the ``Parameters'' tab of the Heston process window by double clicking on them. To set the value of the correlation parameter (called $\rho$ in the following) you have to select the Heston process in the ``Stochastic Process'' window and then click on ``Correlation''.
+It is possible to edit the model values shown in the table above directly on the ``Parameters'' tab of the Heston process window by double clicking on them. To set the value of the correlation parameter (called $\rho$ in the following) you have to select the Heston process in the ``Stochastic Process'' window and then click on ``Correlation''.
 
 \subsection{Heston with time dependent drift}
-
-In the Fairmat user interface when you create a new stochastic process you will find the additional option ``Heston time dependent drift''.
-
+in the fairmat user interface, while adding a new stochastic process, Heston model with time dependent drift can be used.
 The stochastic process is defined by the parameters shown in table below:
 \begin{center}
 \begin{tabular}{|l|c|}
@@ -62,7 +58,7 @@ rho & $\rho$ \\
 \end{center}
 $S_0$ and $V_0$ are the starting values for the stock process and the volatility process, the others are parameters regulating the model dynamic. They are all scalar except the Drift Curve, for this parameter you have to insert a reference to a curve.
 
-You can edit the model values as in the Heston case. Remember that to specify a reference to a previous defined curve {\ttfamily mu} you have to use the notation {\ttfamily @mu}.
+It is possible to edit the model values as in the Heston case. Remember that to specify a reference to a previous defined curve {\ttfamily mu} you have to use the notation {\ttfamily @mu}.
 
 \section{Implementation Details}
 
@@ -74,19 +70,20 @@ The Heston model is used to describe the evolution of a stock price (or an index
 \end{align}
 where $S$ represents the price process, $V$ represents the volatility process and $W_1, W_2$ are correlated Wiener processes with instantaneous correlation $\rho$.
 
-The price process follows a geometric brownian motion with a stochastic volatility while the volatility follows a square root mean reverting process. Usually $\rho$ is negative, so that a lowering in the stock price is correlated with an increase in the volatility.
+The price process follows a geometric brownian motion with a stochastic volatility while the volatility follows a square root mean reverting process $($Cox$-$Ingersoll$-$Ross model$)$. Usually $\rho$ is negative, so a decrease in the stock level corresponds to a volatility increment. 
 
 The parameters have the following interpretation:
 \begin{itemize}
 \item $\mu$ is the rate of return of the stock price
 \item $k$ is the speed of mean reversion
-\item $\theta$ is the mean reversion level. As $t$ grows to infinity, the expected value of $V(t)$ tends to $\theta$:
+\item $\theta$ is the mean reversion level. As $t$ goes to infinity, the expected value of $V(t)$ tends to $\theta$:
 \item $\sigma$ is the "volatility of volatility", in other words it regulates the variance of $V(t)$.
 \end{itemize}
 
 Parameters $k$, $\theta$ and $\sigma$ have to satisfy the constrain $2k\theta>\sigma^2$ (known as the Feller condition) in order to exclude the possibility for $V(t)$ to reach 0.
 
-In the case of Heston with constant drift $\mu$ is set equal to $r-q$ where $r$ is the risk free rate and $q$ is the dividend yield rate of the stock. If you use this kind of model be careful to use a constant discount with risk free rate equal to the $r$ parameter.
+In the case of Heston with constant drift $\mu$ is set equal to $r-q$ where $r$ is the risk free rate and $q$ is the dividend yield rate of the stock. 
+Please be careful to use a constant discount with risk free rate equal to the $r$ parameter.
 
 The Heston model with time dependent drift is defined by the same stochastic differential equations with the only difference that the $\mu$ parameter is time-dependent so that equation (\ref{eq:dsh}) becomes
 \begin{equation}
@@ -108,7 +105,7 @@ and deriving this expression in $t$ gives us
 \begin{equation}
 r(t) = \frac{d\mathrm{ZR}(t)}{dt}t + \mathrm{ZR}(t).
 \end{equation}
-Given that $\mu(t) = r(t) - q(t)$ we have justified formula (\ref{eq:mu}).
+Given that $\mu(t) = r(t) - q(t)$, Equation \ref{eq:mu} has been proven.
 
 
 \subsection{Simulation and discretization scheme}
@@ -128,7 +125,7 @@ where we have used the notation $V_t^+=\max\{V_t,0\}$ and where $N_1(0,1), N_2(0
 
 Equation (\ref{eq:Vdisc}) can still generate negative values for $V$ but when this happens the next simulation step will have the diffusion term suppressed letting the drift term take the process toward positive values.
 
-This kind of discretization entails no discretization error in the stock price process simulation (with the assumption that $V_t$ remains constant in every $\Delta t$) while it does introduce a small bias in the volatility process. To reduce bias error it is appropriate to simulate using small time steps, for example in \cite{HaastrechtPelsser:EffHestonSim} it is suggested to use at least 32 time steps per year. Both in \cite{HaastrechtPelsser:EffHestonSim} and in \cite{Lord:CompBiasSimSchemes} it is stated that this discretization scheme, compared with other Euler-like schemes, seems to produce the smallest bias.
+This kind of scheme entails no discretization error in the stock price process simulation (with the assumption that $V_t$ remains constant in every $\Delta t$) while it introduces a small bias in the volatility process. To reduce bias error it is appropriate to simulate using small time steps, for example in \cite{HaastrechtPelsser:EffHestonSim} it is suggested to use at least 32 time steps per year. Both in \cite{HaastrechtPelsser:EffHestonSim} and in \cite{Lord:CompBiasSimSchemes} it is stated that this discretization scheme, compared with other Euler-like schemes, seems to produce the smallest bias.
 
 This algorithm is used for both Heston and Heston time dependent drift processes.
 
@@ -164,7 +161,7 @@ The price of an european call option with strike $K$ and time to maturity $T$ is
 
 \begin{equation}
 \begin{aligned}
-C(K,T) &= e^{-r T}\left(	\mathbb{E}\left[S_T 1_{S_T \geq K} \right] - K \mathbb{E}\left[1_{S_T \geq K} \right]\right) \\
+C(K,T, S_0, V_0) &= e^{-r T}\left(	\mathbb{E}\left[S_T 1_{S_T \geq K} \right] - K \mathbb{E}\left[1_{S_T \geq K} \right]\right) \\
 &=\frac{1}{2}S_0e^{-q T}+ \frac{e^{-r T}}{\pi}\int_0^{\infty}f_1(u) du  \\
 &- K e^{-r T}  \left[ \frac{1}{2} + \frac{1}{\pi}\int_0^{\infty}f_2(u) du \right] \\
 &=  \frac{1}{2}\left[S_0e^{-q T} - Ke^{-r T}\right] + \frac{e^{-r T}}{\pi}\int_0^{\infty}\left[f_1(u) - Kf_2(u)\right]du
@@ -181,7 +178,7 @@ f_2(u) & = \mathrm{Re}\left[\frac{\exp(-iu\log K)\phi(u,T)}{iu}\right].
 The price of an european digital call option with strike $K$ and time to maturity $T$ is given by the formula
 \begin{equation}
 \begin{aligned}
-DC(K,T) &= e^{-r T} P(S_T \geq K) \\ &=  e^{-r T} \mathbb{E}\left[1_{S_T \geq K}\right] \\
+DC(K,T, S_0, V_0) &= e^{-r T} \mathbb{P}(S_T \geq K) \\ &=  e^{-r T} \mathbb{E}\left[1_{S_T \geq K}\right] \\
 &= e^{-r T}  \left[ \frac{1}{2} + \frac{1}{\pi}\int_0^{\infty}f_2(u) du \right] 
 \end{aligned}
 \end{equation}
@@ -189,7 +186,7 @@ DC(K,T) &= e^{-r T} P(S_T \geq K) \\ &=  e^{-r T} \mathbb{E}\left[1_{S_T \geq K}
 Similarly, the price of an european digital put option with strike $K$ and time to maturity $T$ is given by the formula
 \begin{equation}
 \begin{aligned}
-DP(K,T) &= e^{-r T} P(S_T < K) \\ 
+DP(K,T, S_0, V_0) &= e^{-r T} P(S_T < K) \\ 
 &= e^{-r T} (1-P(S_T \geq K))  \\ 
 & = e^{-r T}  \left[  \frac{1}{2} - \frac{1}{\pi}\int_0^{\infty}f_2(u) du \right] 
 \end{aligned} 
@@ -204,35 +201,35 @@ The approach undertaken to price forward starting options is taken from \cite{ah
 
 
 \subsection{Approximated approach}
-To describe the approximate approach, let us consider a forward starting call options, with maturity $T$, strike date $T_0$, and strike percentage $\tilde{K}$. 
+To describe the approximate approach, let us consider a forward starting call options, with maturity $T$, strike date $T_0$, and strike percentage $\overline{K}$. 
 The pricing problem, at time $t$, consists in determining the following expectation
 $$
-FS(\tilde{K}, T, T_0)  = e^{-r (T-t)}\mathbb{E}_t   \left[\left(S_T - \tilde{K} S_{T_0}\right)^+\right] \ .
+FS(\overline{K}, T, T_0, S_0, V_0)  = e^{-r (T-t)}\mathbb{E}_t   \left[\left(S_T - \overline{K} S_{T_0}\right)^+\right] \ .
 $$
 In the case of $t \in [T_0, T)$ this option corresponds to a vanilla call options and it can be priced using the formula derived in \ref{call}. 
 In the case of $t \in [0, T_0)$ we can use an approximated approach taken from the Black-Scholes framework. 
 Indeed, in the Black-Scholes framework the price of a forward starting call options can be done as follows:
 $$
 \begin{aligned}
-FS^{BS}(\tilde{K}, T, T_0) 
-&= e^{-r (T_0-t)} \mathbb{E}_t   \left[  S_{T_0}  e^{-r (T-T_0)} \mathbb{E}_{T_0} \left[ \left( \frac{S_T}{S_{T_0}} - \tilde{K}\right)^+\right]       \right]
+FS^{BS}(\overline{K}, T, T_0, S_0, V_0) 
+&= e^{-r (T_0-t)} \mathbb{E}_t   \left[  S_{T_0}  e^{-r (T-T_0)} \mathbb{E}_{T_0} \left[ \left( \frac{S_T}{S_{T_0}} - \overline{K}\right)^+\right]       \right]
 \\
 &=
-e^{-r (T_0-t)} \mathbb{E}_t \left[ S_{T_0}  C^{BS}(1; \tilde{K}, T-T_0) \right] 
-\\ &=S_0 e^{-q (T_0-t)}   C^{BS}(S_0 : 1,  \sigma :  \sigma; \tilde{K}, T-T_0) \ , 
+e^{-r (T_0-t)} \mathbb{E}_t \left[ S_{T_0}  C^{BS}(\overline{K}, T-T_0, 1 ,\sigma) \right] 
+\\ &=S_0 e^{-q (T_0-t)}   C^{BS}(\overline{K}, T-T_0, 1 ,\sigma) \ , 
 \end{aligned}
 $$
-where $C^{BS}(S_0 : 1,  \sigma :  \sigma; \tilde{K}, T-T_0)$ is the price of a call option under the Black-Scholes framework, with initial underlying value equal to $1$, strike $\tilde{K}$ and time to maturity $T-T_0$.
+where $C^{BS}(\overline{K}, T-T_0, 1 , \sigma)$ is the price of a call option under the Black-Scholes framework, with initial underlying value equal to $1$, volatility parameter $\sigma$, strike $\overline{K}$ and time to maturity $T-T_0$.
 In the context of the Heston framework, it is possible to undertake the following approximation
 $$
 \begin{aligned}
-FS^{H}(\tilde{K}, T, T_0) = 
-&= e^{-r (T_0-t)} \mathbb{E}_t   \left[  S_{T_0}  e^{-r (T-T_0)} \mathbb{E}_{T_0} \left[ \left( \frac{S_T}{S_{T_0}} - \tilde{K}\right)^+\right]       \right]
+FS(\overline{K}, T, T_0, S_0, V_0) = 
+&= e^{-r (T_0-t)} \mathbb{E}_t   \left[  S_{T_0}  e^{-r (T-T_0)} \mathbb{E}_{T_0} \left[ \left( \frac{S_T}{S_{T_0}} - \overline{K}\right)^+\right]       \right]
 \\
-&\approx e^{-r (T_0-t)} \mathbb{E}_t   \left[  S_{T_0}  \right] \times \mathbb{E}_t \left[ e^{-r (T-T_0)} \mathbb{E}_{T_0} \left[ \left( \frac{S_T}{S_{T_0}} - \tilde{K}\right)^+\right]       \right]
+&\approx e^{-r (T_0-t)} \mathbb{E}_t   \left[  S_{T_0}  \right] \times \mathbb{E}_t \left[ e^{-r (T-T_0)} \mathbb{E}_{T_0} \left[ \left( \frac{S_T}{S_{T_0}} - \overline{K}\right)^+\right]       \right]
 \\ 
 &=
-S_0 e^{-q (T_0-t)}   C^{H}(S_0 : 1,  V_0 : \tilde{V}   ; \tilde{K}, T-T_0) \ , 
+S_0 e^{-q (T_0-t)}   C(\overline{K}, T-T_0, 1, \tilde{V}) \ , 
 \end{aligned}
 $$
 with
@@ -240,7 +237,7 @@ with
 \label{vol-cir-exp}
 \tilde{V} = \mathbb{E}_t[ V_{T_0} ] = V_t  e^{-\kappa  (T_0 -t) } + \theta \left(1 - e^{-\kappa   (T_0 -t) }\right) \ ,
 \end{equation}
-where $C^{H}(S_0 : 1,  V_0 : \tilde{V}   ; \tilde{K}, T-T_0) $ represents the price of a call option under the Heston framework, with initial underlying value equal to $1$, initial variance equal to $\tilde{V}$, strike $\tilde{K}$ and time to maturity $T-T_0$.
+
 It should be stressed that this approach represents an approximation based on the assumption of absence of correlation between the stock process and the variance process. 
 
 
@@ -257,24 +254,24 @@ It should be stressed that this approach represents an approximation based on th
 
 To estimate the function $\mu(t)$ it is necessary to have the zero coupon curve and a curve describing the expected dividend yield at future dates. The zero coupon curve can be calculated from cash rates and swap rates observed in the market and will be denoted with $ZR(t)$. Expected dividend yields can be calculated through put-call parity relation. In the case of continuous constant dividend yield this relation states that
 \begin{equation}
-p = c -S_te^{-qt} + Ke^{-rt}
+P(K, T, S_0, V_0) = C(K, T, S_0, V_0)  - S_0 e^{-qT} + Ke^{-rT}
 \end{equation}
-where $p,c$ are prices for put and call options with maturity $t$ and strike $K$, and $q$ is the dividend yield. Solving for $q$ we have
+Solving for $q$ we have
 \begin{equation}
-q = -\frac{1}{t}\ln\left[\frac{c-p + Ke^{-rt}}{S_0}\right].
+q = -\frac{1}{T}\ln\left[\frac{C(K, T, S_0, V_0)-P(K, T, S_0, V_0) + Ke^{-rT}}{S_0}\right].
 \end{equation}
 Observing call and put prices for at the money options at different maturities we can calculate $q(t)$ and use this values in formula (\ref{eq:mu}).
 
 \subsection{Calibration and Objective function}
 
-Given a stock (or index) with value $S_0$ at a certain date, the price of a call option with strike $K$ and maturity $T$ priced with the Heston model can be seen as a function $C_H(V_0, \mu(T), k, \theta, \sigma, K, T)$.
+Given a stock (or index) with value $S_0$ at a certain date, the price of a call option with strike $K$ and maturity $T$ priced with the Heston model can be seen as a function of the model $C(K,T,S_0, V_0) = f_H(V_0, \mu(T), k, \theta, \sigma, K, T, S_0)$.
 
 Given a matrix of call prices taken from the market $C_M(i,j)$, where the indexes represent different maturities $T_i$ and strike $K_j$, Fairmat fixes the parameters $(V_0, k, \theta, \sigma)$ searching the minimum of the function
 \begin{equation}
-f(V_0, k, \theta, \sigma) = \sum_{ij}\Big[C_H(V_0, \mu(T_i), k, \theta, \sigma, K_j, T_i) - C_M(i,j)\Big]^2.
+f(V_0, k, \theta, \sigma) = \sum_{ij}\Big[f_H(V_0, \mu(T_i), k, \theta, \sigma, K_j, T_i, S_0) - C_M(i,j)\Big]^2.
 \end{equation}
 
-Information necessary for the calibration is taken from two different xml files, one containing an InterestRateMarketData  structure with data needed to calculate the function $ZR(t)$ and one containing a CallPriceMarketData structure with data regarding option prices for the index.
+Information necessary for the calibration is taken from two different data types, one containing an InterestRateMarketData  structure with data needed to calculate the function $ZR(t)$ and one containing a CallPriceMarketData structure with data regarding option prices for the index.
 
 To calibrate the constant drift version you need the same market data and you also have to specify a maturity on the calibration settings. If the maturity value is $T$ then $r$ and $q$ are set to $r = ZR(T)$ and $q = q(T)$. The remaining parameters are found as before but calibration is performed with $\mu(t)$ constant and equal to $r-q$.
 
@@ -290,9 +287,9 @@ In this section, we describe how the calculation of the Greeks can be computed i
 As described in section \ref{call}, the price of a European Call option under the Heston stochastic process is given by the following formula:
 
 $$
-C(K,T) = \frac{1}{2}\left[S_0e^{-q T} - Ke^{-r T}\right] + \frac{e^{-r T}}{\pi}\int_0^{\infty}\left[f_1(u) - Kf_2(u)\right]du
+C(K,T, S_0, V_0) = \frac{1}{2}\left[S_0e^{-q T} - Ke^{-r T}\right] + \frac{e^{-r T}}{\pi}\int_0^{\infty}\left[f_1(u) - Kf_2(u)\right]du
 $$
-
+For simplicity we will denote $C(K,T, S_0, V_0)$ as $C(K,T, S_0, V_0)$.
 
 \begin{itemize}
 
@@ -302,7 +299,7 @@ The Delta of a call option measures the rate of change of the option price with 
 
 $$
 \begin{aligned}
-\Delta_C(K,T) = \frac{ \partial C(K,T) }{\partial S_0} &=
+\Delta_C(K,T, S_0, V_0) = \frac{ \partial C(K,T, S_0, V_0) }{\partial S_0} &=
  \frac{1}{2}e^{-q T} + \frac{e^{-r T}}{\pi} \int_0^{\infty}\frac{ \partial  }{\partial S_0}  \left[f_1(u) - Kf_2(u)\right]du
 \end{aligned}
 $$
@@ -327,8 +324,8 @@ $$
 The Gamma of a call option is the rate of change in the Delta with respect to changes in the underlying price.  For a call option, it can be calculated as follows:
 $$
 \begin{aligned}
-\Gamma_C(K,T) =
-\frac{ \partial^2 C(K,T) }{\partial S_0^2} &=
+\Gamma_C(K,T, S_0, V_0) =
+\frac{ \partial^2 C(K,T, S_0, V_0) }{\partial S_0^2} &=
  \frac{e^{-r T}}{\pi} \int_0^{\infty}\frac{ \partial^2  }{\partial S_0^2}  \left[f_1(u) - Kf_2(u)\right]du \ .
 \end{aligned}
 $$
@@ -336,14 +333,14 @@ The second derivatives of the functions $ f_1(u) $ and $ f_2(u) $ with respect t
 \begin{equation}
 \label{eq:s-derivative-s0-f1-f2}
 \begin{aligned}
-\frac{ \partial^2  f_1(u)   }{\partial S_0^2}&= \mathrm{Re}\left[  \frac{\exp(-iu\log K) \phi_{S_0, S_0}(u-i,T)   }{iu}\right]  \ , \\  
-\frac{\partial^2  f_2(u)   }{\partial S_0^2 } &= \mathrm{Re}\left[ \frac{\exp(-iu\log K) \phi_{S_0, S_0}(u,T)  }{iu}\right].
+\frac{ \partial^2  f_1(u)   }{\partial S_0^2}&= \mathrm{Re}\left[  \frac{\exp(-iu\log K) \phi_{S_0^2}(u-i,T)   }{iu}\right]  \ , \\  
+\frac{\partial^2  f_2(u)   }{\partial S_0^2 } &= \mathrm{Re}\left[ \frac{\exp(-iu\log K) \phi_{S_0^2}(u,T)  }{iu}\right].
 \end{aligned}
 \end{equation}
-Here, $\phi_{S_0, S_0}(u,T)$ is the second derivative of the characteristic function $\phi(u,T)$ with respect to $S_0$, and is given by:
+Here, $\phi_{S_0^2}(u,T)$ is the second derivative of the characteristic function $\phi(u,T)$ with respect to $S_0$, and is given by:
 $$
 \begin{aligned}
-\phi_{S_0, S_0}(u,T) = \frac{ \partial^2  \phi(u,T)}{\partial S_0^2} &= \frac{\partial}{\partial S_0}  \left[ \frac{iu}{S_0} \phi(u,T)\right] \\ &= -\frac{iu}{S_0^2} \phi(u,T) + \left( \frac{iu}{S_0} \right)^2 \phi(u,T) \ .
+\phi_{S_0^2}(u,T) = \frac{ \partial^2  \phi(u,T)}{\partial S_0^2} &= \frac{\partial}{\partial S_0}  \left[ \frac{iu}{S_0} \phi(u,T)\right] \\ &= -\frac{iu}{S_0^2} \phi(u,T) + \left( \frac{iu}{S_0} \right)^2 \phi(u,T) \ .
 \end{aligned}
 $$
 
@@ -356,8 +353,9 @@ The Rho of a call option measures the rate of change of the option price with re
 
 $$
 \begin{aligned}
-\text{Rho}_C(K,T) = 
-\frac{ \partial C(K,T) }{\partial r} &=
+\text{Rho}_C(K,T, S_0, V_0) &= 
+\frac{ \partial C(K,T, S_0, V_0) }{\partial r} 
+\\ &=
 \frac{T}{2} Ke^{-r T}  - \frac{T e^{-r T}} {\pi}\int_0^{\infty}\left[f_1(u) - Kf_2(u)\right]du 
 \\&+ \frac{e^{-r T}} {\pi}\int_0^{\infty}\frac{ \partial \left[f_1(u) - Kf_2(u)\right]}{\partial r}   du \ .
 \end{aligned}
@@ -383,12 +381,12 @@ $$
 
 The Theta of a call option measures the rate of change of the option price with respect to changes in time, or the time decay of the option. It can be represented as follows:
 $$
-\Theta_C(K,T) = \frac{\partial C(K,T)}{\partial T} \ . 
+\Theta_C(K,T, S_0, V_0) = \frac{\partial C(K,T, S_0, V_0)}{\partial T} \ . 
 $$
 
 Given the complexity of the Heston model, an analytical solution for the Theta could be complex. Therefore, we use the central difference method, which approximates the derivative of a function at a point.
 $$
-\Theta_C(K,T) \approx \frac{C(K,T+h) - C(K,T-h)}{2h} \ , 
+\Theta_C(K,T, S_0, V_0) \approx \frac{C(K,T+h) - C(K,T-h)}{2h} \ , 
 $$
 where $h$ is a small increment in time. 
 
@@ -398,7 +396,7 @@ where $h$ is a small increment in time.
 In the Heston model, Vega measures the rate of change of the option price with respect to changes in the initial value of the variance $V_0$. It can be derived as follows:
 
 $$
-\text{Vega}_C(K,T) = \frac{\partial C(K,T)}{\partial V_0} = \frac{e^{-r T}}{\pi} \int_0^{\infty}\frac{ \partial  }{\partial V_0}  \left[f_1(u) - Kf_2(u)\right]du \ . 
+\text{Vega}_C(K,T, S_0, V_0) = \frac{\partial C(K,T, S_0, V_0)}{\partial V_0} = \frac{e^{-r T}}{\pi} \int_0^{\infty}\frac{ \partial  }{\partial V_0}  \left[f_1(u) - Kf_2(u)\right]du \ . 
 $$
 
 The derivatives of the functions $ f_1(u) $ and $ f_2(u) $ with respect to $ V_0$ are given by:
@@ -429,13 +427,14 @@ $$
 
 The Greeks of a European put option can be derived from the Greeks of a European call option using the put-call parity. The put-call parity is a principle that defines a relationship between the price of European put options and calls options of the same class (that is, with the same underlying asset, strike price and expiration date). It is given by:
 $$
-C(S_0; K, T) - P(S_0; K, T)  = S_0 e^{-q T} - K e^{-r T} \ .
+C(K, T, S_0, V_0) - P(, T, S_0, V_0)  = S_0 e^{-q T} - K e^{-r T} \ .
 $$
 Rearranging the terms, we get the price of a European put option:
 
 $$
-P(S_0; K, T) = C(S_0; K, T) - \left(S_0 e^{-q T} - K e^{-r T}\right) \ .
+P(, T, S_0, V_0) = C(, T, S_0, V_0) - \left(S_0 e^{-q T} - K e^{-r T}\right) \ .
 $$
+For simplicity we will denote $P(K,T, S_0, V_0)$ as $P(K,T,S_0,V_0)$.
 Now, let's calculate the Greeks:
 
 \begin{itemize}
@@ -445,7 +444,7 @@ Now, let's calculate the Greeks:
 The Delta of a put option is the rate of change of the option price with respect to changes in the underlying asset's price. It can be calculated from the Delta of a call option as follows:
 
 $$
-\Delta_P(K,T) = \Delta_C(K,T) - e^{-q T} \ .
+\Delta_P(K,T,S_0,V_0) = \Delta_C(K,T, S_0, V_0) - e^{-q T} \ .
 $$
 
 
@@ -454,7 +453,7 @@ $$
 The Gamma of a put option is the rate of change in the Delta with respect to changes in the underlying price. This is essentially measuring the second-order sensitivity of the option value to price changes in the underlying asset. For a put option, the Gamma is the same as that of a call option:
 
 $$
-\Gamma_P(K,T) = \Gamma_C(K,T) \ .
+\Gamma_P(K,T,S_0,V_0) = \Gamma_C(K,T, S_0, V_0) \ .
 $$
 
 
@@ -464,7 +463,7 @@ $$
 The Rho of a put option measures the rate of change of the option price with respect to changes in the risk-free interest rate. It can be represented as follows:
 
 $$
-\text{Rho}_P(K,T) = \text{Rho}_C(K,T) - KTe^{-rT} \ .
+\text{Rho}_P(K,T,S_0,V_0) = \text{Rho}_C(K,T, S_0, V_0) - KTe^{-rT} \ .
 $$
 
 
@@ -473,7 +472,7 @@ $$
 
 The Theta of a put option measures the rate of change of the option price with respect to changes in time, or the time decay of the option. Similary to the call option case, we approximate it using the central difference method. 
 $$
- \Theta_P(K,T) \approx \frac{P(K,T+h) - P(K,T-h)}{2h} \ ,
+ \Theta_P(K,T,S_0,V_0) \approx \frac{P(K,T+h) - P(K,T-h)}{2h} \ ,
 $$
 where $h$ is a small increment in time. 
 
@@ -482,7 +481,7 @@ where $h$ is a small increment in time.
 
 In the Heston model, Vega measures the rate of change of the option price with respect to changes in the initial value of the variance $V_0$. For a european put option it can be derived using the put-call parity:
 $$
-\text{Vega}_P(K,T) = \text{Vega}_C(K,T) \ .
+\text{Vega}_P(K,T,S_0,V_0) = \text{Vega}_C(K,T, S_0, V_0) \ .
 $$
 
 \end{itemize}
@@ -503,16 +502,16 @@ $$
 \subsubsection{Greeks of a European digital call option}
 As described in section \ref{digital} the price of a european digital call option under the Heston stochastic process is given by
 $$
-DC(K,T) = e^{-r T}  \left[ \frac{1}{2} + \frac{1}{\pi}\int_0^{\infty}f_2(u) du \right]  \ .
+DC(K,T, S_0, V_0) = e^{-r T}  \left[ \frac{1}{2} + \frac{1}{\pi}\int_0^{\infty}f_2(u) du \right]  \ .
 $$
-
+For simplicity we will denote $DC(K,T, S_0, V_0)$ as $DC(K,T, S_0, V_0)$.
 
 \begin{itemize}
 \item \textbf{Delta} 
 
 The Delta of a digital call option measures the rate of change of the option price with respect to changes in the underlying asset's price. For the digital call option, it can be calculated as follows:
 $$
-\Delta_{DC}(K,T) =  e^{-r T}   \frac{1}{\pi}\int_0^{\infty}  \frac{\partial f_2(u)}{\partial S_0}  du  \ , 
+\Delta_{DC}(K,T,S_0,V_0) =  e^{-r T}   \frac{1}{\pi}\int_0^{\infty}  \frac{\partial f_2(u)}{\partial S_0}  du  \ , 
 $$
 where $\frac{\partial f_2(u)}{\partial S_0}$ is derived in Equation \ref{eq:derivative-s0-f1-f2}.
 
@@ -522,7 +521,7 @@ where $\frac{\partial f_2(u)}{\partial S_0}$ is derived in Equation \ref{eq:deri
 The Gamma of an option measures the rate of change in the Delta with respect to changes in the underlying price. This is essentially measuring the second-order sensitivity of the option value to price changes in the underlying asset. For the digital call option, it can be calculated as follows:
 
 $$
-\Gamma_{DC}(K,T) =  e^{-r T}   \frac{1}{\pi}\int_0^{\infty}  \frac{\partial^2 f_2(u)}{\partial^2 S_0}  du \ , 
+\Gamma_{DC}(K,T,S_0,V_0) =  e^{-r T}   \frac{1}{\pi}\int_0^{\infty}  \frac{\partial^2 f_2(u)}{\partial^2 S_0}  du \ , 
 $$
 where $\frac{\partial^2 f_2(u)}{\partial S_0^2}$ is derived in Equation \ref{eq:s-derivative-s0-f1-f2}.
 
@@ -534,10 +533,10 @@ The Rho of a digital call option measures the rate of change of the option price
 
 $$
 \begin{aligned}
-\text{Rho}_{DC}(K,T) &= 
-\frac{ \partial DC(K,T) }{\partial r} 
+\text{Rho}_{DC}(K,T,S_0,V_0) &= 
+\frac{ \partial DC(K,T, S_0, V_0) }{\partial r} 
 \\ &=
--T * DC(K,T) + e^{-r T}  \left[ \frac{1}{2} + \frac{1}{\pi}\int_0^{\infty} \frac{ \partial f_2(u)}{\partial r}  du \right] \ ,
+-T * DC(K,T, S_0, V_0) + e^{-r T}  \left[ \frac{1}{2} + \frac{1}{\pi}\int_0^{\infty} \frac{ \partial f_2(u)}{\partial r}  du \right] \ ,
 \end{aligned}
 $$
 where $\frac{\partial f_2(u)}{\partial r}$ is derived in Equation \ref{eq:derivative-r-f1-f2}.
@@ -549,7 +548,7 @@ where $\frac{\partial f_2(u)}{\partial r}$ is derived in Equation \ref{eq:deriva
 
 The Theta of a digital call option measures the rate of change of the option price with respect to changes in time, or the time decay of the option. Similary to the call option case, we approximate it using the central difference method. 
 $$
- \Theta_{DC}(K,T) \approx \frac{DC(K,T+h) - DC(K,T-h)}{2h} \  ,
+ \Theta_{DC}(K,T,S_0,V_0) \approx \frac{DC(K,T+h) - DC(K,T-h)}{2h} \  ,
 $$
 where $h$ is a small increment in time. 
 
@@ -559,7 +558,7 @@ where $h$ is a small increment in time.
 In the Heston model, Vega measures the rate of change of the option price with respect to changes in the initial value of the variance $V_0$. For a digital call option, it can be derived as follows:
 
 $$
-\text{Vega}_{DC}(K,T) = \frac{\partial DC(K,T)}{\partial V_0} = e^{-r T}   \frac{1}{\pi}\int_0^{\infty}\frac{\partial f_2(u)}{\partial V_0} du \ ,
+\text{Vega}_{DC}(K,T,S_0,V_0) = \frac{\partial DC(K,T, S_0, V_0)}{\partial V_0} = e^{-r T}   \frac{1}{\pi}\int_0^{\infty}\frac{\partial f_2(u)}{\partial V_0} du \ ,
 $$
 where $\frac{\partial f_2(u)}{\partial V_0}$ is derived in Equation \ref{eq:derivative-v0-f1-f2}.
 
@@ -583,9 +582,9 @@ where $\frac{\partial f_2(u)}{\partial V_0}$ is derived in Equation \ref{eq:deri
 
 The price of a European digital put option ucan be derived from the price of a European digital call option using the fact that the sum of the prices of a digital call and a digital put is equal to $e^{-rT}$. This gives us:
 $$
-DP(K,T) = e^{-rT} - DC(K,T) \ .
+DP(K,T, S_0, V_0) = e^{-rT} - DC(K,T,  S_0, V_0) \ .
 $$
-
+For simplicity we will denote $DP(K,T, S_0, V_0)$ as $DP(K,T,S_0,V_0)$.
 Now, let's calculate the Greeks:
 
 \begin{itemize}
@@ -595,7 +594,7 @@ Now, let's calculate the Greeks:
 The Delta of a digital put option is the rate of change of the option price with respect to changes in the underlying asset's price. It can be calculated from the Delta of a digital call option as follows:
 
 $$
-\Delta_{DP}(K,T) = -\Delta_{DC}(K,T) \ .
+\Delta_{DP}(K,T,S_0,V_0) = -\Delta_{DC}(K,T,S_0,V_0) \ .
 $$
 
 \item \textbf{Gamma} 
@@ -603,7 +602,7 @@ $$
 The Gamma of a digital put option is the rate of change in the Delta with respect to changes in the underlying price. This is essentially measuring the second-order sensitivity of the option value to price changes in the underlying asset. It can be calculated from the Gamma of a digital call option as follows:
 
 $$
-\Gamma_{DP}(K,T) = -\Gamma_{DC}(K,T) \ .
+\Gamma_{DP}(K,T,S_0,V_0) = -\Gamma_{DC}(K,T,S_0,V_0) \ .
 $$
 
 
@@ -612,8 +611,8 @@ $$
 
 The Rho of a digital call option measures the rate of change of the option price with respect to changes in the risk-free interest rate. It can be represented as follows:
 $$
-\text{Rho}_{DP}(K,T) = 
--Te^{-rT} - \text{Rho}_{DC}(K,T) \ .
+\text{Rho}_{DP}(K,T,S_0,V_0) = 
+-Te^{-rT} - \text{Rho}_{DC}(K,T,S_0,V_0) \ .
 $$
 
 
@@ -621,7 +620,7 @@ $$
 
 The Theta of a digital put option measures the rate of change of the option price with respect to changes in time, or the time decay of the option. Similary to the call option case, we approximate it using the central difference method. 
 $$
- \Theta_{DP}(K,T) \approx \frac{DP(K,T+h) - DP(K,T-h)}{2h} \ ,
+ \Theta_{DP}(K,T,S_0,V_0) \approx \frac{DP(K,T+h) - DP(K,T-h)}{2h} \ ,
 $$
 where $h$ is a small increment in time. 
 
@@ -630,7 +629,7 @@ where $h$ is a small increment in time.
 In the Heston model, Vega measures the rate of change of the option price with respect to changes in the initial value of the variance $V_0$. For a digital put option, it can be derived as follows:
 
 $$
-\text{Vega}_{DP}(K,T) = - \text{Vega}_{DC}(K,T) \ .
+\text{Vega}_{DP}(K,T,S_0,V_0) = - \text{Vega}_{DC}(K,T,S_0,V_0) \ .
 $$
 
 
