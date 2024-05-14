@@ -8,13 +8,14 @@
 \PluginTitle{\pluginName}{\pluginVersion}
 
 \section{Introduction}
-This plug-in implements the Heston model. Once installed the plug-in offers the possibility of using two new processes, the Heston process and the Heston time dependent drift process. The latter is a generalization of the former in which a parameter is made time dependent. For a general reference on the Heston model see \cite{Heston:ClosedFormSol}.
+This plug-in implements the Heston model. Once installed the plug-in offers the possibility of using two new processes, the Heston process and the Heston time dependent drift process. 
+The latter is a generalization of the former in which the drift is time-dependent. For a general reference on the Heston model see \cite{Heston:ClosedFormSol}.
 
 \section{How to use the plug-in}
 
 \subsection{Heston process}
-in the fairmat user interface, while adding a new stochastic process, Heston model can be used.
-The stochastic process is defined by the parameters shown in table below:
+in the fairmat user interface, while adding a new stochastic process, Heston model can be selected.
+The stochastic process is defined by the parameters shown in table the below:
 \begin{center}
 \begin{tabular}{|l|c|}
   \hline
@@ -32,12 +33,12 @@ rho & $\rho$ \\
    \hline
 \end{tabular}
 \end{center}
-$S_0$ and $V_0$ are the starting values for the stock process and the volatility process, the others are parameters regulating the model dynamic.
+$S_0$ and $V_0$ are the starting values for the stock process and the volatility process, the remaining parameters regulate the model dynamic.
 
 It is possible to edit the model values shown in the table above directly on the ``Parameters'' tab of the Heston process window by double clicking on them. To set the value of the correlation parameter (called $\rho$ in the following) you have to select the Heston process in the ``Stochastic Process'' window and then click on ``Correlation''.
 
 \subsection{Heston with time dependent drift}
-in the fairmat user interface, while adding a new stochastic process, Heston model with time dependent drift can be used.
+in the fairmat user interface, while adding a new stochastic process, Heston model with time dependent drift can be selected.
 The stochastic process is defined by the parameters shown in table below:
 \begin{center}
 \begin{tabular}{|l|c|}
@@ -56,7 +57,7 @@ rho & $\rho$ \\
    \hline
 \end{tabular}
 \end{center}
-$S_0$ and $V_0$ are the starting values for the stock process and the volatility process, the others are parameters regulating the model dynamic. They are all scalar except the Drift Curve, for this parameter you have to insert a reference to a curve.
+$S_0$ and $V_0$ are the starting values for the stock process and the volatility process, the remaining parameters regulate the model dynamic. They are all scalar except the Drift Curve, for this parameter you have to insert a reference to a curve.
 
 It is possible to edit the model values as in the Heston case. Remember that to specify a reference to a previous defined curve {\ttfamily mu} you have to use the notation {\ttfamily @mu}.
 
@@ -70,7 +71,7 @@ The Heston model is used to describe the evolution of a stock price (or an index
 \end{align}
 where $S$ represents the price process, $V$ represents the volatility process and $W_1, W_2$ are correlated Wiener processes with instantaneous correlation $\rho$.
 
-The price process follows a geometric brownian motion with a stochastic volatility while the volatility follows a square root mean reverting process $($Cox$-$Ingersoll$-$Ross model$)$. Usually $\rho$ is negative, so a decrease in the stock level corresponds to a volatility increment. 
+The price process follows a geometric Brownian motion with a stochastic volatility while the volatility follows a square root mean reverting process $($Cox$-$Ingersoll$-$Ross model$)$. Usually $\rho$ is negative, so a decrease in the stock level corresponds to a volatility increment. 
 
 The parameters have the following interpretation:
 \begin{itemize}
@@ -83,7 +84,7 @@ The parameters have the following interpretation:
 Parameters $k$, $\theta$ and $\sigma$ have to satisfy the constrain $2k\theta>\sigma^2$ (known as the Feller condition) in order to exclude the possibility for $V(t)$ to reach 0.
 
 In the case of Heston with constant drift $\mu$ is set equal to $r-q$ where $r$ is the risk free rate and $q$ is the dividend yield rate of the stock. 
-Please be careful to use a constant discount with risk free rate equal to the $r$ parameter.
+Please note that a constant discount factor should be selected while using a constant risk free rate.
 
 The Heston model with time dependent drift is defined by the same stochastic differential equations with the only difference that the $\mu$ parameter is time-dependent so that equation (\ref{eq:dsh}) becomes
 \begin{equation}
@@ -110,18 +111,18 @@ Given that $\mu(t) = r(t) - q(t)$, Equation \ref{eq:mu} has been proven.
 
 \subsection{Simulation and discretization scheme}
 
-Applying straight Euler-Maruyama method to simulate a Heston process, we obtain this formula for the volatility component
+By applying straight Euler-Maruyama method to simulate a Heston process, we obtain this formula for the volatility component
 \begin{equation}
 V_{t+1} = V_t + k(\theta - V_t)\Delta t + \sigma\sqrt{V_t}\sqrt{\Delta t} N(0,1)
 \end{equation}
-where $\Delta t = t_{n+1}-t_n$ and $N(0,1)$ represents a realization of a standard normal random variable. Even if the parameters satisfy the Feller condition it is possible for the discretized version of $V$ to reach negative values.
+where $\Delta t = t_{n+1}-t_n$ and $N(0,1)$ represents a realization of a standard Normal random variable. Even if the parameters satisfy the Feller condition it is possible for the discretized version of $V$ to reach negative values.
 
 This forces to use a different discretization scheme. In Fairmat simulations are carried out through Euler full truncation method described in \cite{HaastrechtPelsser:EffHestonSim}, characterized by the equations
 \begin{align}
 &\log(S_{t+1}) = \log(S_t) + \left(\mu_t - V_t^+/2\right)\Delta t + \sqrt{V_t^+\Delta t} N_1(0,1)\\
 &V_{t+1} = V_t + k\left(\theta - V_t^+\right)\Delta t + \sigma\sqrt{V_t^+\Delta t} N_2(0,1)\label{eq:Vdisc}
 \end{align}
-where we have used the notation $V_t^+=\max\{V_t,0\}$ and where $N_1(0,1), N_2(0,1)$ are realizations of two $\rho$-correlated standard normal random variable.
+where we have used the notation $V_t^+=\max\{V_t,0\}$ and where $N_1(0,1), N_2(0,1)$ are realizations of two $\rho$-correlated standard Normal random variable.
 
 Equation (\ref{eq:Vdisc}) can still generate negative values for $V$ but when this happens the next simulation step will have the diffusion term suppressed letting the drift term take the process toward positive values.
 
@@ -130,7 +131,7 @@ This kind of scheme entails no discretization error in the stock price process s
 This algorithm is used for both Heston and Heston time dependent drift processes.
 
 
-\section{Pricing of european options}
+\section{Pricing of European options}
 
 \subsection{Characteristic function }
 
@@ -149,7 +150,7 @@ where
  d & = \sqrt{(\rho\sigma iu - k)^2 + \sigma^2(iu + u^2)} \\
  g & = \frac{k-\rho\sigma iu - d}{k-\rho\sigma iu + d}.
 \end{align}
-The form of the $\phi$ function is not equal to that given in Heston original paper but it is an equivalent one which does not have the continuity problem when integrated to find the price of an european call option. This issue is described in \cite{Albrecher:HestonTrap}.
+The form of the $\phi$ function is not equal to that given in Heston original paper but it is an equivalent one which does not have the continuity problem when integrated to find the price of an European call option. This issue is described in \cite{Albrecher:HestonTrap}.
 
 
 
@@ -157,7 +158,7 @@ The form of the $\phi$ function is not equal to that given in Heston original pa
 \subsection{Call price formula}
 \label{call}
 
-The price of an european call option with strike $K$ and time to maturity $T$ is given by the formula
+The price of an European call option with strike $K$ and time to maturity $T$ is given by the formula
 
 \begin{equation}
 \begin{aligned}
@@ -175,19 +176,19 @@ f_2(u) & = \mathrm{Re}\left[\frac{\exp(-iu\log K)\phi(u,T)}{iu}\right].
 
 \subsection{Digital call price formula}
 \label{digital}
-The price of an european digital call option with strike $K$ and time to maturity $T$ is given by the formula
+The price of an European digital call option with strike $K$ and time to maturity $T$ is given by the formula
 \begin{equation}
 \begin{aligned}
-DC(K,T, S_0, V_0) &= e^{-r T} \mathbb{P}(S_T \geq K) \\ &=  e^{-r T} \mathbb{E}\left[1_{S_T \geq K}\right] \\
+DC(K,T, S_0, V_0) &= e^{-r T} \mathbb{P}(S_T > K) \\ &=  e^{-r T} \mathbb{E}\left[1_{S_T > K}\right] \\
 &= e^{-r T}  \left[ \frac{1}{2} + \frac{1}{\pi}\int_0^{\infty}f_2(u) du \right] 
 \end{aligned}
 \end{equation}
 
-Similarly, the price of an european digital put option with strike $K$ and time to maturity $T$ is given by the formula
+Similarly, the price of an European digital put option with strike $K$ and time to maturity $T$ is given by the formula
 \begin{equation}
 \begin{aligned}
-DP(K,T, S_0, V_0) &= e^{-r T} P(S_T < K) \\ 
-&= e^{-r T} (1-P(S_T \geq K))  \\ 
+DP(K,T, S_0, V_0) &= e^{-r T} P(S_T \leq K) \\ 
+&= e^{-r T} (1-P(S_T > K))  \\ 
 & = e^{-r T}  \left[  \frac{1}{2} - \frac{1}{\pi}\int_0^{\infty}f_2(u) du \right] 
 \end{aligned} 
 \end{equation}
@@ -479,7 +480,7 @@ where $h$ is a small increment in time.
 
 \item \textbf{Vega} 
 
-In the Heston model, Vega measures the rate of change of the option price with respect to changes in the initial value of the variance $V_0$. For a european put option it can be derived using the put-call parity:
+In the Heston model, Vega measures the rate of change of the option price with respect to changes in the initial value of the variance $V_0$. For a European put option it can be derived using the put-call parity:
 $$
 \text{Vega}_P(K,T,S_0,V_0) = \text{Vega}_C(K,T, S_0, V_0) \ .
 $$
@@ -500,7 +501,7 @@ $$
 
 
 \subsubsection{Greeks of a European digital call option}
-As described in section \ref{digital} the price of a european digital call option under the Heston stochastic process is given by
+As described in section \ref{digital} the price of a European digital call option under the Heston stochastic process is given by
 $$
 DC(K,T, S_0, V_0) = e^{-r T}  \left[ \frac{1}{2} + \frac{1}{\pi}\int_0^{\infty}f_2(u) du \right]  \ .
 $$
