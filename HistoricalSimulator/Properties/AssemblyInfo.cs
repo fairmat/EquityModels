@@ -16,18 +16,10 @@
  */
 
 using System.Reflection;
-using System.Runtime.InteropServices;
 using Mono.Addins;
+
 [assembly: AssemblyTrademark("Fairmat")]
 [assembly: AssemblyCulture("")]
-
-// Setting ComVisible to false makes the types in this assembly not visible
-// to COM components.  If you need to access a type in this assembly from
-// COM, set the ComVisible attribute to true on that type.
-[assembly: ComVisible(false)]
-
-// The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("7f9560fe-bae7-4d1d-b1dd-16cce524aeee")]
 
 // The following lines tell that the assembly is an addin.
 [assembly: Addin("Historical Simulator", "1.0.5", Category = "Stochastic Process")]

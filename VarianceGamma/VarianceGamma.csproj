@@ -5,9 +5,6 @@
     <OutputType>Library</OutputType>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-  </PropertyGroup>
-  <PropertyGroup>
-    <StartupObject />
     <AssemblyTitle>Variance Gamma</AssemblyTitle>
     <Description>Variance Gamma equity model calibration and simulation.</Description>
     <Company>Fairmat SRL / Safe Khampol</Company>
@@ -38,8 +35,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Mono.Addins">
-      <Version>1.4.1</Version>
-    </PackageReference>
+    <PackageReference Include="Mono.Addins" Version="1.4.1" />
+    <PackageReference Include="Mono.Addins.CecilReflector" Version="1.4.1" />
   </ItemGroup>
 </Project>

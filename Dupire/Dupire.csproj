@@ -12,14 +12,12 @@
     <FileVersion>1.0.6</FileVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <OutputPath>bin\Debug</OutputPath>
     <DefineConstants>DEBUG;</DefineConstants>
     <Externalconsole>True</Externalconsole>
     <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>none</DebugType>
-    <OutputPath>bin\Release</OutputPath>
     <Externalconsole>True</Externalconsole>
     <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
   </PropertyGroup>
@@ -52,8 +50,7 @@
     <ProjectReference Include="..\..\ModelingTools\PFunction2D\PFunction2D.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Mono.Addins">
-      <Version>1.4.1</Version>
-    </PackageReference>
+    <PackageReference Include="Mono.Addins" Version="1.4.1" />
+    <PackageReference Include="Mono.Addins.CecilReflector" Version="1.4.1" />
   </ItemGroup>
 </Project>

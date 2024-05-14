@@ -17,11 +17,11 @@
  */
 
 using System.Reflection;
-using System.Runtime.InteropServices;
 using Mono.Addins;
-[assembly: Mono.Addins.Addin("Heston model", "1.1.2", Category = "Stochastic Process")]
-[assembly: Mono.Addins.AddinDependency("Fairmat", "1.0")]
-[assembly: Mono.Addins.AddinAuthor("Fairmat SRL")]
+
+[assembly: Addin("Heston model", "1.1.2", Category = "Stochastic Process")]
+[assembly: AddinDependency("Fairmat", "1.0")]
+[assembly: AddinAuthor("Fairmat SRL")]
 [assembly: AddinDescription("The Heston model simulates equity or index prices taking into " +
                             "account stochastic volatility effects. The main feature of the " +
                             "model is that the price process follows a geometric brownian " +
@@ -34,12 +34,3 @@ using Mono.Addins;
                             "series of call prices.")]
 [assembly: AssemblyTrademark("Fairmat")]
 [assembly: AssemblyCulture("")]
-
-// Setting ComVisible to false makes the types in this assembly not visible
-// to COM components.  If you need to access a type in this assembly from
-// COM, set the ComVisible attribute to true on that type.
-[assembly: ComVisible(false)]
-
-// The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("0b44bce0-4c4b-4bea-a5c9-25df658972b9")]
-
