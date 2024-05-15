@@ -1093,6 +1093,8 @@ namespace HestonEstimator
                     q: q);
             }
 
+            
+
             double deltaS = bumpPercentage * s0;
 
             double callPriceBumpUp = HestonForwardApproximated.HestonForwardDigitalCallPrice(
@@ -1555,7 +1557,8 @@ namespace HestonEstimator
         public static double DeltaPut(double kappa, double theta, double rho, double v0, double sigma, double s0, double T, double K, double r, double q)
         {
 
-            if (Engine.Verbose > 0)
+            var verbosity = Engine.Verbose;
+            if (verbosity > 0)
             {
                 Console.WriteLine("Calculating delta of a put with Heston model");
                 Console.WriteLine("Heston Parameters");
@@ -1567,33 +1570,13 @@ namespace HestonEstimator
 
             }
 
-            double F = 1.0 * Math.Exp((r - q) * T);
-            double firstTerm = -0.5 * F;
-            double a = 1E-8;
-            double b = 1000.0;
 
-            // The second term of this expressions approximates the integral in the interval [0,a].
-
-            //Uses PerformIntegral instead of AdaptLobatto in order to keep time constant
-            //var integrate = new Integrate(this);
-            //integrate.Tolerance = 10e-8;
-            //integrate.MaxRecursionLevel = 4;// 4;
-            //double part1 = integrate.AdaptLobatto(a, b);
-
-            TAEDelegateFunction1D functionToIntegrate = (double u) => IntegrandFunc(u: u, kappa: kappa, theta: theta, sigma: sigma, rho: rho, v0: v0, s0: s0, r: r, q: q, T: T, K: K);
-            double part1 = PerformIntegral(a, b, functionToIntegrate);
-
-            double integral = part1 + a * functionToIntegrate(a / 2.0);
-
-            double delta = (firstTerm + integral / Math.PI);
-
-            double adjustedDelta = Math.Exp(-r * T) * delta;
-
-            if (Engine.Verbose > 0)
-                Console.WriteLine("Delta: {0}", adjustedDelta);
+            Engine.Verbose = 0;
+            var deltaCall = DeltaCall(kappa: kappa, theta: theta, rho: rho, v0: v0, sigma: sigma, s0: s0, T, K, r, q);
+            Engine.Verbose = verbosity;
 
 
-            return adjustedDelta;
+            return deltaCall  - Math.Exp(-q * T);
         }
 
         private static double DeltaDigital(double kappa, double theta, double rho, double v0, double sigma, double s0, double T, double K, double r, double q)
@@ -1960,8 +1943,6 @@ namespace HestonEstimator
 
             }
 
-            double F = s0 * Math.Exp((r - q) * T);
-            double firstTerm = 0.5 * (F - K);
             double a = 1E-8;
             double b = 1000.0;
 
@@ -1978,7 +1959,7 @@ namespace HestonEstimator
 
             double integral = part1 + a * functionToIntegrate(a / 2.0);
 
-            double v = (firstTerm + integral / Math.PI);
+            double v = integral / Math.PI ;
 
             double adjustedVega = Math.Exp(-r * T) * v;
 
@@ -1991,8 +1972,8 @@ namespace HestonEstimator
 
         public static double VegaPut(double kappa, double theta, double rho, double v0, double sigma, double s0, double T, double K, double r, double q)
         {
-
-            if (Engine.Verbose > 0)
+            var verbosity = Engine.Verbose;
+            if (verbosity > 0)
             {
                 Console.WriteLine("Calculating vega of a put with Heston model");
                 Console.WriteLine("Heston Parameters");
@@ -2004,33 +1985,12 @@ namespace HestonEstimator
 
             }
 
-            double F = s0 * Math.Exp((r - q) * T);
-            double firstTerm = -0.5 * (F - K);
-            double a = 1E-8;
-            double b = 1000.0;
+            Engine.Verbose = 0;
+            var vegaCall = VegaCall(kappa: kappa, theta: theta, rho: rho, v0: v0, sigma: sigma, s0: s0, T, K, r, q);
+            Engine.Verbose = verbosity;
 
-            // The second term of this expressions approximates the integral in the interval [0,a].
-
-            //Uses PerformIntegral instead of AdaptLobatto in order to keep time constant
-            //var integrate = new Integrate(this);
-            //integrate.Tolerance = 10e-8;
-            //integrate.MaxRecursionLevel = 4;// 4;
-            //double part1 = integrate.AdaptLobatto(a, b);
-
-            TAEDelegateFunction1D functionToIntegrate = (double u) => IntegrandFunc(u: u, kappa: kappa, theta: theta, sigma: sigma, rho: rho, v0: v0, s0: s0, r: r, q: q, T: T, K: K);
-            double part1 = PerformIntegral(a, b, functionToIntegrate);
-
-            double integral = part1 + a * functionToIntegrate(a / 2.0);
-
-            double v = (firstTerm + integral / Math.PI);
-
-            double adjustedVega = Math.Exp(-r * T) * v;
-
-            if (Engine.Verbose > 0)
-                Console.WriteLine("Vega: {0}", adjustedVega);
-
-
-            return adjustedVega;
+            return vegaCall;
+            
         }
 
         private static double VegaDigital(double kappa, double theta, double rho, double v0, double sigma, double s0, double T, double K, double r, double q)
@@ -2218,8 +2178,8 @@ namespace HestonEstimator
 
         public static double RhoPut(double kappa, double theta, double rho, double v0, double sigma, double s0, double T, double K, double r, double q)
         {
-
-            if (Engine.Verbose > 0)
+            var verbosity = Engine.Verbose;
+            if (verbosity > 0)
             {
                 Console.WriteLine("Calculating rho of a put with Heston model");
                 Console.WriteLine("Heston Parameters");
@@ -2230,38 +2190,14 @@ namespace HestonEstimator
                 Console.WriteLine("{0}\t{1}\t{2}\t{3}\t{4}", s0, K, T, r, q);
 
             }
-            double a = 1E-8;
-            double b = 1000.0;
-            var firstTerm = -(0.5 * (s0 * Math.Exp((r - q) * T) - K));
-            var derivativeFirstTerm = -(0.5 * s0 * T * Math.Exp((r - q) * T));
-            // The second term of this expressions approximates the integral in the interval [0,a].
-
-            //Uses PerformIntegral instead of AdaptLobatto in order to keep time constant
-            //var integrate = new Integrate(this);
-            //integrate.Tolerance = 10e-8;
-            //integrate.MaxRecursionLevel = 4;// 4;
-            //double part1 = integrate.AdaptLobatto(a, b);
-
-            TAEDelegateFunction1D functionToIntegrate = (double u) =>
-                IntegrandFunc(u: u, kappa: kappa, theta: theta, sigma: sigma, rho: rho, v0: v0, s0: s0, r: r, q: q, T: T, K: K)
-                -
-                T * HestonCall.IntegrandFunc(u: u, kappa: kappa, theta: theta, sigma: sigma, rho: rho, v0: v0, s0: s0, r: r, q: q, T: T, K: K);
-
-            double part1 = PerformIntegral(a, b, functionToIntegrate);
-
-            double integral = part1 + a * functionToIntegrate(a / 2.0);
-
-            double rho2 = Math.Exp(-r * T) * ((-T) * firstTerm + derivativeFirstTerm);
-
-            double rho1 = Math.Exp(-r * T) * integral / Math.PI;
-
-            var adjustedRho = rho1 + rho2;
-
-            if (Engine.Verbose > 0)
-                Console.WriteLine("Rho: {0}", adjustedRho);
 
 
-            return adjustedRho;
+            Engine.Verbose = 0;
+            var rhoCall = RhoCall(kappa: kappa, theta: theta, rho: rho, v0: v0, sigma: sigma, s0: s0, T, K, r, q);
+            Engine.Verbose = verbosity;
+
+            return rhoCall - K*T*Math.Exp(-r*T);
+         
         }
 
         private static double RhoDigital(double kappa, double theta, double rho, double v0, double sigma, double s0, double T, double K, double r, double q)
@@ -2314,7 +2250,8 @@ namespace HestonEstimator
         
         public static double RhoDigitalPut(double kappa, double theta, double rho, double v0, double sigma, double s0, double T, double K, double r, double q)
         {
-            if (Engine.Verbose > 0)
+            var verbosity = Engine.Verbose;
+            if (verbosity > 0)
             {
                 Console.WriteLine("Calculating rho of a digital put with Heston model");
                 Console.WriteLine("Heston Parameters");
@@ -2326,18 +2263,12 @@ namespace HestonEstimator
 
             }
 
-            var ds = HestonDigital.DiscountFactor(rate: r, T: T);
-            var rho1 = RhoDigital(kappa: kappa, theta: theta, rho: rho, v0: v0, sigma: sigma, s0: s0, T, K, r, q);
-            var rhoGreek = ds * (-rho1 - T / 2);
+            Engine.Verbose = 0;
+            var rhoDigitalCall = RhoDigitalCall(kappa: kappa, theta: theta, rho: rho, v0: v0, sigma: sigma, s0: s0, T, K, r, q);
+            Engine.Verbose = verbosity;
 
-            if (Engine.Verbose > 0)
-            {
-                Console.WriteLine("Rho");
-                Console.WriteLine(rhoGreek);
-            }
+            return - rhoDigitalCall - T * Math.Exp(-r * T);
 
-
-            return rhoGreek;
         }
 
     }
