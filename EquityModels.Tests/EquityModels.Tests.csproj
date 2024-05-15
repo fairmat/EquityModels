@@ -64,10 +64,14 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Accord.Math" Version="3.8.0" />
+    <PackageReference Include="Basic.Reference.Assemblies" Version="1.5.0" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.8.0" />
     <PackageReference Include="Mono.Addins" Version="1.4.1" />
     <PackageReference Include="NUnit" Version="3.14.0" />
     <PackageReference Include="NUnit3TestAdapter" Version="4.5.0" />
     <PackageReference Include="QLNet" Version="1.11.4" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+    <PackageReference Include="System.Configuration.ConfigurationManager" Version="8.0.0" />
+    <PackageReference Include="System.Runtime.Caching" Version="8.0.0" />
   </ItemGroup>
 </Project>
