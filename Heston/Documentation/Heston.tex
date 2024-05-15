@@ -15,8 +15,8 @@ The latter is a generalization of the former in which the drift is time-dependen
 
 \subsection{Heston process}
 in the fairmat user interface, while adding a new stochastic process, Heston model can be selected.
-The stochastic process is defined by the parameters shown in table the below:
-\begin{center}
+The stochastic process is defined by the parameters shown in the table below:
+\begin{center}1
 \begin{tabular}{|l|c|}
   \hline
 \textbf{Fairmat}&\textbf{Documentation}\\
@@ -39,7 +39,7 @@ It is possible to edit the model values shown in the table above directly on the
 
 \subsection{Heston with time dependent drift}
 in the fairmat user interface, while adding a new stochastic process, Heston model with time dependent drift can be selected.
-The stochastic process is defined by the parameters shown in table below:
+The stochastic process is defined by the parameters shown in the table below:
 \begin{center}
 \begin{tabular}{|l|c|}
   \hline
@@ -84,7 +84,7 @@ The parameters have the following interpretation:
 Parameters $k$, $\theta$ and $\sigma$ have to satisfy the constrain $2k\theta>\sigma^2$ (known as the Feller condition) in order to exclude the possibility for $V(t)$ to reach 0.
 
 In the case of Heston with constant drift $\mu$ is set equal to $r-q$ where $r$ is the risk free rate and $q$ is the dividend yield rate of the stock. 
-Please note that a constant discount factor should be selected while using a constant risk free rate.
+Please note that a constant discount factor should be selected while using the constant risk free rate $r$.
 
 The Heston model with time dependent drift is defined by the same stochastic differential equations with the only difference that the $\mu$ parameter is time-dependent so that equation (\ref{eq:dsh}) becomes
 \begin{equation}
