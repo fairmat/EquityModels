@@ -406,6 +406,18 @@ namespace Heston
         #region IPlainVanillaPricing Members
 
         /// <summary>
+        /// Calculates the discount factor for a given time period.
+        /// </summary>
+        /// <param name="t1">The start of the time period.</param>
+        /// <param name="t2">The end of the time period.</param>
+        /// <returns>The discount factor, calculated as e^(-r*(t2-t1)), where r is the risk-free interest rate.</returns>
+        public double GetDiscountFactor(double t1, double t2)
+        {
+            return Math.Exp(-this.r.fV() * (t2 - t1));
+        }
+
+
+        /// <summary>
         /// Calculate the price of a european call option.
         /// </summary>
         /// <param name="component">
