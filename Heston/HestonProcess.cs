@@ -411,8 +411,9 @@ namespace Heston
         /// <param name="t1">The start of the time period.</param>
         /// <param name="t2">The end of the time period.</param>
         /// <returns>The discount factor, calculated as e^(-r*(t2-t1)), where r is the risk-free interest rate.</returns>
-        public double GetDiscountFactor(double t1, double t2)
+        public double GetDiscountFactor(int component, double t1, double t2)
         {
+            // component in the context of Heston process is not used
             return Math.Exp(-this.r.fV() * (t2 - t1));
         }
 
