@@ -16,7 +16,7 @@ The latter is a generalization of the former in which the drift is time-dependen
 \subsection{Heston process}
 in the fairmat user interface, while adding a new stochastic process, Heston model can be selected.
 The stochastic process is defined by the parameters shown in the table below:
-\begin{center}1
+\begin{center}
 \begin{tabular}{|l|c|}
   \hline
 \textbf{Fairmat}&\textbf{Documentation}\\
@@ -290,7 +290,7 @@ As described in section \ref{call}, the price of a European Call option under th
 $$
 C(K,T, S_0, V_0) = \frac{1}{2}\left[S_0e^{-q T} - Ke^{-r T}\right] + \frac{e^{-r T}}{\pi}\int_0^{\infty}\left[f_1(u) - Kf_2(u)\right]du
 $$
-For simplicity we will denote $C(K,T, S_0, V_0)$ as $C(K,T, S_0, V_0)$.
+
 
 \begin{itemize}
 
@@ -428,14 +428,14 @@ $$
 
 The Greeks of a European put option can be derived from the Greeks of a European call option using the put-call parity. The put-call parity is a principle that defines a relationship between the price of European put options and calls options of the same class (that is, with the same underlying asset, strike price and expiration date). It is given by:
 $$
-C(K, T, S_0, V_0) - P(, T, S_0, V_0)  = S_0 e^{-q T} - K e^{-r T} \ .
+C(K, T, S_0, V_0) - P(K, T, S_0, V_0)  = S_0 e^{-q T} - K e^{-r T} \ .
 $$
 Rearranging the terms, we get the price of a European put option:
 
 $$
-P(, T, S_0, V_0) = C(, T, S_0, V_0) - \left(S_0 e^{-q T} - K e^{-r T}\right) \ .
+P(K, T, S_0, V_0) = C(K, T, S_0, V_0) - \left(S_0 e^{-q T} - K e^{-r T}\right) \ .
 $$
-For simplicity we will denote $P(K,T, S_0, V_0)$ as $P(K,T,S_0,V_0)$.
+
 Now, let's calculate the Greeks:
 
 \begin{itemize}
@@ -505,7 +505,7 @@ As described in section \ref{digital} the price of a European digital call optio
 $$
 DC(K,T, S_0, V_0) = e^{-r T}  \left[ \frac{1}{2} + \frac{1}{\pi}\int_0^{\infty}f_2(u) du \right]  \ .
 $$
-For simplicity we will denote $DC(K,T, S_0, V_0)$ as $DC(K,T, S_0, V_0)$.
+
 
 \begin{itemize}
 \item \textbf{Delta} 
@@ -585,7 +585,6 @@ The price of a European digital put option ucan be derived from the price of a E
 $$
 DP(K,T, S_0, V_0) = e^{-rT} - DC(K,T,  S_0, V_0) \ .
 $$
-For simplicity we will denote $DP(K,T, S_0, V_0)$ as $DP(K,T,S_0,V_0)$.
 Now, let's calculate the Greeks:
 
 \begin{itemize}
