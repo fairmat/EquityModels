@@ -7,7 +7,7 @@ namespace HestonEstimator
 {
     // this implementation is based on https://doi.org/10.1142/S0219024909005166 
     // FORWARD START OPTIONS UNDER STOCHASTIC VOLATILITY AND STOCHASTIC INTEREST RATES - REHEZ AHLIP and MAREK RUTKOWSKI
-    public class HestonForwardAhlipRutkowski: HestonCall
+    public class HestonForwardAhlipRutkowski : HestonCall
     {
 
         /// <summary>
@@ -64,136 +64,229 @@ namespace HestonEstimator
             public double K;
         }
 
-       
+
         internal static Complex s1(Complex u, ModelParameters mp, CallParameters cp)
-        { 
+        {
+
+            // s1 = a + b + c
+
             var iu = Complex.I * u;
-            var onePlusIu = Complex.One + iu;
-            var result = -mp.kappa * mp.rho * onePlusIu / mp.sigma;
-            result -= 0.5 * (1 - mp.rho * mp.rho) * Complex.Pow(onePlusIu, 2);
-            result += onePlusIu / 2;
-            return result;
+            var onePlusIu = 1 + iu;
+
+            var a = -mp.kappa * mp.rho * onePlusIu / mp.sigma;
+            var b = -(1 - mp.rho * mp.rho) * (onePlusIu * onePlusIu) / 2;
+            var c = onePlusIu / 2;
+
+            return a + b + c;
+
         }
 
         internal static Complex s2(Complex u, ModelParameters mp)
         {
+            // s2 = a / b
+
             var iu = Complex.I * u;
-            var onePlusIu = 1.0 + iu;
-            return mp.rho * onePlusIu / mp.sigma;
+
+            var a = -mp.rho * (1 + iu);
+            var b = mp.sigma;
+
+            return a / b;
+
         }
 
         internal static Complex q1(Complex u, ModelParameters mp)
         {
-            var iu = Complex.I * u;
-            var preMult = -iu / 2;
-            return preMult * (2 * mp.kappa * mp.rho / mp.sigma - iu * (1 - mp.rho * mp.rho) - 1.0);
+            // q1 = a * ( b + c + d)
+
+            var iu = u * Complex.I;
+
+            var a = -iu / 2;
+            var b = mp.kappa * mp.rho / mp.sigma;
+            var c = iu * (1 - mp.rho * mp.rho);
+            var d = -1.0;
+
+            return a * (b + c + d);
+
         }
 
         internal static Complex q2(Complex u, ModelParameters mp)
         {
+            // q2 = a / b 
+
             var iu = Complex.I * u;
-            return -iu * mp.rho / mp.sigma;
+
+            var a = -mp.rho * iu;
+            var b = mp.sigma;
+
+            return a / b;
+
         }
 
 
         internal static Complex G1(double tau, Complex lambda, Complex mu, ModelParameters mp, double t)
         {
-            var gamma = Complex.Sqrt(mp.kappa * mp.kappa + 2 * mp.sigma * mp.sigma * mu);
-            var expGammaTau = Complex.Exp(gamma * tau);
-            var numerator = lambda * ((mp.kappa + gamma) + expGammaTau * (gamma - mp.kappa));
-            numerator += 2 * mu * (1 - Complex.Exp(gamma * t));
+            // g1 = ( a + b ) / ( c + d + e + f)
 
-            var denominator = mp.sigma * mp.sigma * lambda * (expGammaTau - 1) + gamma - mp.kappa;
-            denominator += expGammaTau * (gamma + mp.kappa);
-            
-            return numerator / denominator;
+            var sigma2 = (mp.sigma * mp.sigma);
+            var gamma = Gamma(mu: mu, kappa: mp.kappa, sigma: mp.sigma);
+
+            var a = lambda * ((gamma + mp.kappa) + Complex.Exp(gamma * tau) * (gamma - mp.kappa));
+            var b = 2 * mu * (1 - Complex.Exp(t * gamma));
+
+            var c = sigma2 * lambda * (Complex.Exp(gamma * tau) - 1);
+            var d = gamma;
+            var e = -mp.kappa;
+            var f = Complex.Exp(gamma * tau) * (gamma + mp.kappa);
+
+            return (a + b) / (c + d + e + f);
+
 
         }
 
         internal static Complex H1(double tau, Complex lambda, Complex mu, ModelParameters mp)
         {
-            var gamma = Complex.Sqrt(mp.kappa * mp.kappa + 2 * mp.sigma * mp.sigma * mu);
+
+            // H1 = a* ln( b / (c + d + e + f)
+
             var sigma2 = (mp.sigma * mp.sigma);
-            var preMult = -2 / sigma2;
-            var argumentNumerator = 2 * gamma * Complex.Exp((gamma + mp.kappa) * tau / 2);
-            var argumentDenominator = sigma2 * lambda * (Complex.Exp(gamma * tau) - 1) + gamma - mp.kappa + Complex.Exp(gamma * tau) * (gamma + mp.kappa);
-            return preMult * Complex.Log(argumentNumerator / argumentDenominator);
+            var gamma = Gamma(mu: mu, kappa: mp.kappa, sigma: mp.sigma);
+
+
+            var a = -2 / sigma2;
+            var b = 2 * gamma * Complex.Exp((gamma + mp.kappa) * tau / 2);
+            var c = sigma2 * lambda * (Complex.Exp(gamma * tau) - 1);
+            var d = gamma;
+            var e = -mp.kappa;
+            var f = Complex.Exp(gamma * tau) * (gamma + mp.kappa);
+
+            return a * Complex.Log(b / (c + d + e + f));
 
         }
 
-        internal static Complex H1Hat( double tau, Complex lambda, ModelParameters mp)
+        internal static Complex H1Hat(double tau, Complex lambda, ModelParameters mp)
         {
-            var sigma2 = (mp.sigma * mp.sigma);
-            var preMult = -2 / sigma2;
-            var argumentNumerator = 2 * mp.kappa * Math.Exp(2 * mp.kappa * tau);
-            var argumentDenominator = sigma2 * lambda * (Math.Exp(mp.kappa * tau) - 1) + 2 * mp.kappa * Math.Exp(mp.kappa * tau);
-            return preMult* Complex.Log(argumentNumerator / argumentDenominator);
-                
+            // H1Hat = a * ln( b / c )
 
-        }
-        
-        internal static Complex G1Hat(ModelParameters mp,  double tau, Complex lambda)
-        {
+            var kappaHat = mp.kappa - mp.rho * mp.sigma;
             var sigma2 = (mp.sigma * mp.sigma);
-            var preMult = -2 / sigma2;
-            var argumentNumerator = 2 * mp.kappa * Math.Exp(2 * mp.kappa * tau);
-            var argumentDenominator = sigma2 * lambda * (Math.Exp(mp.kappa * tau) - 1) + 2 * mp.kappa * Math.Exp(mp.kappa * tau);
-            return preMult * Complex.Log(argumentNumerator / argumentDenominator);
+
+            var a = -2 / sigma2;
+            var b = 2 * kappaHat * Math.Exp(2 * kappaHat * tau);
+            var c = sigma2 * lambda * (Math.Exp(kappaHat * tau) - 1);
+            c += 2 * kappaHat * Math.Exp(kappaHat * tau);
+
+            return a * Complex.Log(b / c);
+
 
         }
 
-        internal static Complex s2Hat(Complex u, double tau0, Complex s1, Complex s2, ModelParameters mp,  double t)
+
+        internal static Complex Gamma(Complex mu, double kappa, double sigma)
         {
+            var argument = kappa * kappa + 2 * sigma * sigma * mu;
+            return Complex.Sqrt(argument);
+        }
+
+        internal static Complex Gamma(double mu, double kappa, double sigma)
+        {
+            var muC = new Complex(mu);
+            return Gamma(muC, kappa, sigma);
+        }
+
+        internal static double GammaHat(double mu, double b, ModelParameters mp)
+        {
+            var argument = b * b + 2 * mp.sigma * mp.sigma * mu;
+            return Math.Sqrt(argument);
+        }
+
+        internal static Complex G1Hat(ModelParameters mp, double tau, Complex lambda)
+        {
+            // TODO 
+            // is Gamma of kappa or of kappaHat ? 
+            var kappaHat = mp.kappa - mp.rho * mp.sigma;
+            var sigma2 = (mp.sigma * mp.sigma);
+            var gamma = Gamma(mu: 0.0, kappa: mp.kappa, sigma: mp.sigma);
+
+            var numerator = 2 * lambda * kappaHat;
+            var denominator = sigma2 * lambda * (Math.Exp(kappaHat * tau) - 1) + 2 * kappaHat * Complex.Exp(tau * gamma);
+
+            return numerator / denominator;
+
+        }
+
+        internal static Complex s2Hat(Complex u, double tau0, Complex s1, Complex s2, ModelParameters mp, double t)
+        {
+            // s2hat = (1 + iu) * rho / sigma + g1(tau0, s1, s2)
+
             Complex iu = Complex.I * u;
-            var g1 = G1(tau: tau0, lambda: s1, mu: s2, mp: mp, t:t);
+            var g1 = G1(tau: tau0, lambda: s1, mu: s2, mp: mp, t: t);
             return g1 + (1 + iu) * (mp.rho / mp.sigma);
         }
 
-        internal static Complex q2Hat(Complex u, double tau0, Complex q1, Complex q2, ModelParameters mp,  double t)
+        internal static Complex q2Hat(Complex u, double tau0, Complex q1, Complex q2, ModelParameters mp, double t)
         {
+            // q2hat = - i * u * rho / sigma - G1(tau0, q1, q2) 
+            // here there was a typo 
             Complex iu = Complex.I * u;
-            return -iu * mp.rho / mp.sigma * G1(tau: tau0, lambda: q1, mu: q2, mp:mp, t: t);
+            return -iu * mp.rho / mp.sigma - G1(tau: tau0, lambda: q1, mu: q2, mp: mp, t: t);
         }
 
         internal static Complex f1Hat(Complex u, ModelParameters mp, CallParameters cp)
         {
+            // f1Hat = exp (a + b + c + d)
+            // a = -(1+iu) * rho * theta * tau0 / sigma
+            // b = - theta H1(tau0, s1, s2)
+            // c = -v0 * G1Hat(tau, s2Hat)
+            // d = -theta * H1Hat(tau, s2Hat)
 
             var t = 0;
             var tau0 = cp.T - cp.T0;
             var tau = cp.T0;
 
             var iu = Complex.I * u;
-            var _s1 = s1(u:u, mp: mp, cp:cp);
-            var _s2 = s2(u:u, mp:mp);
-            var s2H = s2Hat(u:u, tau0: tau0, s1: _s1, s2: _s2, t: t, mp: mp);
+            var _s1 = s1(u: u, mp: mp, cp: cp);
+            var _s2 = s2(u: u, mp: mp);
+            var s2H = s2Hat(u: u, tau0: tau0, s1: _s1, s2: _s2, t: t, mp: mp);
 
 
             var a = -(1 + iu) * mp.rho * mp.theta * tau0 / mp.sigma;
-            var b = -mp.theta * H1(tau: tau0, lambda: _s1, mu: _s2, mp:mp);
-            var c = -mp.v0 * G1Hat(tau: tau, lambda: s2H, mp:mp);
-            var d = -mp.theta * H1Hat(tau: tau, lambda: s2H, mp:mp);
+            var b = -mp.theta * H1(tau: tau0, lambda: _s1, mu: _s2, mp: mp);
+            var c = -mp.v0 * G1Hat(tau: tau, lambda: s2H, mp: mp);
+            var d = -mp.theta * H1Hat(tau: tau, lambda: s2H, mp: mp);
 
             return Complex.Exp(a + b + c + d);
 
         }
 
+        internal static Complex f1Hat(double u, ModelParameters mp, CallParameters cp)
+        {
+            var uComplex = new Complex(u);
+            return f1Hat(uComplex, mp: mp, cp: cp);
+        }
+
         internal static Complex f2Hat(Complex u, ModelParameters mp, CallParameters cp)
         {
+            // f1Hat = exp (a + b + c + d)
+            // a = - iu * rho * theta * tau0 / sigma
+            // b = - theta H1(tau0, q1, q2)
+            // c = -v0 * G1Hat(tau, q2Hat)
+            // d = -theta * H1Hat(tau, q2Hat)
+
             var t = 0;
             var tau0 = cp.T - cp.T0;
             var tau = cp.T0;
 
 
             var iu = Complex.I * u;
-            var _q1 = q1(u: u, mp:mp);
-            var _q2 = q2(u: u, mp:mp);
-            var q2H = q2Hat(u: u, tau0: tau0,  q1: _q1, q2: _q2, mp:mp, t: t);
+            var _q1 = q1(u: u, mp: mp);
+            var _q2 = q2(u: u, mp: mp);
+            var q2H = q2Hat(u: u, tau0: tau0, q1: _q1, q2: _q2, mp: mp, t: t);
 
 
             var a = -iu * mp.rho * mp.theta * tau0 / mp.sigma;
-            var b = -mp.theta * H1(tau: tau0, lambda: _q1, mu: _q2, mp:mp);
-            var c = -mp.v0 * G1Hat(tau: tau, lambda: q2H, mp:mp);
-            var d = -mp.theta * H1Hat(tau: tau, lambda: q2H, mp:mp);
+            var b = -mp.theta * H1(tau: tau0, lambda: _q1, mu: _q2, mp: mp);
+            var c = -mp.v0 * G1Hat(tau: tau, lambda: q2H, mp: mp);
+            var d = -mp.theta * H1Hat(tau: tau, lambda: q2H, mp: mp);
 
             return Complex.Exp(a + b + c + d);
 
@@ -201,28 +294,85 @@ namespace HestonEstimator
 
         internal static double IntegrandP1(double u, ModelParameters mp, CallParameters cp)
         {
-            var uComp = new Complex(u);
+            // integrand of P1Hat = f1Hat(u) * exp(-i * u * ln(k) ) / iu 
+
             var iu = Complex.I * u;
             var logK = Math.Log(cp.K);
-            var f1 = f1Hat(u: uComp, mp:mp, cp:cp);
+            var f1 = f1Hat(u: u, mp: mp, cp: cp);
             return (f1 * Complex.Exp(-iu * logK) / iu).Re;
 
 
         }
-        
+
         internal static double IntegrandP2(double u, ModelParameters mp, CallParameters cp)
         {
-            var uComp = new Complex(u);
+            // integrand of P2Hat = f2Hat(u) * exp(-i * u * ln(k) ) / iu 
 
+            var uComp = new Complex(u);
             var iu = Complex.I * u;
             var logK = Math.Log(cp.K);
-            var f2 = f2Hat(u: uComp, cp:cp, mp:mp);
+            var f2 = f2Hat(u: uComp, cp: cp, mp: mp);
             return (f2 * Complex.Exp(-iu * logK) / iu).Re;
+
 
         }
 
+
+
+        internal static double GetIntegrandGivenFj(double u, Func<Complex, Complex> fj, double strike)
+        {
+            // Re ( phi * exp( -i * u  * ln strike ) / iu )
+            var iu = Complex.I * u;
+            var logK = Math.Log(strike);
+
+            var phi = fj(iu);
+
+            return (phi * Complex.Exp(-iu * logK) / iu).Re;
+
+        }
+
+
+
+        internal static double ComputeIntegral(TAEDelegateFunction1D f)
+        {
+            // integrand of P1Hat = f1Hat(u) * exp(-i * u * ln(k) ) / iu 
+
+            var a = 1E-8;
+            var b = 1000.0;
+
+            
+            double part1 = PerformIntegral(a, b, f);
+            double integral = part1 + a * f(a / 2.0);
+            
+            return integral;
+            
+                 
+        }
+
+
+        internal static double CallPrice(ModelParameters mp, CallParameters cp)
+        {
+
+            double u;
+
+            // f1 = exp ( a + b + c )
+            // f2 = exp ( d + e + f )
+
+            return 0.0;
+
+        }
+
+
+
+
+
+
+
+
         internal static double P1Hat( ModelParameters mp, CallParameters cp)
         {
+            // P1Hat = 1/2 + 1/pi * integral from 0 to infinity of IntegrandP1(u) du
+            
             // compute the integral 
             double a = 1E-8;
             double b = 1000.0;
@@ -248,6 +398,17 @@ namespace HestonEstimator
         }
 
 
+        internal static Complex Alpha(Complex phi)
+        {
+            return 1 + phi * Complex.I;
+        }
+
+        internal static Complex Beta(Complex phi)
+        {
+            return 1 - phi * Complex.I;
+        }
+
+
         // based on corollary 6.2 of the paper
         public static double HestonForwardCallPrice(double kappa, double theta, double rho, double v0, double sigma, double s0, double K, double r, double q, double T, double T0)
         {
@@ -259,10 +420,14 @@ namespace HestonEstimator
 
             double thetaAdjusted = kappa * theta;
 
-
             var cp = new CallParameters() { T = T, T0 = T0, K = K };
             var mp = new ModelParameters() { kappa = kappa, theta = thetaAdjusted, sigma = sigma, rho = rho, v0 = v0, s0 = s0, r = r, q = q };
 
+            var stabilityCondition = (2 * mp.theta / sigma) > 1;
+            if (!stabilityCondition)
+            {
+                throw new Exception("Stability condition is not satisfied");
+            }
 
 
             // use theta adjusted instead of theta 

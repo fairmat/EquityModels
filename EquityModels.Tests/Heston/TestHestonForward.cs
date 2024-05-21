@@ -21,7 +21,7 @@ namespace EquityModels.Tests.Heston
         [Test]
         public void TestApproximatedApproach()
         {
-            double k = 0.9;
+            double k = 1.0;
             double tau = 2.0;
 
             double rate = 0.01;
@@ -49,7 +49,7 @@ namespace EquityModels.Tests.Heston
                 rho: rho
                 );
 
-            var expected = 26.1556170228032;
+            var expected = 22.872215559994689d;
 
 
             Assert.AreEqual(expected, result, 1e-10);
@@ -59,13 +59,13 @@ namespace EquityModels.Tests.Heston
         [Test]
         public void TestForwardAhlipRutkowski()
         {
-            double k = 0.9;
+            double k = 1.0;
             double tau = 2.0;
 
             double rate = 0.01;
             double dy = 0.07;
             double kappa = 2.5;
-            double theta = 0.4;
+            double theta = 0.2;
             double sigma = 0.2;
             double s0 = 100.0;
             double v0 = 0.3;
