@@ -96,7 +96,7 @@ namespace HestonEstimator
 
         }
 
-        internal static Complex q1(double u, ModelParameters mp)
+        public static Complex q1(double u, ModelParameters mp)
         {
             // q1 = a * ( b + c + d)
 
@@ -111,7 +111,7 @@ namespace HestonEstimator
 
         }
 
-        internal static Complex q2(double u, ModelParameters mp)
+        public static Complex q2(double u, ModelParameters mp)
         {
             // q2 = a / b 
 
@@ -306,7 +306,6 @@ namespace HestonEstimator
         {
             // integrand of P2Hat = f2Hat(u) * exp(-i * u * ln(k) ) / iu 
 
-            var uComp = new Complex(u);
             var iu = Complex.I * u;
             var logK = Math.Log(cp.K);
             var f2 = f2Hat(u: u, cp: cp, mp: mp);
@@ -316,9 +315,8 @@ namespace HestonEstimator
         }
 
 
-        internal static double ComputeIntegral(TAEDelegateFunction1D f, double a = 1E-8, double b = 10000.0)
+        internal static double ComputeIntegral(TAEDelegateFunction1D f, double a = 1E-8, double b = 1000.0)
         {
-
             var res = PerformIntegral(a, b, f);
             res += a * f(a / 2.0);
             return res;
@@ -330,24 +328,23 @@ namespace HestonEstimator
         {
             double functionToIntegrate(double u)
             {
-                var strikeMonetary = cp.K * mp.s0;
                 // f1 = exp( a + b + c)
+                var strikeMonetary = cp.K * mp.s0;
                 var tau = cp.T;
+                var iu = Complex.I * u;
 
                 var _s1 = s1(u, mp, cp);
                 var _s2 = s2(u, mp);
 
-                var a = -mp.rho * Alpha(u) / mp.sigma * (mp.v0 + mp.theta * tau);
-                var b = -mp.v0 * G1(tau, _s1, _s2, mp: mp, t: 0.0);
-                var c = -mp.theta * H1(tau, _s1, _s2, mp);
+                var a = - mp.rho * (1 + iu) / mp.sigma * (mp.v0 + mp.theta * tau);
+                var b = - mp.v0 * G1(tau: tau, _s1, _s2, mp: mp, t: 0.0);
+                var c = - mp.theta * H1(tau: tau, _s1, _s2, mp);
 
                 var f1 = Complex.Exp(a + b + c);
 
-                var iu  = Complex.I * u;
-                var multiplier = (1/iu) * Complex.Exp( - iu * Math.Log(strikeMonetary));
+                var multiplier = (1/iu) * Complex.Exp( -iu * Math.Log(strikeMonetary));
 
                 return (f1 * multiplier).Re;
-
 
             }
 
@@ -367,14 +364,14 @@ namespace HestonEstimator
                 var strikeMonetary = cp.K * mp.s0;
                 var tau = cp.T;
 
-                var _q1 = q1(u, mp);
-                var _q2 = q2(u, mp);
+                var _q1 = q1(u:u, mp);
+                var _q2 = q2(u:u, mp);
                 var iu = Complex.I * u;
 
 
                 var a = - iu * mp.rho / mp.sigma * (mp.v0 + mp.theta * tau);
-                var b = -mp.v0 * G1(tau, _q1, _q2, mp: mp, t: 0.0);
-                var c = -mp.theta * H1(tau, _q1, _q2, mp);
+                var b = -mp.v0 * G1(tau: tau, _q1, _q2, mp: mp, t: 0.0);
+                var c = -mp.theta * H1(tau: tau, _q1, _q2, mp);
 
                 var f2 = Complex.Exp(a + b + c);
                 var multiplier = (1/iu) * Complex.Exp(-Complex.I * u * Math.Log(strikeMonetary));
@@ -400,13 +397,15 @@ namespace HestonEstimator
             var strikeMonetary = K * s0;
 
 
-            var cp = new CallParameters() { T = T, T0 = T0, K = K };
-            var mp = new ModelParameters() { kappa = kappa, theta = thetaAdjusted, sigma = sigma, rho = rho, v0 = v0, s0 = s0, r = r, q = q };
+            var cp = new CallParameters() 
+            { T = T, T0 = T0, K = K };
+            var mp = new ModelParameters() 
+            { kappa = kappa, theta = thetaAdjusted, sigma = sigma, rho = rho, v0 = v0, s0 = s0, r = r, q = q };
 
             
             var b_t_T = Math.Exp(-cp.T * mp.r);
-            var p1 = P1Call(mp, cp);
-            var p2 = P2Call(mp, cp);
+            var p1 = P1Call(mp:mp, cp);
+            var p2 = P2Call(mp:mp, cp);
 
             return mp.s0 * p1 - b_t_T * strikeMonetary * p2;
 

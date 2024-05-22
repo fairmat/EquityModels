@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using NUnit.Framework;
 using Heston;
 using HestonEstimator;
+using Fairmat.Math;
 
 namespace EquityModels.Tests.Heston
 {
@@ -97,7 +98,7 @@ namespace EquityModels.Tests.Heston
         [Test]
         public void TestCallPriceAhlipRutkowski()
         {
-            double k = 0.1;
+            double strike = 0.1;
             double tau = 0.5;
 
             double rate = 0.01;
@@ -111,7 +112,7 @@ namespace EquityModels.Tests.Heston
 
 
             var resultFromFwd = HestonForwardAhlipRutkowski.CallPrice(
-                K: k,
+                K: strike,
                 T: tau,
                 T0: 0.0,
                 r: rate,
@@ -126,7 +127,7 @@ namespace EquityModels.Tests.Heston
 
             // in the context of fwd starting k is a percentage of s0
             var resultFromHeston = HestonCall.HestonCallPrice(
-                K: k*s0,
+                K: strike*s0,
                 T: tau,
                 r: rate,
                 q: dy,
@@ -139,6 +140,56 @@ namespace EquityModels.Tests.Heston
 
             Assert.AreEqual(resultFromHeston, resultFromFwd, 1e-10);
 
+        }
+
+        [TestFixture]
+        public class HestonForwardAhlipRutkowskiTests
+        {
+            [Test]
+            public void TestQ2()
+            {
+                
+                // Arrange
+                var mp = new HestonForwardAhlipRutkowski.ModelParameters
+                {
+                    rho = -0.8,
+                    sigma = 0.2, 
+                    kappa = 0.5
+                };
+                double u = 0.5;
+
+                // Act
+                Complex result = HestonForwardAhlipRutkowski.q2(u, mp);
+
+                // Assert
+                // Here you should check if the result is what you expect.
+                // This depends on what you expect the output to be for the given input.
+                // For example, if you expect the result to be (0.25 + 0i), you could write:
+                Assert.AreEqual(new Complex(0, 2), result);
+            }
+
+            [Test]
+            public void TestQ1()
+            {
+
+                // Arrange
+                var mp = new HestonForwardAhlipRutkowski.ModelParameters
+                {
+                    rho = -0.8,
+                    sigma = 0.2,
+                    kappa = 0.5
+                };
+                double u = 0.5;
+
+                // Act
+                Complex result = HestonForwardAhlipRutkowski.q1(u, mp);
+
+                // Assert
+                // Here you should check if the result is what you expect.
+                // This depends on what you expect the output to be for the given input.
+                // For example, if you expect the result to be (0.25 + 0i), you could write:
+                Assert.AreEqual(new Complex(0.045, 1.25), result);
+            }
         }
 
     }
