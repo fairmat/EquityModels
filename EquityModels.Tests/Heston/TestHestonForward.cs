@@ -92,5 +92,54 @@ namespace EquityModels.Tests.Heston
             Assert.AreEqual(expected, result, 1e-10);
 
         }
+
+
+        [Test]
+        public void TestCallPriceAhlipRutkowski()
+        {
+            double k = 0.1;
+            double tau = 0.5;
+
+            double rate = 0.01;
+            double dy = 0.00;
+            double kappa = 2.5;
+            double theta = 0.2;
+            double sigma = 0.2;
+            double s0 = 100.0;
+            double v0 = 0.15;
+            double rho = -0.8;
+
+
+            var resultFromFwd = HestonForwardAhlipRutkowski.CallPrice(
+                K: k,
+                T: tau,
+                T0: 0.0,
+                r: rate,
+                q: dy,
+                kappa: kappa,
+                theta: theta,
+                sigma: sigma,
+                s0: s0,
+                v0: v0,
+                rho: rho
+                );
+
+            // in the context of fwd starting k is a percentage of s0
+            var resultFromHeston = HestonCall.HestonCallPrice(
+                K: k*s0,
+                T: tau,
+                r: rate,
+                q: dy,
+                kappa: kappa,
+                theta: theta,
+                sigma: sigma,
+                s0: s0,
+                v0: v0,
+                rho: rho);
+
+            Assert.AreEqual(resultFromHeston, resultFromFwd, 1e-10);
+
+        }
+
     }
 }
