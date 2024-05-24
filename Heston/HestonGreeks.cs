@@ -197,7 +197,7 @@ namespace HestonEstimator
                 q: q);
 
             Engine.Verbose = 0;
-            var thetaGreek = GreeksBumper(bumpPercentage, T, callPrice);
+            var thetaGreek = (-1.0)*GreeksBumper(bumpPercentage, T, callPrice);
             Engine.Verbose = verbosity;
 
             if (verbosity > 0)
@@ -373,7 +373,7 @@ namespace HestonEstimator
 
 
             Engine.Verbose = 0;
-            var thetaGreek = GreeksBumper(bumpPercentage, T, price);
+            var thetaGreek = (-1.0)*GreeksBumper(bumpPercentage, T, price);
             Engine.Verbose = verbosity;
 
             if (verbosity > 0)
@@ -673,7 +673,7 @@ namespace HestonEstimator
 
 
             Engine.Verbose = 0;
-            var thetaGreek = GreeksBumper(bumpPercentage, T, price);
+            var thetaGreek = (- 1.0) * GreeksBumper(bumpPercentage, T, price);
             Engine.Verbose = verbosity;
 
             if (verbosity > 0)
@@ -712,7 +712,7 @@ namespace HestonEstimator
                 q: q);
 
             Engine.Verbose = 0;
-            var thetaGreek = GreeksBumper(bumpPercentage, T, price);
+            var thetaGreek = (-1.0) * GreeksBumper(bumpPercentage, T, price);
             Engine.Verbose = verbosity;
 
             if (verbosity > 0)
@@ -835,21 +835,22 @@ namespace HestonEstimator
                 Console.WriteLine("{0}\t{1}\t{2}\t{3}\t{4}", s0, K, T, r, q);
             }
 
-            Func<double, double> callPrice = (double maturity) => HestonForwardApproximated.HestonForwardCallPrice(
+            var M = T - T0;
+            Func<double, double> callPrice = (double strikeDate) => HestonForwardApproximated.HestonForwardCallPrice(
                 kappa: kappa,
                 theta: theta,
                 sigma: sigma,
                 rho: rho,
                 v0: v0,
                 s0: s0,
-                T: maturity,
-                T0: T0,
+                T: strikeDate + M,
+                T0: strikeDate,
                 K: K,
                 r: r,
                 q: q);
 
             Engine.Verbose = 0;
-            var thetaGreek = GreeksBumper(bumpPercentage, T, callPrice);
+            var thetaGreek = - GreeksBumper(bumpPercentage, T0, callPrice);
             Engine.Verbose = verbosity;
 
             if (verbosity > 0)
@@ -1008,21 +1009,22 @@ namespace HestonEstimator
                 Console.WriteLine("{0}\t{1}\t{2}\t{3}\t{4}", s0, K, T, r, q);
             }
 
-            Func<double, double> putPrice = (double maturity) => HestonForwardApproximated.HestonForwardPutPrice(
+            var M = T - T0;
+            Func<double, double> putPrice = (double strikeDate) => HestonForwardApproximated.HestonForwardPutPrice(
                 kappa: kappa,
                 theta: theta,
                 sigma: sigma,
                 rho: rho,
                 v0: v0,
                 s0: s0,
-                T: maturity,
-                T0: T0,
+                T: strikeDate + M,
+                T0: strikeDate,
                 K: K,
                 r: r,
                 q: q);
 
             Engine.Verbose = 0;
-            var thetaGreek = GreeksBumper(bumpPercentage, T, putPrice);
+            var thetaGreek = - GreeksBumper(bumpPercentage, T0, putPrice);
             Engine.Verbose = verbosity;
 
             if (verbosity > 0)
@@ -1182,22 +1184,22 @@ namespace HestonEstimator
                 Console.WriteLine($"{s0}\t{K}\t{T}\t{T0}\t{r}\t{q}");
             }
 
-
-            Func<double, double> callPrice = (double maturity) => HestonForwardApproximated.HestonForwardDigitalCallPrice(
+            var M = T - T0;
+            Func<double, double> callPrice = (double strikeDate) => HestonForwardApproximated.HestonForwardDigitalCallPrice(
                 kappa: kappa,
                 theta: theta,
                 sigma: sigma,
                 rho: rho,
                 v0: v0,
                 s0: s0,
-                T: maturity,
-                T0: T0,
+                T: strikeDate+M,
+                T0: strikeDate,
                 K: K,
                 r: r,
                 q: q);
 
             Engine.Verbose = 0;
-            var thetaGreek = GreeksBumper(bumpPercentage, T, callPrice);
+            var thetaGreek = - GreeksBumper(bumpPercentage, T0, callPrice);
             Engine.Verbose = verbosity;
 
             if (verbosity > 0)
@@ -1355,21 +1357,22 @@ namespace HestonEstimator
                 Console.WriteLine($"{s0}\t{K}\t{T}\t{T0}\t{r}\t{q}");
             }
 
-            Func<double, double> putPrice = (double maturity) => HestonForwardApproximated.HestonForwardDigitalPutPrice(
+            var M = T - T0;
+            Func<double, double> putPrice = (double strikeDate) => HestonForwardApproximated.HestonForwardDigitalPutPrice(
                 kappa: kappa,
                 theta: theta,
                 sigma: sigma,
                 rho: rho,
                 v0: v0,
                 s0: s0,
-                T: maturity,
-                T0: T0,
+                T: strikeDate+M,
+                T0: strikeDate,
                 K: K,
                 r: r,
                 q: q);
 
             Engine.Verbose = 0;
-            var thetaGreek = GreeksBumper(bumpPercentage, T, putPrice);
+            var thetaGreek = - GreeksBumper(bumpPercentage, T0, putPrice);
             Engine.Verbose = verbosity;
 
             if (verbosity > 0)

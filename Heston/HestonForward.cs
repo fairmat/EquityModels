@@ -627,17 +627,8 @@ namespace HestonEstimator
 
             var fsCallGamma = 0.0;
 
-            var fsCallTheta = s0 * Math.Exp(-q * T0) * HestonNumericalGreeks.ThetaCall(
-                        kappa: kappa,
-                        theta: theta,
-                        sigma: sigma,
-                        rho: rho,
-                        v0: v_T0,
-                        s0: 1.0,
-                        T: T - T0,
-                        K: K,
-                        r: r,
-                        q: q);
+            var fsCallTheta = HestonNumericalGreeks.ThetaFSCall(kappa: kappa, theta: theta, sigma: sigma, rho: rho, v0: v0, s0: s0, T: T, T0: T0, K: K, r: r, q:q);
+
 
             var fsCallVega = s0 * Math.Exp(-q * T0) * derivativeExpectationCIRProcess(v0, kappa, theta, T0) * HestonVega.VegaCall(
                         kappa: kappa,
@@ -725,17 +716,7 @@ namespace HestonEstimator
 
             var fsPutGamma = 0.0;
 
-            var fsPutTheta = s0 * Math.Exp(-q * T0) * HestonNumericalGreeks.ThetaPut(
-                        kappa: kappa,
-                        theta: theta,
-                        sigma: sigma,
-                        rho: rho,
-                        v0: v_T0,
-                        s0: 1.0,
-                        T: T - T0,
-                        K: K,
-                        r: r,
-                        q: q);
+            var fsPutTheta = HestonNumericalGreeks.ThetaFSPut(kappa: kappa, theta: theta, sigma: sigma, rho: rho, v0: v0, s0: s0, T: T, T0: T0, K: K, r: r, q: q);
 
             var fsPutVega = s0 * Math.Exp(-q * T0) * derivativeExpectationCIRProcess(v0, kappa, theta, T0) * HestonVega.VegaPut(
                         kappa: kappa,
@@ -821,17 +802,7 @@ namespace HestonEstimator
 
             var fsDPutGamma = 0.0;
 
-            var fsDPutTheta = HestonDigital.DiscountFactor(r, T0) * HestonNumericalGreeks.ThetaDPut(
-                        kappa: kappa,
-                        theta: theta,
-                        sigma: sigma,
-                        rho: rho,
-                        v0: v_T0,
-                        s0: 1.0,
-                        T: T - T0,
-                        K: K,
-                        r: r,
-                        q: q);
+            var fsDPutTheta = HestonNumericalGreeks.ThetaFSDPut(kappa: kappa, theta: theta, sigma: sigma, rho: rho, v0: v0, s0: s0, T: T, T0: T0, K: K, r: r, q: q);
 
             var fsDPutVega = HestonDigital.DiscountFactor(r, T0) * derivativeExpectationCIRProcess(v0, kappa, theta, T0) * HestonVega.VegaDigitalPut(
                         kappa: kappa,
@@ -921,17 +892,7 @@ namespace HestonEstimator
 
             var fsDCallGamma = 0.0;
 
-            var fsDCallTheta = HestonDigital.DiscountFactor(r, T0) * HestonNumericalGreeks.ThetaDCall(
-                        kappa: kappa,
-                        theta: theta,
-                        sigma: sigma,
-                        rho: rho,
-                        v0: v_T0,
-                        s0: 1.0,
-                        T: T - T0,
-                        K: K,
-                        r: r,
-                        q: q);
+            var fsDCallTheta = HestonNumericalGreeks.ThetaFSDCall(kappa: kappa, theta: theta, sigma: sigma, rho: rho, v0: v0, s0: s0, T: T, T0: T0, K: K, r: r, q: q);
 
             var fsDCallVega = HestonDigital.DiscountFactor(r, T0) * derivativeExpectationCIRProcess(v0, kappa, theta, T0) * HestonVega.VegaDigitalCall(
                         kappa: kappa,

@@ -227,5 +227,42 @@ namespace Heston
         }
 
 
+
+        [TestCase(1.0, 1, 0.5, 0.05, 19.41)]
+        public void TestFwdApproximation(double strike, double T, double T0,  double r, double expectedResult)
+        {
+            double rate = r;
+            double dy = 0.00;
+
+            var process = new HestonProcess();
+            process.r = (ModelParameter)rate;
+            process.q = (ModelParameter)dy;
+            process.k = (ModelParameter)2.5;
+            process.theta = (ModelParameter)0.4;
+            process.sigma = (ModelParameter)0.2;
+            process.S0 = (ModelParameter)100.0;
+            process.V0 = (ModelParameter)0.3;
+            process.rho = (ModelParameter)(-0.5);
+
+
+           
+
+            // Calculates the theoretical value of the call.
+            Vector param = new Vector(5);
+            param[0] = process.k.V();
+            param[1] = process.theta.V();
+            param[2] = process.sigma.V();
+            param[3] = process.rho.V(); 
+            param[4] = process.V0.V();
+            double thPrice = HestonForwardApproximated.HestonForwardCallPrice(param, process.S0.V(),
+                                                                       T, T0, strike, rate, dy);
+
+
+            Console.WriteLine("Theoretical Price = " + thPrice.ToString());
+            Console.WriteLine("Expected Price = " + expectedResult.ToString());
+
+        }
+
+
     }
 }
