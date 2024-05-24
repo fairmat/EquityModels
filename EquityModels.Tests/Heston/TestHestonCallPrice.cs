@@ -174,7 +174,7 @@ namespace Heston
 
 
             double thetaGreek = HestonNumericalGreeks.ThetaCall(bumpPercentage: 0.001, kappa: kappa, theta: theta, sigma: sigma, rho: rho, v0: v0, s0: s0, T: tau, K: k, r: rate, q: dy);  
-            double expectedTheta = 0.0494223;
+            double expectedTheta = - 0.0494223;
             Assert.AreEqual(expectedTheta, thetaGreek, 1e-3);
 
 
@@ -227,7 +227,7 @@ namespace Heston
 
 
             double thetaGreek = HestonNumericalGreeks.ThetaPut(bumpPercentage: 0.001, kappa: kappa, theta: theta, sigma: sigma, rho: rho, v0: v0, s0: s0, T: tau, K: k, r: rate, q: dy);
-            double expectedTheta = 0.03659261685613;
+            double expectedTheta =- 0.03659261685613;
             Assert.AreEqual(expectedTheta, thetaGreek, 1e-3);
 
 

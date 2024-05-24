@@ -111,7 +111,7 @@ namespace Heston
             double expectedVega = -0.052751716997;
 
             double thetaGreek = HestonNumericalGreeks.ThetaDCall(bumpPercentage: 0.001, kappa: kappa, theta: theta, sigma: sigma, rho: rho, v0: v0, s0: s0, T: tau, K: k, r: rate, q: dy);
-            double expectedTheta = -0.07603626576;
+            double expectedTheta = 0.07603626576;
 
 
             // delta 
@@ -167,7 +167,7 @@ namespace Heston
             double expectedVega = 0.0527517169;
 
             double thetaGreek = HestonNumericalGreeks.ThetaDPut(bumpPercentage: 0.001, kappa: kappa, theta: theta, sigma: sigma, rho: rho, v0: v0, s0: s0, T: tau, K: k, r: rate, q: dy);
-            double expectedTheta = -0.00583681009161;
+            double expectedTheta = 0.00583681009161;
 
 
             // delta 
