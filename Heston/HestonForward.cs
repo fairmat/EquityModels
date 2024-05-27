@@ -1270,14 +1270,14 @@ namespace HestonEstimator
         }
 
 
-        private static double LittleB(ModelParameters mp, double t)
+        public static double LittleB(ModelParameters mp, double t)
         {
         double kappa = mp.kappa;
         double xi = mp.sigma;
         return ((xi * xi) / (4.0 * kappa)) * (1.0 - Math.Exp(-kappa * t));
         }
 
-        private static Complex D(ModelParameters mp, Complex u)
+        public static Complex D(ModelParameters mp, Complex u)
         {
             double kappa = mp.kappa;
             double xi = mp.sigma;
@@ -1285,7 +1285,7 @@ namespace HestonEstimator
             return Complex.Sqrt(((kappa - rho * xi * u) * (kappa - rho * xi * u)) + u * (1.0 - u) * xi * xi);
         }
 
-        private static Complex LittleGamma(ModelParameters mp, Complex u)
+        public static Complex LittleGamma(ModelParameters mp, Complex u)
         {
             double kappa = mp.kappa;
             double xi = mp.sigma;
@@ -1294,7 +1294,7 @@ namespace HestonEstimator
             return (kappa - rho * xi * u - dd) / (kappa - rho * xi * u + dd);
         }
 
-        private static Complex BigA(ModelParameters mp, Complex u, double tau)
+        public static Complex BigA(ModelParameters mp, Complex u, double tau)
         {
             double kappa = mp.kappa;
             double xi = mp.sigma;
@@ -1306,7 +1306,7 @@ namespace HestonEstimator
             return ((kappa * theta) / (xi * xi)) * ((kappa - rho * xi * u - ddd) * tau - 2.0 * LL);
         }
 
-        private static  Complex BigB(ModelParameters mp, Complex u, double tau)
+        public static  Complex BigB(ModelParameters mp, Complex u, double tau)
         {
             double kappa = mp.kappa;
             double xi = mp.sigma;
@@ -1317,7 +1317,7 @@ namespace HestonEstimator
         }
 
 
-        private static Complex CfHestonFwd(ModelParameters mp, Complex u, double t, double tau)
+        public static Complex CfHestonFwd(ModelParameters mp, Complex u, double t, double tau)
         {
             double kappa = mp.kappa;
             double xi = mp.sigma;
@@ -1327,10 +1327,25 @@ namespace HestonEstimator
             return Complex.Exp(BigA(mp, u, tau) + (BBB / (1.0 - 2.0 * BBb * BBB)) * (v0 * (Math.Exp(-kappa * t))) - ((2.0 * kappa * mp.theta) / (xi * xi)) * Complex.Log(1.0 - 2.0 * BBb * BBB));
         }
 
-        private static double IntPhi(ModelParameters mp, double w, double alpha, double k, double t, double tau)
+        public static double IntPhi(ModelParameters mp, double w, double alpha, double k, double t, double tau)
         {
             return (Complex.Exp(-k * (alpha + Complex.I * w)) * CfHestonFwd(mp, alpha + Complex.I * w, t, tau) / ((alpha + Complex.I * w) * (1.0 - alpha - Complex.I * w))).Re;
         }
+
+        public static double TrapezoidalRule( double a, double b, Func<double, double> f, int n=100000)
+        {
+            double h = (b - a) / n; // Step size
+            double s = f(a) + f(b); // Initialize sum
+
+            for (int i = 1; i < n; i++)
+            {
+                double x = a + h * i;
+                s += 2 * f(x);
+            }
+
+            return (h / 2) * s;
+        }
+
 
         //private double CallPrice(ModelParameters mp, double K, double t, double tau)
         public static double CallPrice(double kappa, double theta, double rho, double v0, double sigma, double s0, double K, double r, double q, double T, double T0)
@@ -1344,11 +1359,14 @@ namespace HestonEstimator
                 v0 = v0,
                 s0 = s0,
                 r = r,
-                q = q
-                    };    
+                q = q };
+
+            // adjust T 
+            T = T - T0; 
             double alpha = 0.5;
-            double pp = CfHestonFwd(mp, new Complex(0, 1), 0.0, T).Re;
-            return pp - K / (2.0 * Math.PI) * PerformIntegral(1E-8, 1000, (x) => IntPhi(mp, x, alpha, Math.Log(K), 0.0, T));
+            double pp = CfHestonFwd(mp, new Complex(1, 0), T0, T).Re;
+            var integral = TrapezoidalRule(-1000.0, 1000.0, (x) => IntPhi(mp, x, alpha, Math.Log(K), T0, T));
+            return pp - K / (2.0 * Math.PI) * integral;
         }
 
        

@@ -381,7 +381,7 @@ namespace HestonEstimator
         public static double PerformIntegral(double a, double b,TAEDelegateFunction1D f)
         {
             double sum = 0;
-            double dt = a/10;
+            double dt = Math.Abs(a/10);
             double x=a;
             double y0 = f(a);
             double s0 = 1.05;
