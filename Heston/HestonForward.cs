@@ -4,6 +4,8 @@ using Fairmat.Math;
 using DVPLI;
 using DVPLI.ExportableDomain;
 using System.Xml.Schema;
+using System.Diagnostics;
+using Fairmat.Finance;
 
 namespace HestonEstimator
 {
@@ -374,7 +376,7 @@ namespace HestonEstimator
                 var c = -mp.theta * H1(tau: tau, _q1, _q2, mp);
 
                 var f2 = Complex.Exp(a + b + c);
-                var multiplier = (1/iu) * Complex.Exp(-Complex.I * u * Math.Log(strikeMonetary));
+                var multiplier = (1/iu) * Complex.Exp(-iu * Math.Log(strikeMonetary));
 
                 return (f2 * multiplier).Re;
             }
@@ -404,8 +406,8 @@ namespace HestonEstimator
 
             
             var b_t_T = Math.Exp(-cp.T * mp.r);
-            var p1 = P1Call(mp:mp, cp);
-            var p2 = P2Call(mp:mp, cp);
+            var p1 = Math.Max(P1Call(mp:mp, cp), 0);
+            var p2 = Math.Max(P2Call(mp: mp, cp),0) ;
 
             return mp.s0 * p1 - b_t_T * strikeMonetary * p2;
 
@@ -1209,4 +1211,148 @@ namespace HestonEstimator
 
 
         }
+
+    public class HestonForwardJJ: HestonCall
+    {
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="HestonEstimator.HestonForward"/> class.
+        /// </summary>
+        public HestonForwardJJ() { }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="HestonEstimator.HestonForward"/> class.
+        /// </summary>
+        /// <param name='problem'>
+        /// HestonCallOptimizationProblem at which digital price calculations are to be linked.
+        /// </param>
+        public HestonForwardJJ(HestonCallOptimizationProblem problem) : base(problem) { }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="HestonEstimator.HestonForward"/> class.
+        /// </summary>
+        /// <param name='process'>
+        /// HestonProcess at which digital price calculations are to be linked.
+        /// </param>
+        /// <param name='strike'> 
+        /// Strike of the digital option
+        /// </param>
+        /// <param name="timeToMaturity">
+        /// TimeToMaturity of the digital option
+        /// </param>
+        public HestonForwardJJ(HestonProcess process, double strike, double timeToMaturity) : base(process, strike, timeToMaturity) { }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="HestonEstimator.HestonForward"/> class.
+        /// </summary>
+        /// <param name='process'>
+        /// HestonProcess at which digital price calculations are to be linked.
+        /// </param>
+        public HestonForwardJJ(HestonProcess process) : base(process) { }
+
+        public struct ModelParameters
+        {
+            public double kappa;
+            public double theta;
+            public double sigma;
+            public double rho;
+            public double v0;
+            public double s0;
+            public double r;
+            public double q;
+        }
+
+        public struct CallParameters
+        {
+            public double T;
+            public double T0;
+            public double K;
+        }
+
+
+        private static double LittleB(ModelParameters mp, double t)
+        {
+        double kappa = mp.kappa;
+        double xi = mp.sigma;
+        return ((xi * xi) / (4.0 * kappa)) * (1.0 - Math.Exp(-kappa * t));
+        }
+
+        private static Complex D(ModelParameters mp, Complex u)
+        {
+            double kappa = mp.kappa;
+            double xi = mp.sigma;
+            double rho = mp.rho;
+            return Complex.Sqrt(((kappa - rho * xi * u) * (kappa - rho * xi * u)) + u * (1.0 - u) * xi * xi);
+        }
+
+        private static Complex LittleGamma(ModelParameters mp, Complex u)
+        {
+            double kappa = mp.kappa;
+            double xi = mp.sigma;
+            double rho =mp.rho;
+            Complex dd = D(mp, u);
+            return (kappa - rho * xi * u - dd) / (kappa - rho * xi * u + dd);
+        }
+
+        private static Complex BigA(ModelParameters mp, Complex u, double tau)
+        {
+            double kappa = mp.kappa;
+            double xi = mp.sigma;
+            double rho = mp.rho;
+            double theta = mp.theta;
+            Complex ddd = D(mp, u);
+            Complex g = LittleGamma(mp, u);
+            Complex LL = Complex.Log((1.0 - g * Complex.Exp(-ddd * tau)) / (1.0 - g));
+            return ((kappa * theta) / (xi * xi)) * ((kappa - rho * xi * u - ddd) * tau - 2.0 * LL);
+        }
+
+        private static  Complex BigB(ModelParameters mp, Complex u, double tau)
+        {
+            double kappa = mp.kappa;
+            double xi = mp.sigma;
+            double rho = mp.rho;
+            Complex ddd = D(mp, u);
+            Complex ee = Complex.Exp(-ddd * tau);
+            return (1.0 / (xi * xi)) * (kappa - rho * xi * u - ddd) * ((1.0 - ee) / (1.0 - LittleGamma(mp,u) * ee));
+        }
+
+
+        private static Complex CfHestonFwd(ModelParameters mp, Complex u, double t, double tau)
+        {
+            double kappa = mp.kappa;
+            double xi = mp.sigma;
+            double v0 = mp.v0;
+            Complex BBB = BigB(mp, u, tau);
+            double BBb = LittleB(mp, t);
+            return Complex.Exp(BigA(mp, u, tau) + (BBB / (1.0 - 2.0 * BBb * BBB)) * (v0 * (Math.Exp(-kappa * t))) - ((2.0 * kappa * mp.theta) / (xi * xi)) * Complex.Log(1.0 - 2.0 * BBb * BBB));
+        }
+
+        private static double IntPhi(ModelParameters mp, double w, double alpha, double k, double t, double tau)
+        {
+            return (Complex.Exp(-k * (alpha + Complex.I * w)) * CfHestonFwd(mp, alpha + Complex.I * w, t, tau) / ((alpha + Complex.I * w) * (1.0 - alpha - Complex.I * w))).Re;
+        }
+
+        //private double CallPrice(ModelParameters mp, double K, double t, double tau)
+        public static double CallPrice(double kappa, double theta, double rho, double v0, double sigma, double s0, double K, double r, double q, double T, double T0)
+        {
+
+            var mp = new ModelParameters{
+                kappa = kappa,
+                theta = theta,
+                sigma= sigma,
+                rho = rho,
+                v0 = v0,
+                s0 = s0,
+                r = r,
+                q = q
+                    };    
+            double alpha = 0.5;
+            double pp = CfHestonFwd(mp, new Complex(0, 1), 0.0, T).Re;
+            return pp - K / (2.0 * Math.PI) * PerformIntegral(1E-8, 1000, (x) => IntPhi(mp, x, alpha, Math.Log(K), 0.0, T));
+        }
+
+       
+
+    }
+
 }

@@ -54,7 +54,6 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Dupire\Dupire.csproj" />
     <ProjectReference Include="..\..\ModelingTools\PFunction2D\PFunction2D.csproj" />
     <ProjectReference Include="..\Heston\Heston.csproj" />
     <ProjectReference Include="..\VarianceGamma\VarianceGamma.csproj" />

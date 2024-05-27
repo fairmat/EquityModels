@@ -7,6 +7,7 @@ using NUnit.Framework;
 using Heston;
 using HestonEstimator;
 using Fairmat.Math;
+using System.Diagnostics;
 
 namespace EquityModels.Tests.Heston
 {
@@ -94,7 +95,6 @@ namespace EquityModels.Tests.Heston
 
         }
 
-
         [Test]
         public void TestCallPriceAhlipRutkowski()
         {
@@ -139,6 +139,52 @@ namespace EquityModels.Tests.Heston
                 rho: rho);
 
             Assert.AreEqual(resultFromHeston, resultFromFwd, 1e-10);
+
+        }
+        [Test]
+        public void TestCallPriceJJ()
+        {
+            double strike = 1.0;
+            double tau = 1;
+            double T0 = 0.5;
+            double rate = 0.0;
+            double dy = 0.00;
+            double kappa = 2.5;
+            double theta = 0.4;
+            double sigma = 0.2;
+            double s0 = 100.0;
+            double v0 = 0.3;
+            double rho = -0.5; 
+
+
+            var resultFromFwd = HestonForwardJJ.CallPrice(
+                K: strike,
+                T: tau,
+                T0: T0,
+                r: rate,
+                q: dy,
+                kappa: kappa,
+                theta: theta,
+                sigma: sigma,
+                s0: s0,
+                v0: v0,
+                rho: rho
+                );
+            
+            // in the context of fwd starting k is a percentage of s0
+            var resultFromHeston = HestonCall.HestonCallPrice(
+                K: strike * s0,
+                T: tau,
+                r: rate,
+                q: dy,
+                kappa: kappa,
+                theta: theta,
+                sigma: sigma,
+                s0: s0,
+                v0: v0,
+                rho: rho);
+
+            Assert.AreEqual(resultFromHeston, s0 * Math.Exp(-dy * T0) * resultFromFwd, 1e-10);
 
         }
 
