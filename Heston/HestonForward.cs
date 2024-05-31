@@ -1244,7 +1244,7 @@ namespace HestonEstimator
     // For reference: https://github.com/JackJacquier/Heston-normal-and-rough
     // Please note that unlike the others Heston forward classes, the payoff of this implementation is (S_T/S_{T_0} - K)^+
     // An approximation can be used to price options with payoff (S_T - K * S_{T_0})^+ using this class.
-    // note that in this implementation, r=0 and q=0
+    // note that in this implementation q=0
 
     public class HestonForwardJJ: HestonCall
     {
