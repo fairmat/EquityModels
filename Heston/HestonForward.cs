@@ -9,8 +9,31 @@ using Fairmat.Finance;
 
 namespace HestonEstimator
 {
+    public struct ModelParameters
+    {
+        public double kappa;
+        public double theta;
+        public double sigma;
+        public double rho;
+        public double v0;
+        public double s0;
+        public double r;
+        public double q;
+    }
+
+    public struct CallParameters
+    {
+        public double T;
+        public double T0;
+        public double K;
+    }
+
+
+
     // this implementation is based on https://doi.org/10.1142/S0219024909005166 
     // FORWARD START OPTIONS UNDER STOCHASTIC VOLATILITY AND STOCHASTIC INTEREST RATES - REHEZ AHLIP and MAREK RUTKOWSKI
+    // this implementation use as payoff (S_T - K * S_{T_0})^+
+
     public class HestonForwardAhlipRutkowski : HestonCall
     {
 
@@ -602,7 +625,9 @@ namespace HestonEstimator
 
     }
 
-
+    // this implementation is described in the official documentation of the Fairmat Heston model 
+    // It is based on a Black Scholes like approximation of the formula of the forward starting option
+    // this implementation use as payoff (S_T - K * S_{T_0})^+
     public class HestonForwardApproximated
     {
         public static double HestonForwardCallPrice(Vector x, double s0, double T, double T0, double K, double r, double q)
@@ -1212,6 +1237,15 @@ namespace HestonEstimator
 
         }
 
+    
+    
+    
+    // this implementation is based on the implemenation of the Heston model of Jack Jacquier
+    // For reference: https://github.com/JackJacquier/Heston-normal-and-rough
+    // Please note that unlike the others Heston forward classes, the payoff of this implementation is (S_T/S_{T_0} - K)^+
+    // An approximation can be used to price options with payoff (S_T - K * S_{T_0})^+ using this class.
+    // note that in this implementation, r=0 and q=0
+
     public class HestonForwardJJ: HestonCall
     {
 
@@ -1250,32 +1284,13 @@ namespace HestonEstimator
         /// </param>
         public HestonForwardJJ(HestonProcess process) : base(process) { }
 
-        public struct ModelParameters
-        {
-            public double kappa;
-            public double theta;
-            public double sigma;
-            public double rho;
-            public double v0;
-            public double s0;
-            public double r;
-            public double q;
-        }
 
-        public struct CallParameters
+        public static double GetLittleB(ModelParameters mp, double t)
         {
-            public double T;
-            public double T0;
-            public double K;
-        }
-
-
-        public static double LittleB(ModelParameters mp, double t)
-        {
-        double kappa = mp.kappa;
-        double xi = mp.sigma;
-        return ((xi * xi) / (4.0 * kappa)) * (1.0 - Math.Exp(-kappa * t));
-        }
+            double kappa = mp.kappa;
+            double xi = mp.sigma;
+            return ((xi * xi) / (4.0 * kappa)) * (1.0 - Math.Exp(-kappa * t));
+            }
 
         public static Complex D(ModelParameters mp, Complex u)
         {
@@ -1285,7 +1300,7 @@ namespace HestonEstimator
             return Complex.Sqrt(((kappa - rho * xi * u) * (kappa - rho * xi * u)) + u * (1.0 - u) * xi * xi);
         }
 
-        public static Complex LittleGamma(ModelParameters mp, Complex u)
+        public static Complex GetLittleGamma(ModelParameters mp, Complex u)
         {
             double kappa = mp.kappa;
             double xi = mp.sigma;
@@ -1294,26 +1309,26 @@ namespace HestonEstimator
             return (kappa - rho * xi * u - dd) / (kappa - rho * xi * u + dd);
         }
 
-        public static Complex BigA(ModelParameters mp, Complex u, double tau)
+        public static Complex GetBigA(ModelParameters mp, Complex u, double tau)
         {
             double kappa = mp.kappa;
             double xi = mp.sigma;
             double rho = mp.rho;
             double theta = mp.theta;
             Complex ddd = D(mp, u);
-            Complex g = LittleGamma(mp, u);
+            Complex g = GetLittleGamma(mp, u);
             Complex LL = Complex.Log((1.0 - g * Complex.Exp(-ddd * tau)) / (1.0 - g));
             return ((kappa * theta) / (xi * xi)) * ((kappa - rho * xi * u - ddd) * tau - 2.0 * LL);
         }
 
-        public static  Complex BigB(ModelParameters mp, Complex u, double tau)
+        public static  Complex GetBigB(ModelParameters mp, Complex u, double tau)
         {
             double kappa = mp.kappa;
             double xi = mp.sigma;
             double rho = mp.rho;
             Complex ddd = D(mp, u);
             Complex ee = Complex.Exp(-ddd * tau);
-            return (1.0 / (xi * xi)) * (kappa - rho * xi * u - ddd) * ((1.0 - ee) / (1.0 - LittleGamma(mp,u) * ee));
+            return (1.0 / (xi * xi)) * (kappa - rho * xi * u - ddd) * ((1.0 - ee) / (1.0 - GetLittleGamma(mp,u) * ee));
         }
 
 
@@ -1322,17 +1337,17 @@ namespace HestonEstimator
             double kappa = mp.kappa;
             double xi = mp.sigma;
             double v0 = mp.v0;
-            Complex BBB = BigB(mp, u, tau);
-            double BBb = LittleB(mp, t);
-            return Complex.Exp(BigA(mp, u, tau) + (BBB / (1.0 - 2.0 * BBb * BBB)) * (v0 * (Math.Exp(-kappa * t))) - ((2.0 * kappa * mp.theta) / (xi * xi)) * Complex.Log(1.0 - 2.0 * BBb * BBB));
+            Complex BBB = GetBigB(mp, u, tau);
+            double BBb = GetLittleB(mp, t);
+            return Complex.Exp(GetBigA(mp, u, tau) + (BBB / (1.0 - 2.0 * BBb * BBB)) * (v0 * (Math.Exp(-kappa * t))) - ((2.0 * kappa * mp.theta) / (xi * xi)) * Complex.Log(1.0 - 2.0 * BBb * BBB));
         }
 
-        public static double IntPhi(ModelParameters mp, double w, double alpha, double k, double t, double tau)
+        public static double GetIntegrandFunction(ModelParameters mp, double w, double alpha, double k, double t, double tau)
         {
             return (Complex.Exp(-k * (alpha + Complex.I * w)) * CfHestonFwd(mp, alpha + Complex.I * w, t, tau) / ((alpha + Complex.I * w) * (1.0 - alpha - Complex.I * w))).Re;
         }
 
-        public static double TrapezoidalRule( double a, double b, Func<double, double> f, int n=100000)
+        public static double PerformIntegralTrapezoidal( double a, double b, Func<double, double> f, int n=100000)
         {
             double h = (b - a) / n; // Step size
             double s = f(a) + f(b); // Initialize sum
@@ -1347,8 +1362,7 @@ namespace HestonEstimator
         }
 
 
-        //private double CallPrice(ModelParameters mp, double K, double t, double tau)
-        public static double CallPrice(double kappa, double theta, double rho, double v0, double sigma, double s0, double K, double r, double q, double T, double T0)
+        public static double CalculateFwdCallPrice(double kappa, double theta, double rho, double v0, double sigma, double s0, double K, double r, double q, double T, double T0)
         {
 
             var mp = new ModelParameters{
@@ -1365,7 +1379,7 @@ namespace HestonEstimator
             T = T - T0; 
             double alpha = 0.5;
             double pp = CfHestonFwd(mp, new Complex(1, 0), T0, T).Re;
-            var integral = TrapezoidalRule(-1000.0, 1000.0, (x) => IntPhi(mp, x, alpha, Math.Log(K), T0, T));
+            var integral = PerformIntegralTrapezoidal(-1000.0, 1000.0, (x) => GetIntegrandFunction(mp, x, alpha, Math.Log(K), T0, T));
             return pp - K / (2.0 * Math.PI) * integral;
         }
 

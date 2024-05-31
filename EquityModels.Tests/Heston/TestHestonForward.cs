@@ -89,7 +89,7 @@ namespace EquityModels.Tests.Heston
                 rho: rho
                 );
 
-            var resultJJ = HestonForwardJJ.CallPrice(
+            var resultJJ = HestonForwardJJ.CalculateFwdCallPrice(
                 K: k,
                 T: tau,
                 T0: T0,
@@ -208,7 +208,7 @@ namespace EquityModels.Tests.Heston
             double rho = -0.5; 
 
 
-            var resultFromFwd = HestonForwardJJ.CallPrice(
+            var resultFromFwd = HestonForwardJJ.CalculateFwdCallPrice(
                 K: strike,
                 T: tau,
                 T0: T0,
@@ -254,7 +254,7 @@ namespace EquityModels.Tests.Heston
             double v0 = 0.05;
             double rho = -0.2;
 
-            var mp = new HestonForwardJJ.ModelParameters
+            var mp = new HestonEstimator.ModelParameters
             {
                 kappa = kappa,
                 theta = theta,
@@ -267,11 +267,11 @@ namespace EquityModels.Tests.Heston
             };
 
             var u = new Complex(0.5, 1); 
-            var b = HestonForwardJJ.LittleB(mp, T0);
+            var b = HestonForwardJJ.GetLittleB(mp, T0);
             var d = HestonForwardJJ.D(mp, u);
-            var littleGamma = HestonForwardJJ.LittleGamma(mp, u);
+            var littleGamma = HestonForwardJJ.GetLittleGamma(mp, u);
             var cfHeston = HestonForwardJJ.CfHestonFwd(mp, u, T0, tau);
-            var intPhi = HestonForwardJJ.IntPhi(mp, 2.0, 0.5, mp.kappa, T0, tau);
+            var intPhi = HestonForwardJJ.GetIntegrandFunction(mp, 2.0, 0.5, mp.kappa, T0, tau);
 
             Assert.AreEqual(0.0002254949452, b, 1e-10);
             Assert.AreEqual((2.1129597440980485), d.Re, 1e-10);
@@ -280,7 +280,7 @@ namespace EquityModels.Tests.Heston
 
 
 
-            var resultFromFwd = HestonForwardJJ.CallPrice(
+            var resultFromFwd = HestonForwardJJ.CalculateFwdCallPrice(
                 K: strike,
                 T: tau,
                 T0: T0,
