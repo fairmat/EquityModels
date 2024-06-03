@@ -3,30 +3,46 @@
     <TargetFrameworks>netstandard2.0;net48</TargetFrameworks>
     <OutputType>Library</OutputType>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <Title>HistoricalSimulator</Title>
+    <PackageId>$(BasePackageId).$(Title)</PackageId>
+    <AssemblyName>$(Title)</AssemblyName>
     <AssemblyTitle>Historical Simulator</AssemblyTitle>
-    <Company>Fairmat SRL</Company>
     <Product>Historical Simulator</Product>
-    <Copyright>Copyright © Fairmat SRL 2012</Copyright>
     <AssemblyVersion>1.0.5</AssemblyVersion>
     <FileVersion>1.0.5</FileVersion>
+    <Description>Simulate future realizations of underlying asset using historical stock realizations.</Description>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugType>full</DebugType>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>portable</DebugType>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Mono.Addins" Version="1.4.1" />
-    <PackageReference Include="Mono.Addins.CecilReflector" Version="1.4.1" />
-    <PackageReference Include="System.Data.DataSetExtensions" Version="4.5.0" />
-  </ItemGroup>
-  <ItemGroup>
+    <!-- TODO: This reference will be a nuget package soon, these lines below are temporary -->
+    <None Include="..\..\DVPLReferences\DVPLDOM.dll" Pack="true" PackagePath="lib" />
     <Reference Include="DVPLDOM">
       <HintPath>..\..\DVPLReferences\DVPLDOM.dll</HintPath>
     </Reference>
+    <!-- TODO: This reference will be a nuget package soon, these lines below are temporary -->
+    <None Include="..\..\DVPLReferences\DVPLDOME.dll" Pack="true" PackagePath="lib" />
     <Reference Include="DVPLDOME">
       <HintPath>..\..\DVPLReferences\DVPLDOME.dll</HintPath>
     </Reference>
+    <!-- TODO: This reference will be a nuget package soon, these lines below are temporary -->
+    <None Include="..\..\DVPLReferences\DVPLI.dll" Pack="true" PackagePath="lib" />
     <Reference Include="DVPLI">
       <HintPath>..\..\DVPLReferences\DVPLI.dll</HintPath>
     </Reference>
+    <!-- TODO: This reference will be a nuget package soon, these lines below are temporary -->
+    <None Include="..\..\DVPLReferences\DVPLInterfaces.dll" Pack="true" PackagePath="lib" />
     <Reference Include="DVPLInterfaces">
       <HintPath>..\..\DVPLReferences\DVPLInterfaces.dll</HintPath>
     </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Mono.Addins" />
+    <PackageReference Include="Mono.Addins.CecilReflector" />
+    <PackageReference Include="System.Data.DataSetExtensions" />
   </ItemGroup>
 </Project>
