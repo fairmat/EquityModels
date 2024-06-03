@@ -14,6 +14,14 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Heston", "Heston\Heston.csp
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "VarianceGamma", "VarianceGamma\VarianceGamma.csproj", "{1CF5F32A-530F-4CA5-BD23-25431EF3B9F5}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{71CA5EF6-3DFD-435C-B542-C56665E4C844}"
+	ProjectSection(SolutionItems) = preProject
+		Directory.Build.props = Directory.Build.props
+		Directory.Packages.props = Directory.Packages.props
+		Fairmat-icon.png = Fairmat-icon.png
+		global.json = global.json
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU

@@ -1,0 +1,34 @@
+<Project>
+
+    <PropertyGroup>
+        <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+        <IncludeLatestPreRelease>true</IncludeLatestPreRelease>
+        <CentralPackageFloatingVersionsEnabled>true</CentralPackageFloatingVersionsEnabled>
+        <FairmatDepsVersion>*-build*</FairmatDepsVersion>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(Configuration)' == 'Release'">
+        <FairmatDepsVersion>*</FairmatDepsVersion>
+    </PropertyGroup>
+
+    <ItemGroup Label="FairmatDeps">
+        <!-- Inser here the Fairmat dependencies -->
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageVersion Include="Basic.Reference.Assemblies" Version="1.5.0" />
+        <PackageVersion Include="QLNet" Version="1.11.4" />
+        <PackageVersion Include="Mono.Addins.CecilReflector" Version="1.4.1" />
+        <PackageVersion Include="NUnit" Version="3.14.0" />
+        <PackageVersion Include="System.Configuration.ConfigurationManager" Version="8.0.0" />
+        <PackageVersion Include="Mono.Addins" Version="1.4.1" />
+        <PackageVersion Include="System.Data.DataSetExtensions" Version="4.5.0" />
+        <PackageVersion Include="System.Collections.Immutable" Version="8.0.0" />
+        <PackageVersion Include="Microsoft.CodeAnalysis.CSharp" Version="4.8.0" />
+        <PackageVersion Include="NUnit3TestAdapter" Version="4.5.0" />
+        <PackageVersion Include="Newtonsoft.Json" Version="13.0.3" />
+        <PackageVersion Include="Accord.Math" Version="3.8.0" />
+        <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.9.0" />
+        <PackageVersion Include="System.Runtime.Caching" Version="8.0.0" />
+    </ItemGroup>
+    
+</Project>
