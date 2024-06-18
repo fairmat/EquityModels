@@ -2,12 +2,13 @@
 using Heston;
 using Fairmat.Math;
 using DVPLI;
+using System.Linq;
 
 namespace HestonEstimator
 {
     // this implementation is based on https://doi.org/10.1142/S0219024909005166 
     // FORWARD START OPTIONS UNDER STOCHASTIC VOLATILITY AND STOCHASTIC INTEREST RATES - REHEZ AHLIP and MAREK RUTKOWSKI
-    public class HestonForwardAhlipRutkowski: HestonCall
+    public class HestonForwardAhlipRutkowski : HestonCall
     {
 
         /// <summary>
@@ -64,7 +65,7 @@ namespace HestonEstimator
             public double K;
         }
 
-       
+
         public static Complex s1(Complex u, double kappa, double theta, double rho, double v0, double sigma, double s0, double K, double r, double q, double T, double T0)
         {
             var iu = Complex.I * u;
@@ -105,7 +106,7 @@ namespace HestonEstimator
 
             var denominator = sigma * sigma * lambda * (expGammaTau - 1) + gamma - kappa;
             denominator += expGammaTau * (gamma + kappa);
-            
+
             return numerator / denominator;
 
         }
@@ -121,17 +122,17 @@ namespace HestonEstimator
 
         }
 
-        public static Complex H1Hat( double tau, Complex lambda, double sigma, double kappa)
+        public static Complex H1Hat(double tau, Complex lambda, double sigma, double kappa)
         {
             var sigma2 = (sigma * sigma);
             var preMult = -2 / sigma2;
             var argumentNumerator = 2 * kappa * Math.Exp(2 * kappa * tau);
             var argumentDenominator = sigma2 * lambda * (Math.Exp(kappa * tau) - 1) + 2 * kappa * Math.Exp(kappa * tau);
-            return preMult* Complex.Log(argumentNumerator / argumentDenominator);
-                
+            return preMult * Complex.Log(argumentNumerator / argumentDenominator);
+
 
         }
-        
+
         public static Complex G1Hat(double sigma, double kappa, double tau, Complex lambda)
         {
             var sigma2 = (sigma * sigma);
@@ -149,7 +150,7 @@ namespace HestonEstimator
             return g1 + (1 + iu) * (rho / sigma);
         }
 
-        public static Complex q2Hat(Complex u, double tau0, double rho, double sigma, Complex q1, Complex q2, double kappa,  double t)
+        public static Complex q2Hat(Complex u, double tau0, double rho, double sigma, Complex q1, Complex q2, double kappa, double t)
         {
             Complex iu = Complex.I * u;
             return -iu * rho / sigma * G1(tau: tau0, lambda: q1, mu: q2, kappa: kappa, sigma: sigma, t: t);
@@ -162,14 +163,14 @@ namespace HestonEstimator
             var t = 0;
 
             var iu = Complex.I * u;
-            var _s1 = s1(u:u, kappa: kappa, theta: theta, rho: rho, v0: v0, sigma: sigma, s0: s0, K: K, r: r, q: q, T: T, T0: T0);
-            var _s2 = s2(u:u, kappa: kappa, theta: theta, rho: rho, v0: v0, sigma: sigma, s0: s0, K: K, r: r, q: q, T: T, T0: T0);
-            var s2H = s2Hat(u:u, tau0: tau0, rho: rho, sigma: sigma, s1: _s1, s2: _s2, kappa: kappa, t: t);
+            var _s1 = s1(u: u, kappa: kappa, theta: theta, rho: rho, v0: v0, sigma: sigma, s0: s0, K: K, r: r, q: q, T: T, T0: T0);
+            var _s2 = s2(u: u, kappa: kappa, theta: theta, rho: rho, v0: v0, sigma: sigma, s0: s0, K: K, r: r, q: q, T: T, T0: T0);
+            var s2H = s2Hat(u: u, tau0: tau0, rho: rho, sigma: sigma, s1: _s1, s2: _s2, kappa: kappa, t: t);
 
 
             var a = -(1 + iu) * rho * theta * tau0 / sigma;
             var b = -theta * H1(tau: tau0, lambda: _s1, mu: _s2, kappa: kappa, sigma: sigma);
-            var c = -v0 * G1Hat(tau: tau, lambda: s2H, sigma:sigma, kappa: kappa);
+            var c = -v0 * G1Hat(tau: tau, lambda: s2H, sigma: sigma, kappa: kappa);
             var d = -theta * H1Hat(tau: tau, lambda: s2H, sigma: sigma, kappa: kappa);
 
             return Complex.Exp(a + b + c + d);
@@ -207,7 +208,7 @@ namespace HestonEstimator
 
 
         }
-        
+
         public static double IntegrandP2(double u, double kappa, double theta, double rho, double v0, double sigma, double s0, double K, double r, double q, double T, double T0)
         {
             var uComp = new Complex(u);
@@ -224,7 +225,7 @@ namespace HestonEstimator
             // compute the integral 
             double a = 1E-8;
             double b = 1000.0;
-            TAEDelegateFunction1D functionToIntegrate = (double u) => IntegrandP1(u: u, kappa: kappa, theta: theta, sigma: sigma, rho: rho, v0: v0, s0: s0, r: r, q: q, T: T, T0:T0, K: K);
+            TAEDelegateFunction1D functionToIntegrate = (double u) => IntegrandP1(u: u, kappa: kappa, theta: theta, sigma: sigma, rho: rho, v0: v0, s0: s0, r: r, q: q, T: T, T0: T0, K: K);
             double part1 = PerformIntegral(a, b, functionToIntegrate);
             double integral = part1 + a * functionToIntegrate(a / 2.0);
 
@@ -257,10 +258,10 @@ namespace HestonEstimator
             double thetaAdjusted = kappa * theta;
 
             // use theta adjusted instead of theta 
-            var p1 = P1Hat(kappa: kappa, theta: thetaAdjusted, rho: rho, v0: v0, sigma: sigma, s0: s0, K: K, r: r, q: q, T: T, T0:T0);
+            var p1 = P1Hat(kappa: kappa, theta: thetaAdjusted, rho: rho, v0: v0, sigma: sigma, s0: s0, K: K, r: r, q: q, T: T, T0: T0);
             var p2 = P2Hat(kappa: kappa, theta: thetaAdjusted, rho: rho, v0: v0, sigma: sigma, s0: s0, K: K, r: r, q: q, T: T, T0: T0);
             var B_T_T0 = Math.Exp(-r * (T - T0));
-            return s0 * ( p1 - B_T_T0 * K * p2);
+            return s0 * (p1 - B_T_T0 * K * p2);
         }
 
         public static double HestonForwardCallPrice(Vector x, double s0, double T, double T0, double K, double r, double q)
@@ -280,7 +281,7 @@ namespace HestonEstimator
                 v0: v0,
                 s0: s0,
                 T: T,
-                T0:T0, 
+                T0: T0,
                 K: K,
                 r: r,
                 q: q);
@@ -289,7 +290,7 @@ namespace HestonEstimator
 
     }
 
-    
+
     // this solution follows the solution of lucic 
     // http://www.untag-smd.ac.id/files/Perpustakaan_Digital_1/FINANCE%20The%20Best%20of%20Wilmott%20Vol.1%20Incorporating%20the%20Quantitative%20Finance%20Review.pdf#page=426
     public class HestonForwardLucic
@@ -314,7 +315,7 @@ namespace HestonEstimator
 
         public static double b(double lambda, double rho, double eta, double j, double T, double T0, double tau)
         {
-            return lambda + rho * eta * (m - 2 + Theta_tau(tau, T0:T0, T:T) * (2 - m - j));
+            return lambda + rho * eta * (m - 2 + Theta_tau(tau, T0: T0, T: T) * (2 - m - j));
         }
 
         public static double Theta_tau(double x, double T, double T0)
@@ -342,11 +343,11 @@ namespace HestonEstimator
         }
 
 
-        public static Complex d( double lambda, double rho, double eta, double j, double T, double T0, double kappa)
+        public static Complex d(double lambda, double rho, double eta, double j, double T, double T0, double kappa)
         {
             var eta2 = eta * eta;
-            var beta = Beta(tau: 0.0, lambda: lambda, rho: rho, eta: eta, j: j, T: T, T0: T0,  kappa: kappa);
-            var arg = beta * beta - 2 * eta2 * Alpha(tau:0.0, lambda: lambda, rho: rho, eta: eta, j: j, T: T, T0: T0, kappa: kappa);
+            var beta = Beta(tau: 0.0, lambda: lambda, rho: rho, eta: eta, j: j, T: T, T0: T0, kappa: kappa);
+            var arg = beta * beta - 2 * eta2 * Alpha(tau: 0.0, lambda: lambda, rho: rho, eta: eta, j: j, T: T, T0: T0, kappa: kappa);
 
 
             return Complex.Sqrt(arg);
@@ -359,7 +360,7 @@ namespace HestonEstimator
             return (beta + _d) / (eta * eta);
         }
 
-        public static Complex rMinus(double lambda, double rho, double eta, double j, double T, double T0,  double kappa)
+        public static Complex rMinus(double lambda, double rho, double eta, double j, double T, double T0, double kappa)
         {
             var beta = Beta(tau: 0.0, lambda: lambda, rho: rho, eta: eta, j: j, T: T, T0: T0, kappa: kappa);
             var _d = d(lambda: lambda, rho: rho, eta: eta, j: j, T: T, T0: T0, kappa: kappa);
@@ -446,12 +447,12 @@ namespace HestonEstimator
             Engine.Verbose = verbosity;
 
             var price = s0 * Math.Exp(-q * T0) * c;
-            
+
             if (verbosity > 0)
             {
                 Console.WriteLine($"Price of the Forward Starting Call Option is {price}");
             }
-            
+
             return price;
         }
 
@@ -514,7 +515,7 @@ namespace HestonEstimator
                 Console.WriteLine($"{s0}\t{K}\t{T}\t{T0}\t{r}\t{q}");
 
             }
-            
+
             // v follows a CIR process so we take its expectations 
             var v_T0 = ExpectationCIRProcess(v0, kappa, theta, T0);
 
@@ -576,16 +577,75 @@ namespace HestonEstimator
             Engine.Verbose = verbosity;
 
             var digitalPrice = HestonDigital.DiscountFactor(r, T0) * dcall;
-            
+
             if (verbosity > 0)
             {
                 Console.WriteLine($"Price of the Forward Starting Digital Call Option is {digitalPrice}");
             }
-            
+
             return digitalPrice;
         }
 
         #region Greeks
+
+        public static double FSCallCalculateDelta(double s0, double K, double T, double T0, double r, double q, double kappa, double theta, double sigma, double rho, double v0)
+        {
+            var v_T0 = ExpectationCIRProcess(v0, kappa, theta, T0);
+            var c = HestonCall.HestonCallPrice(
+                kappa: kappa,
+                theta: theta,
+                sigma: sigma,
+                rho: rho,
+                v0: v_T0,
+                s0: 1.0,
+                T: T - T0,
+                K: K,
+                r: r,
+                q: q);
+            return Math.Exp(-q * T0) * c;
+        }
+
+        public static double FSCallCalculateGamma(double s0, double K, double T, double T0, double r, double q, double kappa, double theta, double sigma, double rho, double v0)
+        {
+            // Implement Gamma calculation here
+            // Placeholder for Gamma as it's not directly provided in the context
+            return 0.0;
+        }
+
+        public static double FSCallCalculateTheta(double s0, double K, double T, double T0, double r, double q, double kappa, double theta, double sigma, double rho, double v0)
+        {
+            return HestonNumericalGreeks.ThetaFSCall(kappa: kappa, theta: theta, sigma: sigma, rho: rho, v0: v0, s0: s0, T: T, T0: T0, K: K, r: r, q: q);
+        }
+
+        public static double FSCallCalculateVega(double s0, double K, double T, double T0, double r, double q, double kappa, double theta, double sigma, double rho, double v0)
+        {
+            return s0 * Math.Exp(-q * T0) * derivativeExpectationCIRProcess(v0, kappa, theta, T0) * HestonVega.VegaCall(
+                        kappa: kappa,
+                        theta: theta,
+                        sigma: sigma,
+                        rho: rho,
+                        v0: ExpectationCIRProcess(v0, kappa, theta, T0),
+                        s0: 1.0,
+                        T: T - T0,
+                        K: K,
+                        r: r,
+                        q: q);
+        }
+
+        public static double FSCallCalculateRho(double s0, double K, double T, double T0, double r, double q, double kappa, double theta, double sigma, double rho, double v0)
+        {
+            return s0 * Math.Exp(-q * T0) * HestonRho.RhoCall(
+                        kappa: kappa,
+                        theta: theta,
+                        sigma: sigma,
+                        rho: rho,
+                        v0: ExpectationCIRProcess(v0, kappa, theta, T0),
+                        s0: 1.0,
+                        T: T - T0,
+                        K: K,
+                        r: r, q: q);
+        }
+
         public static GreeksDerivatives HestonForwardCallWithGreeks(double kappa, double theta, double rho, double v0, double sigma, double s0, double K, double r, double q, double T, double T0)
         {
 
@@ -620,14 +680,14 @@ namespace HestonEstimator
                 r: r,
                 q: q);
 
-            
-            var fscallMarkToMarket =  s0 * Math.Exp(-q * T0) * c;
+
+            var fscallMarkToMarket = s0 * Math.Exp(-q * T0) * c;
 
             var fsCallDelta = Math.Exp(-q * T0) * c;
 
             var fsCallGamma = 0.0;
 
-            var fsCallTheta = HestonNumericalGreeks.ThetaFSCall(kappa: kappa, theta: theta, sigma: sigma, rho: rho, v0: v0, s0: s0, T: T, T0: T0, K: K, r: r, q:q);
+            var fsCallTheta = HestonNumericalGreeks.ThetaFSCall(kappa: kappa, theta: theta, sigma: sigma, rho: rho, v0: v0, s0: s0, T: T, T0: T0, K: K, r: r, q: q);
 
 
             var fsCallVega = s0 * Math.Exp(-q * T0) * derivativeExpectationCIRProcess(v0, kappa, theta, T0) * HestonVega.VegaCall(
@@ -662,7 +722,7 @@ namespace HestonEstimator
                 Gammas = (Vector)fsCallGamma,
                 Theta = fsCallTheta,
                 Vegas = (Vector)fsCallVega,
-                MarkToMarket = fscallMarkToMarket, 
+                MarkToMarket = fscallMarkToMarket,
                 Rho = rhoGreek
             };
 
@@ -676,6 +736,68 @@ namespace HestonEstimator
 
             return result;
 
+        }
+
+        public static double FSPutCalculateDelta(double s0, double K, double T, double T0, double r, double q, double kappa, double theta, double sigma, double rho, double v0)
+        {
+            var v_T0 = ExpectationCIRProcess(v0, kappa, theta, T0);
+            var put = HestonCall.HestonPutPrice(
+                kappa: kappa,
+                theta: theta,
+                sigma: sigma,
+                rho: rho,
+                v0: v_T0,
+                s0: 1.0,
+                T: T - T0,
+                K: K,
+                r: r,
+                q: q);
+
+            return Math.Exp(-q * T0) * put;
+        }
+
+        public static double FSPutCalculateGamma(double s0, double K, double T, double T0, double r, double q, double kappa, double theta, double sigma, double rho, double v0)
+        {
+            // Implement Gamma calculation here
+            // Placeholder for Gamma as it's not directly provided in the context
+            return 0.0;
+        }
+
+        public static double FSPutCalculateTheta(double s0, double K, double T, double T0, double r, double q, double kappa, double theta, double sigma, double rho, double v0)
+        {
+            return HestonNumericalGreeks.ThetaFSPut(kappa: kappa, theta: theta, sigma: sigma, rho: rho, v0: v0, s0: s0, T: T, T0: T0, K: K, r: r, q: q);
+        }
+
+        public static double FSPutCalculateVega(double s0, double K, double T, double T0, double r, double q, double kappa, double theta, double sigma, double rho, double v0)
+        {
+            var v_T0 = ExpectationCIRProcess(v0, kappa, theta, T0);
+
+            return s0 * Math.Exp(-q * T0) * derivativeExpectationCIRProcess(v0, kappa, theta, T0) * HestonVega.VegaPut(
+                        kappa: kappa,
+                        theta: theta,
+                        sigma: sigma,
+                        rho: rho,
+                        v0: v_T0,
+                        s0: 1.0,
+                        T: T - T0,
+                        K: K,
+                        r: r,
+                        q: q);
+        }
+
+        public static double FSPutCalculateRho(double s0, double K, double T, double T0, double r, double q, double kappa, double theta, double sigma, double rho, double v0)
+        {
+            var v_T0 = ExpectationCIRProcess(v0, kappa, theta, T0);
+            return s0 * Math.Exp(-q * T0) * HestonRho.RhoPut(
+                        kappa: kappa,
+                        theta: theta,
+                        sigma: sigma,
+                        rho: rho,
+                        v0: v_T0,
+                        s0: 1.0,
+                        T: T - T0,
+                        K: K,
+                        r: r, q: q);
         }
 
         public static GreeksDerivatives HestonForwardPutWithGreeks(double kappa, double theta, double rho, double v0, double sigma, double s0, double K, double r, double q, double T, double T0)
@@ -762,6 +884,66 @@ namespace HestonEstimator
 
             return result;
 
+        }
+
+
+        public static double FSDPutCalculateDelta(double kappa, double theta, double rho, double v0, double sigma, double s0, double K, double r, double q, double T, double T0)
+        {
+            // Placeholder for Delta calculation as it's not directly provided in the context
+            return 0.0;
+        }
+
+        public static double FSDPutCalculateGamma(double kappa, double theta, double rho, double v0, double sigma, double s0, double K, double r, double q, double T, double T0)
+        {
+            // Placeholder for Gamma calculation as it's not directly provided in the context
+            return 0.0;
+        }
+
+        public static double FSDPutCalculateTheta(double kappa, double theta, double rho, double v0, double sigma, double s0, double K, double r, double q, double T, double T0)
+        {
+            return HestonNumericalGreeks.ThetaFSDPut(kappa: kappa, theta: theta, sigma: sigma, rho: rho, v0: v0, s0: s0, T: T, T0: T0, K: K, r: r, q: q);
+        }
+
+        public static double FSDPutCalculateVega(double kappa, double theta, double rho, double v0, double sigma, double s0, double K, double r, double q, double T, double T0)
+        {
+            return HestonDigital.DiscountFactor(r, T0) * derivativeExpectationCIRProcess(v0, kappa, theta, T0) * HestonVega.VegaDigitalPut(
+                        kappa: kappa,
+                        theta: theta,
+                        sigma: sigma,
+                        rho: rho,
+                        v0: ExpectationCIRProcess(v0, kappa, theta, T0),
+                        s0: 1.0,
+                        T: T - T0,
+                        K: K,
+                        r: r,
+                        q: q);
+        }
+
+        public static double FSDPutCalculateRho(double kappa, double theta, double rho, double v0, double sigma, double s0, double K, double r, double q, double T, double T0)
+        {
+            var res = HestonDigital.DiscountFactor(r, T0) * HestonRho.RhoDigitalPut(
+                        kappa: kappa,
+                        theta: theta,
+                        sigma: sigma,
+                        rho: rho,
+                        v0: ExpectationCIRProcess(v0, kappa, theta, T0),
+                        s0: 1.0,
+                        T: T - T0,
+                        K: K,
+                        r: r,
+                        q: q);
+
+            return res - T0 * HestonDigital.DiscountFactor(r, T0) * HestonDigital.HestonDigitalPutPrice(
+                kappa: kappa,
+                theta: theta,
+                sigma: sigma,
+                rho: rho,
+                v0: ExpectationCIRProcess(v0, kappa, theta, T0),
+                s0: 1.0,
+                T: T - T0,
+                K: K,
+                r: r,
+                q: q); ;
         }
 
         public static GreeksDerivatives HestonForwardDigitalPutWithGreeks(double kappa, double theta, double rho, double v0, double sigma, double s0, double K, double r, double q, double T, double T0)
@@ -853,6 +1035,67 @@ namespace HestonEstimator
 
         }
 
+        public static double FSDCallCalculateDelta(double kappa, double theta, double rho, double v0, double sigma, double s0, double K, double r, double q, double T, double T0)
+        {
+            // Placeholder for Delta calculation as it's not directly provided in the context
+            return 0.0;
+        }
+
+        public static double FSDCallCalculateGamma(double kappa, double theta, double rho, double v0, double sigma, double s0, double K, double r, double q, double T, double T0)
+        {
+            // Placeholder for Gamma calculation as it's not directly provided in the context
+            return 0.0;
+        }
+
+        public static double FSDCallCalculateTheta(double kappa, double theta, double rho, double v0, double sigma, double s0, double K, double r, double q, double T, double T0)
+        {
+            return HestonNumericalGreeks.ThetaFSDCall(kappa: kappa, theta: theta, sigma: sigma, rho: rho, v0: v0, s0: s0, T: T, T0: T0, K: K, r: r, q: q);
+
+        }
+
+        public static double FSDCallCalculateVega(double kappa, double theta, double rho, double v0, double sigma, double s0, double K, double r, double q, double T, double T0)
+        {
+            return HestonDigital.DiscountFactor(r, T0) * derivativeExpectationCIRProcess(v0, kappa, theta, T0) * HestonVega.VegaDigitalCall(
+                        kappa: kappa,
+                        theta: theta,
+                        sigma: sigma,
+                        rho: rho,
+                        v0: ExpectationCIRProcess(v0, kappa, theta, T0),
+                        s0: 1.0,
+                        T: T - T0,
+                        K: K,
+                        r: r,
+                        q: q);
+        }
+
+        public static double FSDCallCalculateRho(double kappa, double theta, double rho, double v0, double sigma, double s0, double K, double r, double q, double T, double T0)
+        {
+            var v_T0 = ExpectationCIRProcess(v0, kappa, theta, T0);
+            var res = HestonDigital.DiscountFactor(r, T0) * HestonRho.RhoDigitalCall(
+                        kappa: kappa,
+                        theta: theta,
+                        sigma: sigma,
+                        rho: rho,
+                        v0: v_T0,
+                        s0: 1.0,
+                        T: T - T0,
+                        K: K,
+                        r: r,
+                        q: q);
+
+            return res - T0 * HestonDigital.HestonDigitalCallPrice(
+                kappa: kappa,
+                theta: theta,
+                sigma: sigma,
+                rho: rho,
+                v0: v_T0,
+                s0: 1.0,
+                T: T - T0,
+                K: K,
+                r: r,
+                q: q) * HestonDigital.DiscountFactor(r, T0);
+        }
+
         public static GreeksDerivatives HestonForwardDigitalCallWithGreeks(double kappa, double theta, double rho, double v0, double sigma, double s0, double K, double r, double q, double T, double T0)
         {
             int verbosity = Engine.Verbose;
@@ -872,7 +1115,7 @@ namespace HestonEstimator
 
             // v follows a CIR process so we take its expectations 
             var v_T0 = ExpectationCIRProcess(v0, kappa, theta, T0);
-            
+
             var dCall = HestonDigital.HestonDigitalCallPrice(
                 kappa: kappa,
                 theta: theta,
@@ -941,9 +1184,7 @@ namespace HestonEstimator
 
             return result;
         }
-
         #endregion
 
-
-        }
+    }
 }

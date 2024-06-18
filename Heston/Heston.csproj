@@ -21,7 +21,7 @@
       <HintPath>..\..\DVPLReferences\CoreExtensions.dll</HintPath>
     </Reference>
     <Reference Include="DVPLDOM">
-      <HintPath>..\..\DVPLReferences\DVPLDOM.dll</HintPath>
+      <HintPath>..\..\dvpl\DVPLDOM2\bin\Debug\net48\DVPLDOM.dll</HintPath>
     </Reference>
     <Reference Include="DVPLDOME">
       <HintPath>..\..\DVPLReferences\DVPLDOME.dll</HintPath>
