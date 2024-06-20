@@ -607,8 +607,6 @@ namespace HestonEstimator
 
         public static double FSCallCalculateGamma(double s0, double K, double T, double T0, double r, double q, double kappa, double theta, double sigma, double rho, double v0)
         {
-            // Implement Gamma calculation here
-            // Placeholder for Gamma as it's not directly provided in the context
             return 0.0;
         }
 
@@ -758,8 +756,6 @@ namespace HestonEstimator
 
         public static double FSPutCalculateGamma(double s0, double K, double T, double T0, double r, double q, double kappa, double theta, double sigma, double rho, double v0)
         {
-            // Implement Gamma calculation here
-            // Placeholder for Gamma as it's not directly provided in the context
             return 0.0;
         }
 
@@ -889,13 +885,11 @@ namespace HestonEstimator
 
         public static double FSDPutCalculateDelta(double kappa, double theta, double rho, double v0, double sigma, double s0, double K, double r, double q, double T, double T0)
         {
-            // Placeholder for Delta calculation as it's not directly provided in the context
             return 0.0;
         }
 
         public static double FSDPutCalculateGamma(double kappa, double theta, double rho, double v0, double sigma, double s0, double K, double r, double q, double T, double T0)
         {
-            // Placeholder for Gamma calculation as it's not directly provided in the context
             return 0.0;
         }
 
@@ -1037,13 +1031,11 @@ namespace HestonEstimator
 
         public static double FSDCallCalculateDelta(double kappa, double theta, double rho, double v0, double sigma, double s0, double K, double r, double q, double T, double T0)
         {
-            // Placeholder for Delta calculation as it's not directly provided in the context
             return 0.0;
         }
 
         public static double FSDCallCalculateGamma(double kappa, double theta, double rho, double v0, double sigma, double s0, double K, double r, double q, double T, double T0)
         {
-            // Placeholder for Gamma calculation as it's not directly provided in the context
             return 0.0;
         }
 
