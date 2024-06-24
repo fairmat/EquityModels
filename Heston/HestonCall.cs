@@ -104,7 +104,6 @@ namespace HestonEstimator
         /// </summary>
         internal Matrix hestonPutPrice;
 
-
         /// <summary>
         /// Initializes a new instance of the <see cref="HestonEstimator.HestonCall"/> class.
         /// </summary>
@@ -355,11 +354,7 @@ namespace HestonEstimator
             double a = 1E-12;
             double b = 1000.0;
 
-            // The second term of this expressions approximates the integral in the interval [0,a].
-            var integrate = new Integrate(this.IntegrandFunc);
-            integrate.Tolerance = 10e-8;
-            integrate.MaxRecursionLevel = 4;// 4;
-
+            
          
             double part1 = PerformIntegral(a, b, IntegrandFunc);
             double integral = part1 + a * IntegrandFunc(a / 2.0);

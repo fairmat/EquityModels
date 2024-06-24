@@ -235,13 +235,12 @@ namespace HestonEstimator
             this.s0 = s0;
 
             var dy = new PFunction(maturity, dividendYield);
-            var dyF = new Fairmat.Math.Integrate(x => dy.Evaluate(x));
 
             this.rate = new Vector(maturity.Length);
             this.dividendYield = new Vector(maturity.Length);
             for (int z = 0; z < maturity.Length; z++)
             {
-                this.dividendYield[z] = dyF.AdaptLobatto(0, maturity[z]) / maturity[z];
+                this.dividendYield[z] = Fairmat.Math.Integrate.AdaptLobatto(x => dy.Evaluate(x), 0, maturity[z]) / maturity[z];
             }
 
             this.rate = rate;

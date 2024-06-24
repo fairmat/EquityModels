@@ -58,12 +58,11 @@ namespace Dupire
             Matrix locVolMatrix = new Matrix(nmat, nstrike);
             double t, dt, forwardValue, y, dy, strike, strikep, strikem, w, wp, wm, dwdy;
             double d2wdy2, den1, den2, den3, strikept, strikemt, wpt, wmt, dwdt;
-            Integrate integrate = new Integrate(this.IntegrandFunc);
 
             for (int i = 0; i < nmat; i++)
             {
                 t = locVolMat[i];
-                forwardValue = Hdataset.S0 * Math.Exp(integrate.AdaptLobatto(0.0, t));
+                forwardValue = Hdataset.S0 * Math.Exp(Integrate.AdaptLobatto(this.IntegrandFunc, 0.0, t));
                 for (int j = 0; j < nstrike; j++)
                 {
                     strike = locVolStr[j];
@@ -83,7 +82,7 @@ namespace Dupire
                     if (t == 0.0)
                     {
                         dt = 0.0001;
-                        strikept = strike * Math.Exp(integrate.AdaptLobatto(0.0, t + dt));
+                        strikept = strike * Math.Exp(Integrate.AdaptLobatto(this.IntegrandFunc, 0.0, t + dt));
                         wpt = impVol.Evaluate(t + dt, strikept);
                         // if (wpt < w)
                         //    Console.WriteLine("Decreasing variance at strike {0} between time {1} and time {2}", strike, t, t + dt);
@@ -92,8 +91,8 @@ namespace Dupire
                     else
                     {
                         dt = Math.Min(0.0001, t / 2.0);
-                        strikept = strike * Math.Exp(integrate.AdaptLobatto(t, t + dt));
-                        strikemt = strike * Math.Exp(-integrate.AdaptLobatto(t - dt, t));
+                        strikept = strike * Math.Exp(Integrate.AdaptLobatto(this.IntegrandFunc, t, t + dt));
+                        strikemt = strike * Math.Exp(-Integrate.AdaptLobatto(this.IntegrandFunc, t - dt, t));
                         wpt = impVol.Evaluate(t + dt, strikept);
                         wmt = impVol.Evaluate(t + dt, strikemt);
 
