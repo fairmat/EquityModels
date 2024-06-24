@@ -7,7 +7,7 @@ using Fairmat.Statistics;
 
 namespace Dupire
 {
-    public partial class DupireEstimator : IEstimatorEx, IIntegrable
+    public partial class DupireEstimator : IEstimatorEx
     {
         private EstimationResult QuantLibEstimate(CurveMarketData discoutingCurve, CallPriceMarketData Hdataset)
         {
@@ -58,7 +58,7 @@ namespace Dupire
             Matrix locVolMatrix = new Matrix(nmat, nstrike);
             double t, dt, forwardValue, y, dy, strike, strikep, strikem, w, wp, wm, dwdy;
             double d2wdy2, den1, den2, den3, strikept, strikemt, wpt, wmt, dwdt;
-            Integrate integrate = new Integrate(this);
+            Integrate integrate = new Integrate(this.IntegrandFunc);
 
             for (int i = 0; i < nmat; i++)
             {

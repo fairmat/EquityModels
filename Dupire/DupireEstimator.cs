@@ -26,7 +26,7 @@ using Fairmat.Finance;
 namespace Dupire
 {
     [Mono.Addins.Extension("/Fairmat/Estimator")]
-    public partial class DupireEstimator : IEstimatorEx, IIntegrable
+    public partial class DupireEstimator : IEstimatorEx
     {
         private PFunction r;
         private PFunction q;
@@ -153,7 +153,7 @@ namespace Dupire
             locVolStr = Vector.Linspace(Hdataset.Strike[0], lastStr, nstrike);
             Matrix locVolMatrix = new Matrix(nmat, nstrike);
            
-            Integrate integrate = new Integrate(this);
+            Integrate integrate = new Integrate(this.IntegrandFunc);
             double sigma, dSigmadk, num, y, den, avgGrowthRate;
             Vector x = new Vector(2);
             for (int i = 0; i < nmat; i++)
@@ -188,7 +188,7 @@ namespace Dupire
 
         private Matrix LocVolMatrixFromCallPrices(CallPriceMarketData Hdataset, CallPriceSurface CallPrice, out Vector locVolMat, out Vector locVolStr)
         {
-            Integrate integrate = new Integrate(this);  
+            Integrate integrate = new Integrate(this.IntegrandFunc);  
 
             int nmat = calibrationSettings.LocalVolatilityMaturities;
             int nstrike = calibrationSettings.LocalVolatilityStrikes;
@@ -285,12 +285,10 @@ namespace Dupire
             return locVolMatrix;
         }
 
-        #region IIntegrable implementation
-        double IIntegrable.IntegrandFunc(double x)
+        double IntegrandFunc(double x)
         {
             return (this.q.Evaluate(x) - this.r.Evaluate(x));
         }
-        #endregion
 
         /// <summary>
         /// This method allows to fit the implied volatility using different models.

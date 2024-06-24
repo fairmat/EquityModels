@@ -28,7 +28,7 @@ namespace HestonEstimator
     /// <summary>
     /// Handles the calculation of the call prices on a given Heston model instance.
     /// </summary>
-    public class HestonCall : IIntegrable
+    public class HestonCall 
     {
         #region Model Parameters
         /// <summary>
@@ -241,7 +241,7 @@ namespace HestonEstimator
             // The second term of this expressions approximates the integral in the interval [0,a].
 
             //Uses PerformIntegral instead of AdaptLobatto in order to keep time constant
-            //var integrate = new Integrate(this);
+            //var integrate = new Integrate(this.IntegrandFunc);
             //integrate.Tolerance = 10e-8;
             //integrate.MaxRecursionLevel = 4;// 4;
             //double part1 = integrate.AdaptLobatto(a, b);
@@ -356,10 +356,9 @@ namespace HestonEstimator
             double b = 1000.0;
 
             // The second term of this expressions approximates the integral in the interval [0,a].
-            var integrate = new Integrate(this);
+            var integrate = new Integrate(this.IntegrandFunc);
             integrate.Tolerance = 10e-8;
             integrate.MaxRecursionLevel = 4;// 4;
-
 
          
             double part1 = PerformIntegral(a, b, IntegrandFunc);
