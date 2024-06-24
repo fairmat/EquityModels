@@ -237,13 +237,6 @@ namespace HestonEstimator
             double a = 1E-8;
             double b = 1000.0;
 
-            // The second term of this expressions approximates the integral in the interval [0,a].
-
-            //Uses PerformIntegral instead of AdaptLobatto in order to keep time constant
-            //var integrate = new Integrate(this.IntegrandFunc);
-            //integrate.Tolerance = 10e-8;
-            //integrate.MaxRecursionLevel = 4;// 4;
-            //double part1 = integrate.AdaptLobatto(a, b);
 
             TAEDelegateFunction1D functionToIntegrate = (double u) => IntegrandFunc(u:u, kappa: kappa, theta: theta, sigma: sigma, rho: rho, v0: v0, s0: s0, r: r, q:q, T: T, K: K);
             double part1 = PerformIntegral(a, b, functionToIntegrate);
@@ -701,13 +694,6 @@ namespace HestonEstimator
 
             double a = 1E-12;
             double b = 1000.0;
-            // The second term of this expressions approximates the integral in the interval [0,a].
-
-            //Uses PerformIntegral instead of AdaptLobatto in order to keep time constant
-            //var integrate = new Integrate(this);
-            //integrate.Tolerance = 10e-8;
-            //integrate.MaxRecursionLevel = 4;// 4;
-            //double part1 = integrate.AdaptLobatto(a, b);
 
             double part1 = PerformIntegral(a, b, FunctionToIntegrate);
 
