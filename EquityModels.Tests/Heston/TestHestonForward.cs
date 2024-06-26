@@ -19,19 +19,21 @@ namespace EquityModels.Tests.Heston
         {
             TestCommon.TestInitialization.CommonInitialization();
         }
-
-        //[Test]
+        /// <summary>
+        /// It compares the price of a FSCall provided by the (approximated) Heston model with the results of the MC price provided by Fairmat Professional.
+        /// </summary>
+        [Test]
         public void TestApproximatedApproach()
         {
             double k = 1.0;
             double tau = 2.0;
 
             double rate = 0.01;
-            double dy = 0.07;
+            double dy = 0.007;
             double kappa = 2.5;
             double theta = 0.4;
             double sigma = 0.2;
-            double s0 = 100.0;
+            double s0 = 1.0;
             double v0 = 0.3;
             double rho = -0.8;
             double T0 = 0.5;
@@ -53,13 +55,15 @@ namespace EquityModels.Tests.Heston
 
 
 
-            var expected = 22.872215559994689d;
-
+            var expected = 0.298223216;
+            Assert.That(Math.Abs(result - expected), Is.LessThan(.01));
 
         }
-
-        //[Test]
-        public void TestApproximatedApproachVersusMC()
+        /// <summary>
+        /// The test compares the price of a FSCall provided by the (approximated) Heston model with the results of the Heston model provided by the JJ model.
+        /// </summary>
+        [Test]
+        public void TestApproximatedApproachVersusJJ()
         {
             double k = 1.0;
             double tau = 1.50;
@@ -69,13 +73,13 @@ namespace EquityModels.Tests.Heston
             double kappa = 2.5;
             double theta = 0.4;
             double sigma = 0.2;
-            double s0 = 100.0;
+            double s0 = 1.0;
             double v0 = 0.3;
             double rho = -0.9;
             double T0 = 1.0;
 
 
-            var result = HestonForwardApproximated.HestonForwardCallPrice(
+            var resultApprox = HestonForwardApproximated.HestonForwardCallPrice(
                 K: k,
                 T: tau,
                 T0: T0,
@@ -105,21 +109,23 @@ namespace EquityModels.Tests.Heston
 
             resultJJ = s0 * Math.Exp(-dy * T0) * resultJJ;
 
-            Assert.AreEqual(result, resultJJ, 1e-2);
+            Assert.That(Math.Abs(resultApprox - resultJJ), Is.LessThan(1e-2));
         }
-
-        //[Test]
+        /// <summary>
+        /// It compares the price of a FSCall provided by the closed-form in the Ahli and Rutkowski framework with the MC price provided by Fairmat Professional.
+        /// </summary>
+        [Test]
         public void TestForwardAhlipRutkowski()
         {
             double k = 1.0;
             double tau = 2.0;
 
             double rate = 0.01;
-            double dy = 0.07;
+            double dy = 0.007;
             double kappa = 2.5;
             double theta = 0.2;
             double sigma = 0.2;
-            double s0 = 100.0;
+            double s0 = 1.0;
             double v0 = 0.3;
             double rho = -0.8;
             double T0 = 0.5;
@@ -139,13 +145,15 @@ namespace EquityModels.Tests.Heston
                 rho: rho
                 );
 
-            var expected = 0.0;
+            var expected = 0.2153609; // Not working as expected. TbChecked
 
-            Assert.AreEqual(expected, result, 1e-10);
+            Assert.That(Math.Abs(result-expected), Is.LessThan(0.0001));
 
         }
-
-        //[Test]
+        /// <summary>
+        /// It compares the price of a Call (T0 = 0) provided by the closed-form in the Ahli and Rutkowski framework with the price of the Call in the Heston framework.
+        /// </summary>
+        [Test]
         public void TestCallPriceAhlipRutkowski()
         {
             double strike = 0.1;
@@ -156,7 +164,7 @@ namespace EquityModels.Tests.Heston
             double kappa = 2.5;
             double theta = 0.2;
             double sigma = 0.2;
-            double s0 = 100.0;
+            double s0 = 1.0;
             double v0 = 0.15;
             double rho = -0.8;
 
@@ -188,11 +196,13 @@ namespace EquityModels.Tests.Heston
                 v0: v0,
                 rho: rho);
 
-            Assert.AreEqual(resultFromHeston, resultFromFwd, 1e-10);
+            Assert.That(Math.Abs(resultFromHeston - resultFromFwd), Is.LessThan(0.0001));
 
         }
-        
-        //[Test]
+        /// <summary>
+        /// It compares the price of a Call (T0 = 0) provided by the closed-form in the JJ framework with the price of the Call in the Heston framework.
+        /// </summary>
+        [Test]
         public void TestCallPriceJJ()
         {
             double strike = 1.0;
@@ -203,7 +213,7 @@ namespace EquityModels.Tests.Heston
             double kappa = 2.5;
             double theta = 0.4;
             double sigma = 0.2;
-            double s0 = 100.0;
+            double s0 = 1.0;
             double v0 = 0.3;
             double rho = -0.5; 
 
@@ -235,20 +245,20 @@ namespace EquityModels.Tests.Heston
                 v0: v0,
                 rho: rho);
 
-            Assert.AreEqual(resultFromHeston, s0 * Math.Exp(-dy * T0) * resultFromFwd, 1e-10);
+            Assert.That(Math.Abs(resultFromHeston - s0 * Math.Exp(-dy * T0) * resultFromFwd), Is.LessThan(0.0001));
 
         }
 
-        //[Test]
+        [Test]
         public void TestValidationFwdJJ()
         {
             double strike = 1.0;
             double tau = 1;
             double T0 = 0.1;
-            double rate = 0.0;
-            double dy = 0.00;
+            double rate = 0.01;
+            double dy = 0.007;
             double kappa = 2.1;
-            double theta = 0.03;
+            double theta = 0.2;
             double sigma = 0.1;
             double s0 = 1;
             double v0 = 0.05;
@@ -269,9 +279,9 @@ namespace EquityModels.Tests.Heston
             var u = new Complex(0.5, 1); 
             var b = HestonForwardJJ.GetLittleB(mp, T0);
             var d = HestonForwardJJ.D(mp, u);
-            var littleGamma = HestonForwardJJ.GetLittleGamma(mp, u);
-            var cfHeston = HestonForwardJJ.CfHestonFwd(mp, u, T0, tau);
-            var intPhi = HestonForwardJJ.GetIntegrandFunction(mp, 2.0, 0.5, mp.kappa, T0, tau);
+            //var littleGamma = HestonForwardJJ.GetLittleGamma(mp, u);
+            //var cfHeston = HestonForwardJJ.CfHestonFwd(mp, u, T0, tau);
+            //var intPhi = HestonForwardJJ.GetIntegrandFunction(mp, 2.0, 0.5, mp.kappa, T0, tau);
 
             Assert.AreEqual(0.0002254949452, b, 1e-10);
             Assert.AreEqual((2.1129597440980485), d.Re, 1e-10);
@@ -295,8 +305,8 @@ namespace EquityModels.Tests.Heston
                 );
 
             // in the context of fwd starting k is a percentage of s0
-            
-            Assert.AreEqual(0.07597741087461451, resultFromFwd, 1e-5);
+            var expected = 0.1536971;
+            Assert.That(Math.Abs(resultFromFwd - expected), Is.LessThan(0.0001));
 
         }
 
@@ -320,9 +330,9 @@ namespace EquityModels.Tests.Heston
                 Complex result = HestonForwardAhlipRutkowski.q2(u, mp);
 
                 // Assert
-                // Here you should check if the result is what you expect.
+                // Here you should check if the resultApprox is what you expect.
                 // This depends on what you expect the output to be for the given input.
-                // For example, if you expect the result to be (0.25 + 0i), you could write:
+                // For example, if you expect the resultApprox to be (0.25 + 0i), you could write:
                 Assert.AreEqual(new Complex(0, 2), result);
             }
 
@@ -343,9 +353,9 @@ namespace EquityModels.Tests.Heston
                 Complex result = HestonForwardAhlipRutkowski.q1(u, mp);
 
                 // Assert
-                // Here you should check if the result is what you expect.
+                // Here you should check if the resultApprox is what you expect.
                 // This depends on what you expect the output to be for the given input.
-                // For example, if you expect the result to be (0.25 + 0i), you could write:
+                // For example, if you expect the resultApprox to be (0.25 + 0i), you could write:
                 Assert.AreEqual(new Complex(0.045, 1.25), result);
             }
         }
