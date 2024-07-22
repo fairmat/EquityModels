@@ -61,7 +61,7 @@ namespace HestonEstimator
         /// <summary>
         /// The strike vector relative to callMarketPrice matrix.
         /// </summary>
-        protected Vector strike;
+        protected Matrix strikes;
 
         /// <summary>
         /// The average rate vector up to a given maturity 
@@ -165,7 +165,7 @@ namespace HestonEstimator
             this.matBound = matBound;
             this.strikeBound = strikeBound;
             SetVariables(equityCalData.Hdata.CallPrice, equityCalData.Hdata.Maturity,
-                         equityCalData.Hdata.Strike, equityCalData.CallMatrixRiskFreeRate,
+                         equityCalData.Hdata.Strikes, equityCalData.CallMatrixRiskFreeRate,
                          equityCalData.CallMatrixDividendYield, equityCalData.Hdata.S0);
 
            
@@ -198,11 +198,11 @@ namespace HestonEstimator
         /// for strikes to be used in calibration.
         /// </param>
         [Obsolete]
-        HestonCallOptimizationProblem(Matrix callMarketPrice, Vector maturity, Vector strike, Vector rate, Vector dividendYield, double s0, Vector matBound, Vector strikeBound)
+        HestonCallOptimizationProblem(Matrix callMarketPrice, Vector maturity, Matrix strikes, Vector rate, Vector dividendYield, double s0, Vector matBound, Vector strikeBound)
         {
             this.matBound=matBound;
             this.strikeBound = strikeBound;
-            SetVariables(callMarketPrice, maturity, strike, rate,
+            SetVariables(callMarketPrice, maturity, strikes, rate,
                          dividendYield, s0);
         }
 
@@ -230,7 +230,7 @@ namespace HestonEstimator
         /// <param name="strikeBound">
         /// A vector containing the minimum and maximum values
         /// for strikes to be used in calibration.</param>
-        private void SetVariables(Matrix callMarketPrice, Vector maturity, Vector strike, Vector rate, Vector dividendYield, double s0)
+        private void SetVariables(Matrix callMarketPrice, Vector maturity, Matrix strikes, Vector rate, Vector dividendYield, double s0)
         {
             this.s0 = s0;
 
@@ -245,7 +245,7 @@ namespace HestonEstimator
 
             this.rate = rate;
             this.maturity = maturity;
-            this.strike = strike;
+            this.strikes = strikes;
             this.callMarketPrice = callMarketPrice;
             this.numCall = 0;
 
@@ -260,7 +260,7 @@ namespace HestonEstimator
                     for (int c = 0; c < this.callMarketPrice.C; c++)
                     {
                         // if the strike is within the bounds then we can calibrate on it
-                        if (this.strike[c] >= s0 * strikeBound[0] && this.strike[c] <= s0 * strikeBound[1])
+                        if (this.strikes[r,c] >= s0 * strikeBound[0] && this.strikes[r,c] <= s0 * strikeBound[1])
                         {
                             if (calibrateOnCallOptions)
                                 if (this.callMarketPrice[r, c] > s0 * optionThreshold && this.cpmd.CallVolume[r, c] > 0)
@@ -562,7 +562,7 @@ namespace HestonEstimator
                 bool putCondition = this.cpmd.PutPrice!=null&& this.cpmd.PutPrice[r, c] > s0 * optionThreshold && this.cpmd.PutVolume[r, c] > 0;
                 if (callCondition || putCondition)
                 {
-                    hc.K = this.strike[c];
+                    hc.K = this.strikes[r,c];
                     var callPut = hc.HestonCallPutPrice();
                     strikes.Add(hc.K);
                     calls.Add(callPut[0]);
@@ -591,7 +591,7 @@ namespace HestonEstimator
 
                 if (callCondition)
                 {
-                    hc.hestonCallPrice[r, c] = callFun.Evaluate(this.strike[c]);
+                    hc.hestonCallPrice[r, c] = callFun.Evaluate(this.strikes[r,c]);
                     if (HestonCallOptimizationProblem.optimizeRelativeError)
                     {
                         double mkt = pricingMin + this.callMarketPrice[r, c];
@@ -606,7 +606,7 @@ namespace HestonEstimator
                 
                 if (putCondition)
                 {
-                    hc.hestonPutPrice[r, c] = putFun.Evaluate(this.strike[c]);
+                    hc.hestonPutPrice[r, c] = putFun.Evaluate(this.strikes[r,c]);
                     if (HestonCallOptimizationProblem.optimizeRelativeError)
                     {
                         double mkt = pricingMin + this.cpmd.PutPrice[r, c];
@@ -678,7 +678,7 @@ namespace HestonEstimator
             Console.WriteLine("Black-Sholes Calls Market Prices");
             Console.WriteLine(this.callMarketPrice);
             Console.WriteLine("Strikes");
-            Console.WriteLine(this.strike);
+            Console.WriteLine(this.strikes);
             Console.WriteLine("Maturities");
             Console.WriteLine(this.maturity);
 

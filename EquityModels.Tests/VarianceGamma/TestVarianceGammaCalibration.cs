@@ -249,9 +249,11 @@ namespace VarianceGamma
             espmd.DividendYield = q;
 
             var cpmd = new CallPriceMarketData();
-            cpmd.Strike = k;
             cpmd.Maturity = m;
             cpmd.CallPrice = cp;
+            cpmd.Strikes = k;
+
+            
 
             var dc = new DiscountingCurveMarketData();
             dc.Durations = new Vector() { 0 };

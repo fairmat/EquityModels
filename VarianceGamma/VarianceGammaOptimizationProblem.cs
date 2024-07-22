@@ -46,7 +46,7 @@ namespace VarianceGamma
         /// <summary>
         /// The strike Prices (unrolled).
         /// </summary>
-        private Vector k;
+        private Matrix k;
 
         /// <summary>
         /// The maturities (unrolled).
@@ -67,7 +67,7 @@ namespace VarianceGamma
         /// <param name="r">The risk free rate.</param>
         /// <param name="cp">The observed call prices (unrolled).</param>
         /// <param name="m">The Maturities (unrolled).</param>
-        public VarianceGammaOptimizationProblem(double q, double s0, Vector k, double r, Matrix cp, Vector m)
+        public VarianceGammaOptimizationProblem(double q, double s0, Matrix k, double r, Matrix cp, Vector m)
         {
             this.q = q;
             this.s0 = s0;
@@ -160,24 +160,24 @@ namespace VarianceGamma
         /// <param name="x">Parameter vector</param>
         /// <param name="q">Dividend yield</param>
         /// <param name="s0">Index starting value</param>
-        /// <param name="k">Call strike vector</param>
+        /// <param name="k">Call strike matrix</param>
         /// <param name="r">Short rate</param>
         /// <param name="cp">Call price matrix</param>
         /// <param name="m">Call maturity vector</param>
         /// <returns>Call price root mean square error</returns>
-        public static double VGDiff(Vector x, double q, double s0, Vector k, double r, Matrix cp, Vector m)
+        public static double VGDiff(Vector x, double q, double s0, Matrix k, double r, Matrix cp, Vector m)
         {
             double y = 0;
             double residual;
             for (int i = 0; i < m.Length; i++)
             {
-                for (int j = 0; j < k.Length; j++)
+                for (int j = 0; j < k.C; j++)
                 {
                     double par = m[i] / x[2];
                     double rest = par - Math.Floor(par);
                     if (rest != 0.5 && rest != 0.0 && cp[i,j] != 0.0)
                     {
-                        residual = Math.Pow(cp[i, j] - VarianceGammaOptionsCalibration.VGCall(x[0], x[1], x[2], m[i], k[j], q, s0, r), 2);
+                        residual = Math.Pow(cp[i, j] - VarianceGammaOptionsCalibration.VGCall(x[0], x[1], x[2], m[i], k[i,j], q, s0, r), 2);
                         if (residual > Math.Pow(10, 10) || double.IsNaN(residual))
                         {
                             y = y + 1000 * Math.Sqrt(x[0] * x[0] + x[1] * x[1] + x[2] * x[2]);
@@ -190,7 +190,7 @@ namespace VarianceGamma
                 }
             }
 
-            return Math.Sqrt(y / (m.Length * k.Length));
+            return Math.Sqrt(y / (m.Length * k.C));
         }
     }
 }
