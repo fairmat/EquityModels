@@ -52,9 +52,12 @@ namespace Dupire
             int nmat = calibrationSettings.LocalVolatilityMaturities;
             int nstrike = calibrationSettings.LocalVolatilityStrikes;
             double lastMat = Hdataset.Maturity[Range.End];
-            double lastStr = Hdataset.Strikes[Range.End, Range.End];
+
+
+            Vector strikeAsVec = Hdataset.GetStrikesAsVector();
+            double lastStr = strikeAsVec[Range.End];
             Vector locVolMat = Vector.Linspace(Hdataset.Maturity[0], lastMat, nmat);
-            Vector locVolStr = Vector.Linspace(Hdataset.Strikes[0,0], lastStr, nstrike);
+            Vector locVolStr = Vector.Linspace(strikeAsVec[0], lastStr, nstrike);
             Matrix locVolMatrix = new Matrix(nmat, nstrike);
             double t, dt, forwardValue, y, dy, strike, strikep, strikem, w, wp, wm, dwdy;
             double d2wdy2, den1, den2, den3, strikept, strikemt, wpt, wmt, dwdt;
