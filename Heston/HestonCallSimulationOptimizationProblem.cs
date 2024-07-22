@@ -336,17 +336,18 @@ namespace Heston
 
                 double sum = 0;
                 int count = 0;
-                
+                int nMaturity = this.cpmd.Maturity.Length;
+                int nStrike = this.cpmd.Strikes.C;
 
-                for (int i = 0; i < this.cpmd.Maturity.Length; i++)
+                for (int i = 0; i < nMaturity; i++)
                 {
                     double maturity = this.cpmd.Maturity[i];
                     if (maturity < matBound[0]|| maturity>matBound[1])
                         continue;
 
-                    for (int j = 0; j < this.cpmd.Strike.Length; j++)
+                    for (int j = 0; j < nStrike; j++)
                     {
-                        double strike = this.cpmd.Strike[j];
+                        double strike = this.cpmd.Strikes[i,j];
                         if (strike < strikeBound[0] * s0 || strike > strikeBound[1] * s0)
                             continue;
 

@@ -66,7 +66,7 @@ namespace Dupire
             int j = 4; // Strike.
 
             //simu and maturity to be used for checking the MC valuation 
-            double strike = HData.Strike[j];
+            double strike = HData.Strikes[i,j];
             double maturity = HData.Maturity[i];
 
             Engine.MultiThread = true;

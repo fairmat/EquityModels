@@ -31,7 +31,7 @@ namespace Dupire
                 {
                     if (Hdataset.CallPrice[i, j] > 0)
                     {
-                        var bs = new Fairmat.Finance.BlackScholes(r.Evaluate(m), Hdataset.S0, Hdataset.Strike[j], 0, m, q.Evaluate(m));
+                        var bs = new Fairmat.Finance.BlackScholes(r.Evaluate(m), Hdataset.S0, Hdataset.Strikes[i,j], 0, m, q.Evaluate(m));
                         //Hdataset.Volatility[i, j] = Hdataset.Volatility[i, j] * Hdataset.Volatility[i, j] * Hdataset.Maturity[i];
                         
                         //Hdataset.Volatility[i, j] = bs.ImpliedCallVolatility(Hdataset.CallPrice[i, j]);
@@ -51,10 +51,10 @@ namespace Dupire
 
             int nmat = calibrationSettings.LocalVolatilityMaturities;
             int nstrike = calibrationSettings.LocalVolatilityStrikes;
-            double lastMat = Hdataset.Maturity[SymbolicIntervalExtremes.End];
-            double lastStr = Hdataset.Strike[SymbolicIntervalExtremes.End];
+            double lastMat = Hdataset.Maturity[Range.End];
+            double lastStr = Hdataset.Strikes[Range.End, Range.End];
             Vector locVolMat = Vector.Linspace(Hdataset.Maturity[0], lastMat, nmat);
-            Vector locVolStr = Vector.Linspace(Hdataset.Strike[0], lastStr, nstrike);
+            Vector locVolStr = Vector.Linspace(Hdataset.Strikes[0,0], lastStr, nstrike);
             Matrix locVolMatrix = new Matrix(nmat, nstrike);
             double t, dt, forwardValue, y, dy, strike, strikep, strikem, w, wp, wm, dwdy;
             double d2wdy2, den1, den2, den3, strikept, strikemt, wpt, wmt, dwdt;

@@ -39,9 +39,9 @@ namespace VarianceGamma
         private Vector m;
 
         /// <summary>
-        /// A vector of Strikes.
+        /// A Matrix of Strikes.
         /// </summary>
-        private Vector k;
+        private Matrix k;
 
         /// <summary>
         /// A matrix with the Call prices.
@@ -125,7 +125,7 @@ namespace VarianceGamma
             this.r = espmd.RiskFreeRate;
             this.q = espmd.DividendYield;
 
-            this.k = cpmd.Strike;
+            this.k = cpmd.Strikes;
             this.m = cpmd.Maturity;
             this.cp = cpmd.CallPrice;
 

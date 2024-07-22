@@ -148,9 +148,9 @@ namespace Dupire
             int nmat = calibrationSettings.LocalVolatilityMaturities;
             int nstrike = calibrationSettings.LocalVolatilityStrikes;
             double lastMat = Hdataset.Maturity[Range.End];
-            double lastStr = Hdataset.Strike[Range.End];
+            double lastStr = Hdataset.Strikes[Range.End, Range.End];
             locVolMat = Vector.Linspace(Hdataset.Maturity[0], lastMat, nmat);
-            locVolStr = Vector.Linspace(Hdataset.Strike[0], lastStr, nstrike);
+            locVolStr = Vector.Linspace(Hdataset.Strikes[0, 0], lastStr, nstrike);
             Matrix locVolMatrix = new Matrix(nmat, nstrike);
            
             double sigma, dSigmadk, num, y, den, avgGrowthRate;
@@ -299,7 +299,8 @@ namespace Dupire
             switch (model)
             {
                 case 0:
-                    PFunction2D.PFunction2D pf = new PFunction2D.PFunction2D(Hdataset.Maturity, Hdataset.Strike, Hdataset.Volatility);
+                    var strikeVector = Hdataset.Strikes[0, Range.All].ToArray();
+                    PFunction2D.PFunction2D pf = new PFunction2D.PFunction2D(Hdataset.Maturity, (Vector)strikeVector, Hdataset.Volatility);
                     pf.Interpolation = DVPLUtils.EInterpolationType.LEAST_SQUARES;
                     pf.Extrapolation = DVPLUtils.ExtrapolationType.USEMODEL;
                     pf.Parse(null);
@@ -329,7 +330,7 @@ namespace Dupire
                         {
                             if (Hdataset.Volatility[x, y] > 0.01)
                             {
-                                xy[count, Range.All] = (new Vector() { Hdataset.Maturity[x],Hdataset.Strike[y] }).T;
+                                xy[count, Range.All] = (new Vector() { Hdataset.Maturity[x],Hdataset.Strikes[x,y] }).T;
                                 z[count] = Hdataset.Volatility[x, y];
                                 count++;
                             }
