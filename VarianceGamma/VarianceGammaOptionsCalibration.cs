@@ -146,6 +146,7 @@ namespace VarianceGamma
             int MaxIter = AttributesUtility.RetrieveAttributeOrDefaultValue(properties, "MaxIter", optimizationSettings.MaxIter);
             double Tolerance = AttributesUtility.RetrieveAttributeOrDefaultValue(properties, "Tolerance", 10e-5);
             TimeSpan Maxtime = AttributesUtility.RetrieveAttributeOrDefaultValue(properties, "Maxtime", optimizationSettings.MaxTime);
+            int NP = AttributesUtility.RetrieveAttributeOrDefaultValue(properties, "NP", optimizationSettings.NP);
 
             optimizationSettings.MaxIter = MaxIter;
             optimizationSettings.epsilon = Tolerance;
