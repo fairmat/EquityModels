@@ -23,7 +23,6 @@ using System.Linq;
 using DVPLI;
 using Fairmat.MarketData;
 using NUnit.Framework;
-using NUnit.Framework.Constraints;
 
 namespace VarianceGamma
 {
