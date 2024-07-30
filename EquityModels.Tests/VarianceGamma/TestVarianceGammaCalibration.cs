@@ -23,6 +23,7 @@ using System.Linq;
 using DVPLI;
 using Fairmat.MarketData;
 using NUnit.Framework;
+using NUnit.Framework.Constraints;
 
 namespace VarianceGamma
 {
@@ -262,7 +263,12 @@ namespace VarianceGamma
             marketData.Add(dc);
 
             Dictionary<string, object> properties = new Dictionary<string, object>();
-            properties.Add("MaxIter", 5);
+            properties["MaxIter"] = 5;
+            properties["Maxtime"] = new TimeSpan(0, 0, 30); // hours minutes seconds
+            properties["Tolerance"] = 10e-3;
+            properties["NP"] = 5;
+
+
 
             EstimationResult res = c.Estimate(marketData, null, properties: properties);
             return (Vector)res.Values;
