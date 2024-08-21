@@ -107,8 +107,10 @@ namespace Heston
             double rhoGreek = HestonNumericalGreeks.RhoDCall(bumpPercentage: 0.001, kappa: kappa, theta: theta, sigma: sigma, rho: rho, v0: v0, s0: s0, T: tau, K: k, r: rate, q: dy);
             double expectedRho = 0.044689047683;
 
+
             double vega = HestonNumericalGreeks.VegaDCall(bumpPercentage: 0.001, kappa: kappa, theta: theta, sigma: sigma, rho: rho, v0: v0, s0: s0, T: tau, K: k, r: rate, q: dy);
             double expectedVega = -0.052751716997;
+
 
             double thetaGreek = HestonNumericalGreeks.ThetaDCall(bumpPercentage: 0.001, kappa: kappa, theta: theta, sigma: sigma, rho: rho, v0: v0, s0: s0, T: tau, K: k, r: rate, q: dy);
             double expectedTheta = 0.07603626576;
@@ -124,7 +126,7 @@ namespace Heston
             Assert.AreEqual(expectedTheta, thetaGreek, 1e-3);
             // vega
             Assert.AreEqual(expectedVega, vega, 1e-3);
-            // Assert.AreEqual(analyticalVega, vega, 1e-3);
+            Assert.AreEqual(analyticalVega, vega, 1e-3);
             // rho 
             Assert.AreEqual(expectedRho, rhoGreek, 1e-3);
             Assert.AreEqual(analyticalRho, rhoGreek, 1e-3);
@@ -180,7 +182,7 @@ namespace Heston
             Assert.AreEqual(expectedTheta, thetaGreek, 1e-3);
             // vega
             Assert.AreEqual(expectedVega, vega, 1e-3);
-            // Assert.AreEqual(analyticalVega, vega, 1e-3);
+            Assert.AreEqual(analyticalVega, vega, 1e-3);
             // rho 
             Assert.AreEqual(expectedRho, rhoGreek, 1e-3);
             Assert.AreEqual(analyticalRho, rhoGreek, 1e-3);

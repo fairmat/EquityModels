@@ -1985,7 +1985,9 @@ namespace HestonEstimator
             double a = 1E-8;
             double b = 1000.0;
 
-            TAEDelegateFunction1D functionToIntegrate = (double u) => IntegrandFunc2(u: u, kappa: kappa, theta: theta, sigma: sigma, rho: rho, v0: v0, s0: s0, r: r, q: q, T: T, K: K);
+            // here integrand func 2 must be divided by K because it is in the formulation of the call option  
+            TAEDelegateFunction1D functionToIntegrate = 
+                (double u) => IntegrandFunc2(u: u, kappa: kappa, theta: theta, sigma: sigma, rho: rho, v0: v0, s0: s0, r: r, q: q, T: T, K: K) / K;
 
             double part1 = PerformIntegral(a, b, functionToIntegrate);
             double integral = part1 + a * functionToIntegrate(a / 2.0);
