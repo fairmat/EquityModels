@@ -49,10 +49,11 @@ namespace HestonEstimator
         /// <param name="strike">The strike price of the option.</param>
         /// <param name="timeToMaturity">The time to maturity of the option.</param>
         /// <returns>The price of the digital call option.</returns>
-        public double HestonDigitalCallPrice(double strike, double timeToMaturity)
+        public double HestonDigitalCallPrice(double strike, double timeToMaturity, double? timeToPaymentDate=null)
         {
             this.T = timeToMaturity;
             this.K = strike;
+            this.timeToPaymentDate = timeToPaymentDate ?? timeToMaturity;
 
             return  HestonDigitalCallPrice(
                 kappa: this.kappa,
@@ -64,7 +65,8 @@ namespace HestonEstimator
                 T: this.T,
                 K: this.K,
                 r: this.rate,
-                q: this.dividend);
+                q: this.dividend,
+                timeToPaymentDate: this.timeToPaymentDate);
         }
 
         /// <summary>
@@ -77,7 +79,7 @@ namespace HestonEstimator
         /// <param name="r">The risk-free interest rate.</param>
         /// <param name="q">The dividend yield.</param>
         /// <returns>The price of the digital call option.</returns>
-        public static double HestonDigitalCallPrice(Vector x, double s0, double T, double K, double r, double q)
+        public static double HestonDigitalCallPrice(Vector x, double s0, double T, double K, double r, double q, double? timeToPaymentDate)
         {
             return HestonDigitalCallPrice(
                 kappa: x[0],
@@ -89,7 +91,8 @@ namespace HestonEstimator
                 T: T,
                 K: K,
                 r: r,
-                q: q
+                q: q,
+                timeToPaymentDate: this.timeToPaymentDate
                 );
         }
 

@@ -219,12 +219,13 @@ namespace HestonEstimator
                 T:this.T,
                 K:this.K,
                 r:this.rate,
-                q:this.dividend);
+                q:this.dividend,
+                timeToPaymentDate:this.timeToPaymentDate);
         }
 
-        public static double HestonCallPrice(double kappa, double theta, double rho, double v0, double sigma, double s0, double T, double K, double r, double q)
+        public static double HestonCallPrice(double kappa, double theta, double rho, double v0, double sigma, double s0, double T, double K, double r, double q, double? timeToPaymentDate)
         {
-
+            var tp = (double)(timeToPaymentDate == null? T: timeToPaymentDate);
             if (Engine.Verbose > 0)
             {
                 Console.WriteLine("Pricing a call option with Heston model");
@@ -232,8 +233,8 @@ namespace HestonEstimator
                 Console.WriteLine("kappa\ttheta\tsigma\trho\tv0");
                 Console.WriteLine("{0}\t{1}\t{2}\t{3}\t{4}", kappa, theta, sigma, rho, v0);
                 Console.WriteLine("Call Option Information");
-                Console.WriteLine("s0\tK\tT\tr\tq");
-                Console.WriteLine("{0}\t{1}\t{2}\t{3}\t{4}", s0, K, T, r, q);
+                Console.WriteLine("s0\tK\tT\tTimeToPaymentDate\tr\tq");
+                Console.WriteLine("{0}\t{1}\t{2}\t{3}\t{4}\t{5}", s0, K, T,timeToPaymentDate, r, q);
 
             }
 
@@ -250,7 +251,7 @@ namespace HestonEstimator
 
             double unDiscountedCall =  (firstTerm + integral / Math.PI);
 
-            double call = Math.Exp(-r * T) * unDiscountedCall;
+            double call = Math.Exp(-r * tp) * unDiscountedCall;
 
             if (Engine.Verbose > 0)
             {
@@ -265,8 +266,9 @@ namespace HestonEstimator
         /// Calculates a put price using the Heston model
         /// </summary>
         /// <returns></returns>
-        internal static double HestonPutPrice(double kappa, double theta, double rho, double v0, double sigma, double s0, double T, double K, double r, double q)
+        internal static double HestonPutPrice(double kappa, double theta, double rho, double v0, double sigma, double s0, double T, double K, double r, double q, double? timeToPaymentDate=null)
         {
+            var tp = (double)(timeToPaymentDate == null ? T : timeToPaymentDate);
             if (Engine.Verbose > 0)
             {
                 Console.WriteLine("Pricing a put option with Heston model");
@@ -274,8 +276,8 @@ namespace HestonEstimator
                 Console.WriteLine("kappa\ttheta\tsigma\trho\tv0");
                 Console.WriteLine("{0}\t{1}\t{2}\t{3}\t{4}", kappa, theta, sigma, rho, v0);
                 Console.WriteLine("Put Option Information");
-                Console.WriteLine("s0\tK\tT\tr\tq");
-                Console.WriteLine("{0}\t{1}\t{2}\t{3}\t{4}", s0, K, T, r, q);
+                Console.WriteLine("s0\tK\tT\tTimeToPaymentDate\tr\tq");
+                Console.WriteLine("{0}\t{1}\t{2}\t{3}\t{4}\t{5}", s0, K, T, timeToPaymentDate, r, q);
 
             }
 
@@ -289,7 +291,7 @@ namespace HestonEstimator
             double part1 = PerformIntegral(a, b, functionToIntegrate);
             double integral = part1 + a * functionToIntegrate(a / 2.0);
             double unDiscountedPut =  (firstTerm + integral / Math.PI);
-            double put = Math.Exp(-r * T) * unDiscountedPut;
+            double put = Math.Exp(-r * tp) * unDiscountedPut;
             if (Engine.Verbose > 0)
             {
                 Console.WriteLine("Undiscounted Put Price: {0}", unDiscountedPut);
@@ -325,7 +327,8 @@ namespace HestonEstimator
                 T: this.T,
                 K: this.K,
                 r: this.rate,
-                q: this.dividend);
+                q: this.dividend,
+                timeToPaymentDate: this.timeToPaymentDate);
         }
 
         /// <summary>
@@ -357,8 +360,8 @@ namespace HestonEstimator
             double part1 = PerformIntegral(a, b, IntegrandFunc);
             double integral = part1 + a * IntegrandFunc(a / 2.0);
             Vector callPut= new Vector(2);
-            callPut[0] = Math.Exp(-this.rate * this.T) * (firstTerm + integral / Math.PI);
-            callPut[1] = Math.Exp(-this.rate * this.T) * (-firstTerm + integral / Math.PI);
+            callPut[0] = Math.Exp(-this.rate * this.timeToPaymentDate) * (firstTerm + integral / Math.PI);
+            callPut[1] = Math.Exp(-this.rate * this.timeToPaymentDate) * (-firstTerm + integral / Math.PI);
             return callPut;
         }
 
@@ -405,7 +408,7 @@ namespace HestonEstimator
         /// <param name="r">Risk free rate.</param>
         /// <param name="q">Dividend yield.</param>
         /// <returns>The price of a call option within the Heston model.</returns>
-        public static double HestonCallPrice(Vector x, double s0, double T, double K, double r, double q)
+        public static double HestonCallPrice(Vector x, double s0, double T, double K, double r, double q, double? timeToPaymentDate)
         {
             var kappa = x[0];
             var theta = x[1];
@@ -424,7 +427,8 @@ namespace HestonEstimator
                 T: T,
                 K: K,
                 r: r,
-                q: q);
+                q: q,
+                timeToPaymentDate: timeToPaymentDate);
         }
 
         /// <summary>
@@ -440,7 +444,7 @@ namespace HestonEstimator
         /// <param name="r">Risk free rate.</param>
         /// <param name="q">Dividend yield.</param>
         /// <returns>The price of a put option within the Heston model.</returns>
-        public static double HestonPutPrice(Vector x, double s0, double T, double K, double r, double q)
+        public static double HestonPutPrice(Vector x, double s0, double T, double K, double r, double q, double?timeToPaymentDate)
         {
             var kappa = x[0];
             var theta = x[1];
@@ -459,7 +463,8 @@ namespace HestonEstimator
                 T: T,
                 K: K,
                 r: r,
-                q: q);
+                q: q,
+                timeToPaymentDate: timeToPaymentDate);
         }
 
         /// <summary>
@@ -668,9 +673,9 @@ namespace HestonEstimator
 
         
         // ALTERNATIVE IMPLEMENTATION OF THE INTEGRAL
-        public static double HestonCallPriceCarrMadan(double kappa, double theta, double rho, double v0, double sigma, double s0, double T, double K, double r, double q)
+        public static double HestonCallPriceCarrMadan(double kappa, double theta, double rho, double v0, double sigma, double s0, double T, double K, double r, double q, double?timeToPayment=null)
         {
-
+            var tp = (double)(timeToPaymentDate == null ? T : timeToPaymentDate);
             // Carr Madan Approach to solve the call option price: https://perswww.kuleuven.be/~u0009713/ScSiTi03.pdf
             double alpha = 0.75;
             var multiplier = Math.Exp(-alpha * Math.Log(K)) / Math.PI;
@@ -681,7 +686,7 @@ namespace HestonEstimator
                 var argumentPhi = U - (alpha + 1) * Complex.I; 
                 var g = Phi(argumentPhi, kappa:kappa, theta:theta, sigma:sigma, rho:rho, v0:v0, s0:s0, r:(r-q), T:T);
                 var denom = alpha * alpha + alpha - U * U + Complex.I * (2 * alpha + 1) * U;
-                return Math.Exp(-r*T) * g / denom; 
+                return Math.Exp(-r * tp) * g / denom; 
             }
 
 
