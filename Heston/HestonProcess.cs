@@ -433,7 +433,7 @@ namespace Heston
         /// </param>
         /// <returns>The call price</returns>
 
-        public GreeksDerivatives Call(int component, double strike, double timeToMaturity, Dictionary<string, object> additionalInformation)
+        public GreeksDerivatives Call(int component, double strike, double timeToMaturity, Dictionary<string, object> additionalInformation, double? timeToPaymentDate = null)
         {
             GreeksDerivatives result = new GreeksDerivatives();
 
@@ -445,6 +445,7 @@ namespace Heston
             var s0Param = this.S0.fV();
             var rParam = this.r.fV();
             var qParam = this.q.fV();
+            var timeToPD = timeToPaymentDate == null? timeToMaturity: timeToPaymentDate.Value;
 
             AnalyticalPricingFunctionsValuationMode requestedResult =
                 AttributesUtility.RetrieveAttributeOrDefaultValue(

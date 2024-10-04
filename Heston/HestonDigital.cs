@@ -65,8 +65,7 @@ namespace HestonEstimator
                 T: this.T,
                 K: this.K,
                 r: this.rate,
-                q: this.dividend,
-                timeToPaymentDate: this.timeToPaymentDate);
+                q: this.dividend);
         }
 
         /// <summary>
@@ -91,9 +90,7 @@ namespace HestonEstimator
                 T: T,
                 K: K,
                 r: r,
-                q: q,
-                timeToPaymentDate: this.timeToPaymentDate
-                );
+                q: q);
         }
 
         /// <summary>
