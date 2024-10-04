@@ -79,6 +79,11 @@ namespace HestonEstimator
         internal double T;
 
         /// <summary>
+        /// Call option payment date (it may be different from maturity).
+        /// </summary>
+        internal double timeToPaymentDate;
+
+        /// <summary>
         /// Call option strike value.
         /// </summary>
         internal double K;
