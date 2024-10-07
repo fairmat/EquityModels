@@ -165,8 +165,10 @@ namespace HestonEstimator
         /// </param>
         /// <param name='timeToMaturity'>
         /// Time to maturity of the option
+        /// <paramref name="timeToPaymentDate"/>
+        /// Time to the payment date
         /// </param>
-        internal HestonCall(HestonProcess process, double strike, double timeToMaturity)
+        internal HestonCall(HestonProcess process, double strike, double timeToMaturity, double? timeToPaymentDate)
         {
             this.kappa = process.k.fV();
             this.theta = process.theta.fV();
@@ -179,6 +181,7 @@ namespace HestonEstimator
             // call specific parameters 
             this.K = strike;
             this.T = timeToMaturity; 
+            this.timeToPaymentDate = timeToPaymentDate ?? timeToMaturity;
 
         }
 
@@ -225,7 +228,7 @@ namespace HestonEstimator
 
         public static double HestonCallPrice(double kappa, double theta, double rho, double v0, double sigma, double s0, double T, double K, double r, double q, double? timeToPaymentDate)
         {
-            var tp = (double)(timeToPaymentDate == null? T: timeToPaymentDate);
+            var tp = timeToPaymentDate ?? T;
             if (Engine.Verbose > 0)
             {
                 Console.WriteLine("Pricing a call option with Heston model");
@@ -268,7 +271,7 @@ namespace HestonEstimator
         /// <returns></returns>
         internal static double HestonPutPrice(double kappa, double theta, double rho, double v0, double sigma, double s0, double T, double K, double r, double q, double? timeToPaymentDate=null)
         {
-            var tp = (double)(timeToPaymentDate == null ? T : timeToPaymentDate);
+            var tp = timeToPaymentDate?? T;
             if (Engine.Verbose > 0)
             {
                 Console.WriteLine("Pricing a put option with Heston model");
@@ -305,7 +308,7 @@ namespace HestonEstimator
         /// <param name="strike">The strike of the option.</param>
         /// <param name="timeToMaturity">The time to maturity of the option.</param>
         /// <returns>The put price</returns>
-        internal double HestonPutPrice(double strike, double timeToMaturity)
+        internal double HestonPutPrice(double strike, double timeToMaturity, double? timeToPaymentDate)
         {
             this.T = timeToMaturity;
             this.K = strike;
@@ -673,9 +676,9 @@ namespace HestonEstimator
 
         
         // ALTERNATIVE IMPLEMENTATION OF THE INTEGRAL
-        public static double HestonCallPriceCarrMadan(double kappa, double theta, double rho, double v0, double sigma, double s0, double T, double K, double r, double q, double?timeToPayment=null)
+        public static double HestonCallPriceCarrMadan(double kappa, double theta, double rho, double v0, double sigma, double s0, double T, double K, double r, double q, double? timeToPaymentDate=null)
         {
-            var tp = (double)(timeToPaymentDate == null ? T : timeToPaymentDate);
+            var tp = timeToPaymentDate?? T;
             // Carr Madan Approach to solve the call option price: https://perswww.kuleuven.be/~u0009713/ScSiTi03.pdf
             double alpha = 0.75;
             var multiplier = Math.Exp(-alpha * Math.Log(K)) / Math.PI;
