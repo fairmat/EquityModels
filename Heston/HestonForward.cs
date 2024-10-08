@@ -380,7 +380,7 @@ namespace HestonEstimator
 
     public class HestonForwardApproximated
     {
-        public static double HestonForwardCallPrice(Vector x, double s0, double T, double T0, double K, double r, double q)
+        public static double HestonForwardCallPrice(Vector x, double s0, double T, double T0, double K, double r, double q, double? Tp = null)
         {
             var kappa = x[0];
             var theta = x[1];
@@ -400,7 +400,9 @@ namespace HestonEstimator
                 T0: T0,
                 K: K,
                 r: r,
-                q: q);
+                q: q,
+                Tp: Tp?? T
+                );
         }
         public static double ExpectationCIRProcess(double x0, double a, double b, double t)
         {
@@ -413,7 +415,7 @@ namespace HestonEstimator
         }
 
         // we use similar formulas that are used for pricing Forward call options under Black Scholes model
-        public static double HestonForwardCallPrice(double kappa, double theta, double rho, double v0, double sigma, double s0, double K, double r, double q, double T, double T0)
+        public static double HestonForwardCallPrice(double kappa, double theta, double rho, double v0, double sigma, double s0, double K, double r, double q, double T, double T0, double? Tp = null)
         {
             int verbosity = Engine.Verbose;
 
@@ -424,8 +426,8 @@ namespace HestonEstimator
                 Console.WriteLine("kappa\ttheta\tsigma\trho\tv0");
                 Console.WriteLine($"{kappa}\t{theta}\t{sigma}\t{rho}\t{v0}");
                 Console.WriteLine("Call Option Information");
-                Console.WriteLine("s0\tK\tT\tT0\tr\tq");
-                Console.WriteLine($"{s0}\t{K}\t{T}\t{T0}\t{r}\t{q}");
+                Console.WriteLine("s0\tK\tT\tT0\tTimeToPaymentDate\tr\tq");
+                Console.WriteLine($"{s0}\t{K}\t{T}\t{T0}\t{Tp}\t{r}\t{q}");
 
             }
 
@@ -443,7 +445,8 @@ namespace HestonEstimator
                 T: T - T0,
                 K: K,
                 r: r,
-                q: q);
+                q: q,
+                timeToPaymentDate: Tp);
             Engine.Verbose = verbosity;
 
             var price = s0 * Math.Exp(-q * T0) * c;
@@ -456,7 +459,7 @@ namespace HestonEstimator
             return price;
         }
 
-        public static double HestonForwardPutPrice(double kappa, double theta, double rho, double v0, double sigma, double s0, double K, double r, double q, double T, double T0)
+        public static double HestonForwardPutPrice(double kappa, double theta, double rho, double v0, double sigma, double s0, double K, double r, double q, double T, double T0, double? Tp = null)
         {
             int verbosity = Engine.Verbose;
 
@@ -467,8 +470,8 @@ namespace HestonEstimator
                 Console.WriteLine("kappa\ttheta\tsigma\trho\tv0");
                 Console.WriteLine($"{kappa}\t{theta}\t{sigma}\t{rho}\t{v0}");
                 Console.WriteLine("Call Option Information");
-                Console.WriteLine("s0\tK\tT\tT0\tr\tq");
-                Console.WriteLine($"{s0}\t{K}\t{T}\t{T0}\t{r}\t{q}");
+                Console.WriteLine("s0\tK\tT\tT0\ttimeToPaymentDate\tr\tq");
+                Console.WriteLine($"{s0}\t{K}\t{T}\t{T0}\t{Tp}\t{r}\t{q}");
 
             }
 
@@ -486,7 +489,8 @@ namespace HestonEstimator
                 T: T - T0,
                 K: K,
                 r: r,
-                q: q);
+                q: q,
+                timeToPaymentDate: Tp);
             Engine.Verbose = verbosity;
 
             var price = s0 * Math.Exp(-q * T0) * p;
@@ -499,7 +503,7 @@ namespace HestonEstimator
             return price;
         }
 
-        public static double HestonForwardDigitalPutPrice(double kappa, double theta, double rho, double v0, double sigma, double s0, double K, double r, double q, double T, double T0)
+        public static double HestonForwardDigitalPutPrice(double kappa, double theta, double rho, double v0, double sigma, double s0, double K, double r, double q, double T, double T0, double? Tp = null)
         {
 
             int verbosity = Engine.Verbose;
@@ -511,8 +515,8 @@ namespace HestonEstimator
                 Console.WriteLine("kappa\ttheta\tsigma\trho\tv0");
                 Console.WriteLine($"{kappa}\t{theta}\t{sigma}\t{rho}\t{v0}");
                 Console.WriteLine("Call Option Information");
-                Console.WriteLine("s0\tK\tT\tT0\tr\tq");
-                Console.WriteLine($"{s0}\t{K}\t{T}\t{T0}\t{r}\t{q}");
+                Console.WriteLine("s0\tK\tT\tT0\ttimeToPaymentDate\tr\tq");
+                Console.WriteLine($"{s0}\t{K}\t{T}\t{T0}\t{Tp}\t{r}\t{q}");
 
             }
 
@@ -530,7 +534,8 @@ namespace HestonEstimator
                 T: T - T0,
                 K: K,
                 r: r,
-                q: q);
+                q: q,
+                timeToPaymentDate: Tp);
             Engine.Verbose = verbosity;
 
             var digitalPrice = HestonDigital.DiscountFactor(r, T0) * dput;
@@ -543,7 +548,7 @@ namespace HestonEstimator
             return digitalPrice;
         }
 
-        public static double HestonForwardDigitalCallPrice(double kappa, double theta, double rho, double v0, double sigma, double s0, double K, double r, double q, double T, double T0)
+        public static double HestonForwardDigitalCallPrice(double kappa, double theta, double rho, double v0, double sigma, double s0, double K, double r, double q, double T, double T0, double? Tp = null)
         {
             int verbosity = Engine.Verbose;
 
@@ -554,8 +559,8 @@ namespace HestonEstimator
                 Console.WriteLine("kappa\ttheta\tsigma\trho\tv0");
                 Console.WriteLine($"{kappa}\t{theta}\t{sigma}\t{rho}\t{v0}");
                 Console.WriteLine("Call Option Information");
-                Console.WriteLine("s0\tK\tT\tT0\tr\tq");
-                Console.WriteLine($"{s0}\t{K}\t{T}\t{T0}\t{r}\t{q}");
+                Console.WriteLine("s0\tK\tT\tT0\ttimeToPaymentDate\tr\tq");
+                Console.WriteLine($"{s0}\t{K}\t{T}\t{T0}\t{Tp}\t{r}\t{q}");
 
             }
 
@@ -573,7 +578,9 @@ namespace HestonEstimator
                 T: T - T0,
                 K: K,
                 r: r,
-                q: q);
+                q: q,
+                timeToPaymentDate: Tp
+                );
             Engine.Verbose = verbosity;
 
             var digitalPrice = HestonDigital.DiscountFactor(r, T0) * dcall;
@@ -588,7 +595,7 @@ namespace HestonEstimator
 
         #region Greeks
 
-        public static double FSCallCalculateDelta(double s0, double K, double T, double T0, double r, double q, double kappa, double theta, double sigma, double rho, double v0)
+        public static double FSCallCalculateDelta(double s0, double K, double T, double T0, double r, double q, double kappa, double theta, double sigma, double rho, double v0, double timeToPaymentDate)
         {
             var v_T0 = ExpectationCIRProcess(v0, kappa, theta, T0);
             var c = HestonCall.HestonCallPrice(
@@ -601,7 +608,8 @@ namespace HestonEstimator
                 T: T - T0,
                 K: K,
                 r: r,
-                q: q);
+                q: q,
+                timeToPaymentDate: timeToPaymentDate);
             return Math.Exp(-q * T0) * c;
         }
 
@@ -644,7 +652,7 @@ namespace HestonEstimator
                         r: r, q: q);
         }
 
-        public static GreeksDerivatives HestonForwardCallWithGreeks(double kappa, double theta, double rho, double v0, double sigma, double s0, double K, double r, double q, double T, double T0)
+        public static GreeksDerivatives HestonForwardCallWithGreeks(double kappa, double theta, double rho, double v0, double sigma, double s0, double K, double r, double q, double T, double T0, double? Tp = null)
         {
 
 
@@ -676,7 +684,8 @@ namespace HestonEstimator
                 T: T - T0,
                 K: K,
                 r: r,
-                q: q);
+                q: q,
+                timeToPaymentDate: Tp);
 
 
             var fscallMarkToMarket = s0 * Math.Exp(-q * T0) * c;
@@ -913,7 +922,7 @@ namespace HestonEstimator
                         q: q);
         }
 
-        public static double FSDPutCalculateRho(double kappa, double theta, double rho, double v0, double sigma, double s0, double K, double r, double q, double T, double T0)
+        public static double FSDPutCalculateRho(double kappa, double theta, double rho, double v0, double sigma, double s0, double K, double r, double q, double T, double T0, double? Tp = null)
         {
             var res = HestonDigital.DiscountFactor(r, T0) * HestonRho.RhoDigitalPut(
                         kappa: kappa,
@@ -937,10 +946,11 @@ namespace HestonEstimator
                 T: T - T0,
                 K: K,
                 r: r,
-                q: q); ;
+                q: q,
+                timeToPaymentDate: Tp); ;
         }
 
-        public static GreeksDerivatives HestonForwardDigitalPutWithGreeks(double kappa, double theta, double rho, double v0, double sigma, double s0, double K, double r, double q, double T, double T0)
+        public static GreeksDerivatives HestonForwardDigitalPutWithGreeks(double kappa, double theta, double rho, double v0, double sigma, double s0, double K, double r, double q, double T, double T0, double? Tp = null)
         {
             int verbosity = Engine.Verbose;
 
@@ -951,8 +961,8 @@ namespace HestonEstimator
                 Console.WriteLine("kappa\ttheta\tsigma\trho\tv0");
                 Console.WriteLine($"{kappa}\t{theta}\t{sigma}\t{rho}\t{v0}");
                 Console.WriteLine("Call Option Information");
-                Console.WriteLine("s0\tK\tT\tT0\tr\tq");
-                Console.WriteLine($"{s0}\t{K}\t{T}\t{T0}\t{r}\t{q}");
+                Console.WriteLine("s0\tK\tT\tT0\ttimeToPaymentDate\tr\tq");
+                Console.WriteLine($"{s0}\t{K}\t{T}\t{T0}\t{Tp}\t{r}\t{q}");
             }
 
             Engine.Verbose = 0;
@@ -969,7 +979,9 @@ namespace HestonEstimator
                 T: T - T0,
                 K: K,
                 r: r,
-                q: q);
+                q: q,
+                timeToPaymentDate: Tp
+                );
 
 
             var fsDPutMarkToMarket = HestonDigital.DiscountFactor(r, T0) * dPut;
@@ -1060,7 +1072,7 @@ namespace HestonEstimator
                         q: q);
         }
 
-        public static double FSDCallCalculateRho(double kappa, double theta, double rho, double v0, double sigma, double s0, double K, double r, double q, double T, double T0)
+        public static double FSDCallCalculateRho(double kappa, double theta, double rho, double v0, double sigma, double s0, double K, double r, double q, double T, double T0, double? Tp = null)
         {
             var v_T0 = ExpectationCIRProcess(v0, kappa, theta, T0);
             var res = HestonDigital.DiscountFactor(r, T0) * HestonRho.RhoDigitalCall(
@@ -1085,10 +1097,12 @@ namespace HestonEstimator
                 T: T - T0,
                 K: K,
                 r: r,
-                q: q) * HestonDigital.DiscountFactor(r, T0);
+                q: q,
+                timeToPaymentDate: Tp)
+                * HestonDigital.DiscountFactor(r, T0);
         }
 
-        public static GreeksDerivatives HestonForwardDigitalCallWithGreeks(double kappa, double theta, double rho, double v0, double sigma, double s0, double K, double r, double q, double T, double T0)
+        public static GreeksDerivatives HestonForwardDigitalCallWithGreeks(double kappa, double theta, double rho, double v0, double sigma, double s0, double K, double r, double q, double T, double T0, double? Tp = null)
         {
             int verbosity = Engine.Verbose;
 
@@ -1099,8 +1113,8 @@ namespace HestonEstimator
                 Console.WriteLine("kappa\ttheta\tsigma\trho\tv0");
                 Console.WriteLine($"{kappa}\t{theta}\t{sigma}\t{rho}\t{v0}");
                 Console.WriteLine("Call Option Information");
-                Console.WriteLine("s0\tK\tT\tT0\tr\tq");
-                Console.WriteLine($"{s0}\t{K}\t{T}\t{T0}\t{r}\t{q}");
+                Console.WriteLine("s0\tK\tT\tT0\ttimeToPaymentDate\tr\tq");
+                Console.WriteLine($"{s0}\t{K}\t{T}\t{T0}\t{Tp}\t{r}\t{q}");
             }
 
             Engine.Verbose = 0;
@@ -1118,7 +1132,8 @@ namespace HestonEstimator
                 T: T - T0,
                 K: K,
                 r: r,
-                q: q);
+                q: q,
+                timeToPaymentDate: Tp);
 
 
             var fsDCallMarkToMarket = HestonDigital.DiscountFactor(r, T0) * dCall;

@@ -433,7 +433,7 @@ namespace Heston
         /// </param>
         /// <returns>The call price</returns>
 
-        public GreeksDerivatives Call(int component, double strike, double timeToMaturity, Dictionary<string, object> additionalInformation)
+        public GreeksDerivatives Call(int component, double strike, double timeToMaturity, Dictionary<string, object> additionalInformation, double? timeToPaymentDate = null)
         {
             GreeksDerivatives result = new GreeksDerivatives();
 
@@ -445,6 +445,7 @@ namespace Heston
             var s0Param = this.S0.fV();
             var rParam = this.r.fV();
             var qParam = this.q.fV();
+            var timeToPD = timeToPaymentDate?? timeToMaturity;
 
             AnalyticalPricingFunctionsValuationMode requestedResult =
                 AttributesUtility.RetrieveAttributeOrDefaultValue(
@@ -468,7 +469,7 @@ namespace Heston
                        T: timeToMaturity,
                        K: strike,
                        r: rParam,
-                       q: qParam);
+                       q: qParam, timeToPaymentDate: timeToPaymentDate);
                     break;
 
 
@@ -583,7 +584,7 @@ namespace Heston
         /// Additional information regarding the put option
         /// </param>
         /// <returns>The put price</returns>
-        public GreeksDerivatives Put(int component, double strike, double timeToMaturity, Dictionary<string, object> additionalInformation)
+        public GreeksDerivatives Put(int component, double strike, double timeToMaturity, Dictionary<string, object> additionalInformation, double? timeToPaymentDate = null)
         {
             GreeksDerivatives result = new GreeksDerivatives();
 
@@ -595,6 +596,7 @@ namespace Heston
             var s0Param = this.S0.fV();
             var rParam = this.r.fV();
             var qParam = this.q.fV();
+            timeToPaymentDate = timeToPaymentDate?? timeToMaturity;
 
 
 
@@ -736,7 +738,7 @@ namespace Heston
         /// </param>
         /// <returns>The digital call price</returns>
 
-        public GreeksDerivatives DigitalCall(int component, double strike, double timeToMaturity, Dictionary<string, object> additionalInformation)
+        public GreeksDerivatives DigitalCall(int component, double strike, double timeToMaturity, Dictionary<string, object> additionalInformation, double? timeToPaymentDate = null)
         {
             GreeksDerivatives result = new GreeksDerivatives();
 
@@ -773,7 +775,8 @@ namespace Heston
                        T: timeToMaturity,
                        K: strike,
                        r: rParam,
-                       q: qParam);
+                       q: qParam,
+                       timeToPaymentDate: timeToPaymentDate);
                     break;
 
 
@@ -888,7 +891,7 @@ namespace Heston
         /// Additional information regarding the digital put option
         /// </param>
         /// <returns>The digital put price</returns>
-        public GreeksDerivatives DigitalPut(int component, double strike, double timeToMaturity, Dictionary<string, object> additionalInformation)
+        public GreeksDerivatives DigitalPut(int component, double strike, double timeToMaturity, Dictionary<string, object> additionalInformation, double? timeToPaymentDate = null)
         {
             GreeksDerivatives result = new GreeksDerivatives();
 
@@ -925,7 +928,9 @@ namespace Heston
                        T: timeToMaturity,
                        K: strike,
                        r: rParam,
-                       q: qParam);
+                       q: qParam,
+                       timeToPaymentDate: timeToPaymentDate
+                       );
                     break;
 
 
@@ -1038,7 +1043,7 @@ namespace Heston
         /// Additional information regarding the swap option
         /// </param>
         /// <returns>The swap price</returns>
-        public GreeksDerivatives Swap(int component, double strike, double swapMaturity, Dictionary<string, object> additionalInformation = null)
+        public GreeksDerivatives Swap(int component, double strike, double swapMaturity, Dictionary<string, object> additionalInformation = null, double? timeToPaymentDate = null)
         {
             throw new NotImplementedException();
         }
@@ -1063,7 +1068,7 @@ namespace Heston
         /// Additional information regarding option
         /// </param>
         /// <returns>The option price</returns>
-        public GreeksDerivatives FSCall(int component, double strikeFraction, double fsTime, double timeToMaturity, Dictionary<string, object> additionalInformation = null)
+        public GreeksDerivatives FSCall(int component, double strikeFraction, double fsTime, double timeToMaturity, Dictionary<string, object> additionalInformation = null, double? timeToPaymentDate = null)
         {
             var result = new GreeksDerivatives();
 
@@ -1090,7 +1095,8 @@ namespace Heston
                     K: strikeFraction,
                     r: this.r.fV(),
                     q: this.q.fV(),
-                    T0: fsTime
+                    T0: fsTime,
+                    Tp: timeToPaymentDate
                     );
 
                     break;
@@ -1107,7 +1113,8 @@ namespace Heston
                         K: strikeFraction,
                         r: this.r.fV(),
                         q: this.q.fV(),
-                        T0: fsTime
+                        T0: fsTime,
+                        timeToPaymentDate: timeToPaymentDate??timeToMaturity
                         );
 
                     result.Deltas = (Vector)(delta);
@@ -1200,7 +1207,8 @@ namespace Heston
                         K: strikeFraction,
                         r: this.r.fV(),
                         q: this.q.fV(),
-                        T0: fsTime
+                        T0: fsTime,
+                        Tp: timeToPaymentDate
                         );
             }
 
@@ -1225,7 +1233,7 @@ namespace Heston
         /// Additional information regarding option
         /// </param>
         /// <returns>The option price</returns>
-        public GreeksDerivatives FSPut(int component, double strikeFraction, double fsTime, double timeToMaturity, Dictionary<string, object> additionalInformation = null)
+        public GreeksDerivatives FSPut(int component, double strikeFraction, double fsTime, double timeToMaturity, Dictionary<string, object> additionalInformation = null, double? timeToPaymentDate = null)
         {
             var result = new GreeksDerivatives();
 
@@ -1235,7 +1243,6 @@ namespace Heston
                     AnalyticalPricingFunctions.GreekNameKey,
                     AnalyticalPricingFunctionsValuationMode.Price
                 );
-
 
             switch (requestedResult)
             {
@@ -1252,7 +1259,8 @@ namespace Heston
                     K: strikeFraction,
                     r: this.r.fV(),
                     q: this.q.fV(),
-                    T0: fsTime
+                    T0: fsTime,
+                    Tp: timeToPaymentDate ?? timeToMaturity
                     );
 
                     break;
@@ -1387,7 +1395,7 @@ namespace Heston
         /// Additional information regarding option
         /// </param>
         /// <returns>The option price</returns>
-        public GreeksDerivatives FSDigitalCall(int component, double strikeFraction, double fsTime, double timeToMaturity, Dictionary<string, object> additionalInformation = null)
+        public GreeksDerivatives FSDigitalCall(int component, double strikeFraction, double fsTime, double timeToMaturity, Dictionary<string, object> additionalInformation = null, double? timeToPaymentDate = null)
         {
 
 
@@ -1416,7 +1424,8 @@ namespace Heston
                     K: strikeFraction,
                     r: this.r.fV(),
                     q: this.q.fV(),
-                    T0: fsTime
+                    T0: fsTime,
+                    Tp: timeToPaymentDate ?? timeToMaturity
                     );
 
                     break;
@@ -1471,7 +1480,8 @@ namespace Heston
                         K: strikeFraction,
                         r: this.r.fV(),
                         q: this.q.fV(),
-                        T0: fsTime
+                        T0: fsTime,
+                        Tp: timeToPaymentDate ?? timeToMaturity
                         );
 
                     result.Rho = rho;
@@ -1526,7 +1536,8 @@ namespace Heston
                         K: strikeFraction,
                         r: this.r.fV(),
                         q: this.q.fV(),
-                        T0: fsTime
+                        T0: fsTime,
+                        Tp: timeToPaymentDate
                         );
             }
 
@@ -1552,7 +1563,7 @@ namespace Heston
         /// Additional information regarding option
         /// </param>
         /// <returns>The option price</returns>
-        public GreeksDerivatives FSDigitalPut(int component, double strikeFraction, double fsTime, double timeToMaturity, Dictionary<string, object> additionalInformation = null)
+        public GreeksDerivatives FSDigitalPut(int component, double strikeFraction, double fsTime, double timeToMaturity, Dictionary<string, object> additionalInformation = null, double? timeToPaymentDate = null)
         {
             var result = new GreeksDerivatives();
 
@@ -1579,7 +1590,8 @@ namespace Heston
                     K: strikeFraction,
                     r: this.r.fV(),
                     q: this.q.fV(),
-                    T0: fsTime
+                    T0: fsTime,
+                    Tp: timeToPaymentDate ?? timeToMaturity
                     );
 
                     break;
@@ -1634,7 +1646,8 @@ namespace Heston
                         K: strikeFraction,
                         r: this.r.fV(),
                         q: this.q.fV(),
-                        T0: fsTime
+                        T0: fsTime,
+                        Tp: timeToPaymentDate ?? timeToMaturity
                         );
 
                     result.Rho = rho;
@@ -1689,7 +1702,8 @@ namespace Heston
                         K: strikeFraction,
                         r: this.r.fV(),
                         q: this.q.fV(),
-                        T0: fsTime
+                        T0: fsTime,
+                        Tp: timeToPaymentDate
                         );
             }
 
@@ -1712,7 +1726,7 @@ namespace Heston
         /// Additional information regarding option
         /// </param>
         /// <returns>The option price</returns>
-        public GreeksDerivatives FSSwap(int component, double strikeFraction, double fsTime, double swapMaturity, Dictionary<string, object> additionalInformation = null)
+        public GreeksDerivatives FSSwap(int component, double strikeFraction, double fsTime, double swapMaturity, Dictionary<string, object> additionalInformation = null, double? timeToPaymentDate = null)
         {
             throw new NotImplementedException();
         }
