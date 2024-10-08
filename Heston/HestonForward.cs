@@ -380,7 +380,7 @@ namespace HestonEstimator
 
     public class HestonForwardApproximated
     {
-        public static double HestonForwardCallPrice(Vector x, double s0, double T, double T0, double K, double r, double q, double? timeToPaymentDate = null)
+        public static double HestonForwardCallPrice(Vector x, double s0, double T, double T0, double K, double r, double q, double? Tp = null)
         {
             var kappa = x[0];
             var theta = x[1];
@@ -401,7 +401,7 @@ namespace HestonEstimator
                 K: K,
                 r: r,
                 q: q,
-                Tp: timeToPaymentDate?? T
+                Tp: Tp?? T
                 );
         }
         public static double ExpectationCIRProcess(double x0, double a, double b, double t)
@@ -415,7 +415,7 @@ namespace HestonEstimator
         }
 
         // we use similar formulas that are used for pricing Forward call options under Black Scholes model
-        public static double HestonForwardCallPrice(double kappa, double theta, double rho, double v0, double sigma, double s0, double K, double r, double q, double T, double T0, double? Tp)
+        public static double HestonForwardCallPrice(double kappa, double theta, double rho, double v0, double sigma, double s0, double K, double r, double q, double T, double T0, double? Tp = null)
         {
             int verbosity = Engine.Verbose;
 
@@ -459,7 +459,7 @@ namespace HestonEstimator
             return price;
         }
 
-        public static double HestonForwardPutPrice(double kappa, double theta, double rho, double v0, double sigma, double s0, double K, double r, double q, double T, double T0, double? Tp)
+        public static double HestonForwardPutPrice(double kappa, double theta, double rho, double v0, double sigma, double s0, double K, double r, double q, double T, double T0, double? Tp = null)
         {
             int verbosity = Engine.Verbose;
 
@@ -503,7 +503,7 @@ namespace HestonEstimator
             return price;
         }
 
-        public static double HestonForwardDigitalPutPrice(double kappa, double theta, double rho, double v0, double sigma, double s0, double K, double r, double q, double T, double T0, double? Tp)
+        public static double HestonForwardDigitalPutPrice(double kappa, double theta, double rho, double v0, double sigma, double s0, double K, double r, double q, double T, double T0, double? Tp = null)
         {
 
             int verbosity = Engine.Verbose;
@@ -548,7 +548,7 @@ namespace HestonEstimator
             return digitalPrice;
         }
 
-        public static double HestonForwardDigitalCallPrice(double kappa, double theta, double rho, double v0, double sigma, double s0, double K, double r, double q, double T, double T0, double? Tp)
+        public static double HestonForwardDigitalCallPrice(double kappa, double theta, double rho, double v0, double sigma, double s0, double K, double r, double q, double T, double T0, double? Tp = null)
         {
             int verbosity = Engine.Verbose;
 
@@ -652,7 +652,7 @@ namespace HestonEstimator
                         r: r, q: q);
         }
 
-        public static GreeksDerivatives HestonForwardCallWithGreeks(double kappa, double theta, double rho, double v0, double sigma, double s0, double K, double r, double q, double T, double T0, double? Tp)
+        public static GreeksDerivatives HestonForwardCallWithGreeks(double kappa, double theta, double rho, double v0, double sigma, double s0, double K, double r, double q, double T, double T0, double? Tp = null)
         {
 
 
@@ -922,7 +922,7 @@ namespace HestonEstimator
                         q: q);
         }
 
-        public static double FSDPutCalculateRho(double kappa, double theta, double rho, double v0, double sigma, double s0, double K, double r, double q, double T, double T0, double? Tp)
+        public static double FSDPutCalculateRho(double kappa, double theta, double rho, double v0, double sigma, double s0, double K, double r, double q, double T, double T0, double? Tp = null)
         {
             var res = HestonDigital.DiscountFactor(r, T0) * HestonRho.RhoDigitalPut(
                         kappa: kappa,
@@ -950,7 +950,7 @@ namespace HestonEstimator
                 timeToPaymentDate: Tp); ;
         }
 
-        public static GreeksDerivatives HestonForwardDigitalPutWithGreeks(double kappa, double theta, double rho, double v0, double sigma, double s0, double K, double r, double q, double T, double T0, double? Tp)
+        public static GreeksDerivatives HestonForwardDigitalPutWithGreeks(double kappa, double theta, double rho, double v0, double sigma, double s0, double K, double r, double q, double T, double T0, double? Tp = null)
         {
             int verbosity = Engine.Verbose;
 
@@ -1072,7 +1072,7 @@ namespace HestonEstimator
                         q: q);
         }
 
-        public static double FSDCallCalculateRho(double kappa, double theta, double rho, double v0, double sigma, double s0, double K, double r, double q, double T, double T0, double? Tp)
+        public static double FSDCallCalculateRho(double kappa, double theta, double rho, double v0, double sigma, double s0, double K, double r, double q, double T, double T0, double? Tp = null)
         {
             var v_T0 = ExpectationCIRProcess(v0, kappa, theta, T0);
             var res = HestonDigital.DiscountFactor(r, T0) * HestonRho.RhoDigitalCall(
@@ -1102,7 +1102,7 @@ namespace HestonEstimator
                 * HestonDigital.DiscountFactor(r, T0);
         }
 
-        public static GreeksDerivatives HestonForwardDigitalCallWithGreeks(double kappa, double theta, double rho, double v0, double sigma, double s0, double K, double r, double q, double T, double T0, double? Tp)
+        public static GreeksDerivatives HestonForwardDigitalCallWithGreeks(double kappa, double theta, double rho, double v0, double sigma, double s0, double K, double r, double q, double T, double T0, double? Tp = null)
         {
             int verbosity = Engine.Verbose;
 
