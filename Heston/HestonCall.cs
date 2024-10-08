@@ -168,7 +168,7 @@ namespace HestonEstimator
         /// <paramref name="timeToPaymentDate"/>
         /// Time to the payment date
         /// </param>
-        internal HestonCall(HestonProcess process, double strike, double timeToMaturity, double? timeToPaymentDate)
+        internal HestonCall(HestonProcess process, double strike, double timeToMaturity, double? timeToPaymentDate = null)
         {
             this.kappa = process.k.fV();
             this.theta = process.theta.fV();
@@ -226,7 +226,7 @@ namespace HestonEstimator
                 timeToPaymentDate:this.timeToPaymentDate);
         }
 
-        public static double HestonCallPrice(double kappa, double theta, double rho, double v0, double sigma, double s0, double T, double K, double r, double q, double? timeToPaymentDate)
+        public static double HestonCallPrice(double kappa, double theta, double rho, double v0, double sigma, double s0, double T, double K, double r, double q, double? timeToPaymentDate = null)
         {
             var tp = timeToPaymentDate ?? T;
             if (Engine.Verbose > 0)
@@ -308,7 +308,7 @@ namespace HestonEstimator
         /// <param name="strike">The strike of the option.</param>
         /// <param name="timeToMaturity">The time to maturity of the option.</param>
         /// <returns>The put price</returns>
-        internal double HestonPutPrice(double strike, double timeToMaturity, double? timeToPaymentDate)
+        internal double HestonPutPrice(double strike, double timeToMaturity, double? timeToPaymentDate = null)
         {
             this.T = timeToMaturity;
             this.K = strike;
@@ -411,7 +411,7 @@ namespace HestonEstimator
         /// <param name="r">Risk free rate.</param>
         /// <param name="q">Dividend yield.</param>
         /// <returns>The price of a call option within the Heston model.</returns>
-        public static double HestonCallPrice(Vector x, double s0, double T, double K, double r, double q, double? timeToPaymentDate)
+        public static double HestonCallPrice(Vector x, double s0, double T, double K, double r, double q, double? timeToPaymentDate = null)
         {
             var kappa = x[0];
             var theta = x[1];
@@ -447,7 +447,7 @@ namespace HestonEstimator
         /// <param name="r">Risk free rate.</param>
         /// <param name="q">Dividend yield.</param>
         /// <returns>The price of a put option within the Heston model.</returns>
-        public static double HestonPutPrice(Vector x, double s0, double T, double K, double r, double q, double?timeToPaymentDate)
+        public static double HestonPutPrice(Vector x, double s0, double T, double K, double r, double q, double? timeToPaymentDate = null)
         {
             var kappa = x[0];
             var theta = x[1];
