@@ -417,6 +417,14 @@ namespace Heston
             return Math.Exp(-this.r.fV() * (t2 - t1));
         }
 
+        public double GetForwardPrice(int component, double t, double T)
+        {
+            // component in the context of Heston process is not used
+            var ratesDifference = this.r.fV() - this.q.fV();
+            // F(t,T) = S(t) * e^( (r-q)*(T-t) )
+            return Math.Exp(ratesDifference * (T - t)) * this.S0.fV();
+        }
+
 
         /// <summary>
         /// Calculate the price of a european call option.
