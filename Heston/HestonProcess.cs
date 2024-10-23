@@ -421,7 +421,8 @@ namespace Heston
         {
             // component in the context of Heston process is not used
             var ratesDifference = this.r.fV() - this.q.fV();
-            return Math.Exp(ratesDifference * (T - t));
+            // F(t,T) = S(t) * e^( (r-q)*(T-t) )
+            return Math.Exp(ratesDifference * (T - t)) * this.S0.fV();
         }
 
 
