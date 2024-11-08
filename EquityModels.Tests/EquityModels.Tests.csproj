@@ -8,6 +8,7 @@
     <AssemblyTitle>$(Title)</AssemblyTitle>
     <Description>Several test for Equity Models plugins.</Description>
     <Product>EquityModels.Tests</Product>
+    <EnableUnsafeBinaryFormatterSerialization>true</EnableUnsafeBinaryFormatterSerialization>
     <ConsolePause>false</ConsolePause>
     <IsPackable>false</IsPackable>
     <IsTestProject>true</IsTestProject>
