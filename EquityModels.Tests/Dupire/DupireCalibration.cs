@@ -160,7 +160,7 @@ namespace Dupire
             Console.WriteLine("Monte Carlo Price  = " + samplePrice);
             Console.WriteLine("Standard Deviation = " + sampleDevSt.ToString());
             double tol = 4.0 * sampleDevSt;
-            doc.WriteToFile("Dupire.bfair");
+            doc.WriteToXMLFile("Dupire.fair");
             Assert.LessOrEqual(Math.Abs(referencePrice - samplePrice), tol);
         }
     }
