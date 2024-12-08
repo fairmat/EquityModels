@@ -1388,6 +1388,50 @@ namespace Heston
         }
 
         /// <summary>
+        /// Calculate the price of a forward starting call percentage option.
+        /// </summary>
+        /// <param name="component">
+        /// The component of the process
+        /// </param>
+        /// <param name="strikeFraction">
+        /// The strike percentage of the option
+        /// <param name="fsTime">
+        /// The strike fixing date of the option 
+        /// <param name="timeToMaturity">
+        /// The time to maturity of the option: T-t
+        /// <param name="additionalInformation">"
+        /// Additional information regarding option
+        /// </param>
+        /// <returns>The option price</returns>
+        public GreeksDerivatives FSCallPercentage(int component, double strikeFraction, double fsTime, double timeToMaturity, Dictionary<string, object> additionalInformation = null, double? timeToPaymentDate = null)
+        {
+            throw new NotImplementedException();
+        }
+
+
+        /// <summary>
+        /// Calculate the price of a forward starting put percentage option.
+        /// </summary>
+        /// <param name="component">
+        /// The component of the process
+        /// </param>
+        /// <param name="strikeFraction">
+        /// The strike percentage of the option
+        /// <param name="fsTime">
+        /// The strike fixing date of the option 
+        /// <param name="timeToMaturity">
+        /// The time to maturity of the option: T-t
+        /// <param name="additionalInformation">"
+        /// Additional information regarding option
+        /// </param>
+        /// <returns>The option price</returns>
+        public GreeksDerivatives FSPutPercentage(int component, double strikeFraction, double fsTime, double timeToMaturity, Dictionary<string, object> additionalInformation = null, double? timeToPaymentDate = null)
+        {
+            throw new NotImplementedException();
+        }
+
+
+        /// <summary>
         /// Calculate the price of a forward starting digital call option.
         /// </summary>
         /// <param name="component">
