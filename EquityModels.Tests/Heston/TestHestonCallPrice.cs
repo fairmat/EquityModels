@@ -17,6 +17,7 @@
  */
 
 using System;
+using System.Numerics;
 using DVPLI;
 using HestonEstimator;
 using NUnit.Framework;
@@ -38,6 +39,7 @@ namespace Heston
         [Test]
         public void Test()
         {
+            /*
             double k = 0.9;
             double tau = 2.0;
 
@@ -48,7 +50,21 @@ namespace Heston
             double sigma = 0.2;
             double s0 = 1.0;
             double v0 = 0.3;
-            double rho = -0.8;
+            double rho = 0.8;
+            double T0 = 0.00001;
+            */
+            double k = 1;
+            double tau = 2.0;
+
+            double rate = 0.5;
+            double dy = 0.0;
+            double kappa = 1;
+            double theta = 0.4;
+            double sigma = 0.1;
+            double s0 = 1.0;
+            double v0 = 0.4;
+            double rho = 0.0;
+            double T0 = 0.001;
 
             // Calculates the theoretical value of the call.
             DVPLI.Vector param = new DVPLI.Vector(5);
@@ -58,13 +74,29 @@ namespace Heston
             param[3] = rho;
             param[4] = v0;
             double fairmatPrice = HestonCall.HestonCallPrice(param, s0, tau, k, rate, dy);
+            //double fairmatPriceF = HestonForwardAhlipRutkowski.HestonForwardCallPrice(kappa, theta, rho, v0, sigma, s0, k, rate, dy, tau, T0);
+            // in lucic paper we have 
+            // lambda * (vhat - v )
+            // in our notation we have
+            //kappa(theta-v)
+
+            double lambda = kappa;
+            double vhat = theta;
+            double eta = sigma;
+
+            var fairmatPriceLucic = (HestonForwardLucic.HestonForwardLucicCallPrice(lambda: lambda, rho: rho, eta: eta, T: tau, T0: T0, tau: tau-T0, vhat: vhat, v: v0, rate: rate, K: k)).Re;
             double tol = 1e-3;
             double benchmarkPrice = 0.339537359104676;
 
             Console.WriteLine("Theoretical Benchmark  Price = " + benchmarkPrice.ToString());
             Console.WriteLine("Theoretical Fairmat    Price = " + fairmatPrice);
+            //Console.WriteLine("Theoretical Fairmat forward  Price = " + fairmatPriceF);
+            Console.WriteLine("Theoretical Fairmat forward  Lucic  Price = " + fairmatPriceLucic);
+            var fairmatPriceApprox = HestonForwardApproximated.HestonForwardCallPrice(x: param, s0, T: tau, T0: T0, K: k, r: rate, q: dy);
+            var fairmatPriceApprox2 = HestonForwardApproximated.HestonForwardPercentageCallPrice(x: param, s0, T: tau, T0: T0, K: k, r: rate, q: dy);
 
             Assert.Less(Math.Abs(fairmatPrice - benchmarkPrice), tol);
+
         }
 
 
