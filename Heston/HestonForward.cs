@@ -572,6 +572,30 @@ namespace HestonEstimator
                 Tp: Tp?? T
                 );
         }
+        public static double HestonForwardPutPrice(Vector x, double s0, double T, double T0, double K, double r, double q, double? Tp = null)
+        {
+            var kappa = x[0];
+            var theta = x[1];
+            var sigma = x[2];
+            var rho = x[3];
+            var v0 = x[4];
+
+
+            return HestonForwardPutPrice(
+                kappa: kappa,
+                theta: theta,
+                sigma: sigma,
+                rho: rho,
+                v0: v0,
+                s0: s0,
+                T: T,
+                T0: T0,
+                K: K,
+                r: r,
+                q: q,
+                Tp: Tp ?? T
+                );
+        }
 
         public static double HestonForwardPercentageCallPrice(Vector x, double s0, double T, double T0, double K, double r, double q, Func<double, double, double> discountingFactorFunction = null, double? paymentTime = null)
         {
@@ -598,6 +622,32 @@ namespace HestonEstimator
                 paymentTime: paymentTime
                 );
         }
+        public static double HestonForwardPercentagePutPrice(Vector x, double s0, double T, double T0, double K, double r, double q, Func<double, double, double> discountingFactorFunction = null, double? paymentTime = null)
+        {
+            var kappa = x[0];
+            var theta = x[1];
+            var sigma = x[2];
+            var rho = x[3];
+            var v0 = x[4];
+
+
+            return HestonForwardPercentagePutPrice(
+                kappa: kappa,
+                theta: theta,
+                sigma: sigma,
+                rho: rho,
+                v0: v0,
+                s0: s0,
+                T: T,
+                T0: T0,
+                K: K,
+                r: r,
+                q: q,
+                discountingFactorFunction: discountingFactorFunction,
+                paymentTime: paymentTime
+                );
+        }
+
         public static double ExpectationCIRProcess(double x0, double a, double b, double t)
         {
             return x0 * Math.Exp(-a * t) + b * (1 - Math.Exp(-a * t));
@@ -679,7 +729,7 @@ namespace HestonEstimator
             var v_T0 = ExpectationCIRProcess(v0, kappa, theta, T0);
 
             Engine.Verbose = 0;
-            var c = HestonCall.HestonPercentageCallPrice(
+            var c = HestonCall.HestonUndiscountedCallPrice(
                 kappa: kappa,
                 theta: theta,
                 sigma: sigma,
@@ -702,7 +752,7 @@ namespace HestonEstimator
 
             if (verbosity > 0)
             {
-                Console.WriteLine($"Price of the Forward Starting Call Option is {forwardStartingCall}");
+                Console.WriteLine($"Price of the Forward Starting Percentage Call Option is {forwardStartingCall}");
             }
 
             return forwardStartingCall;
@@ -750,6 +800,60 @@ namespace HestonEstimator
             }
 
             return price;
+        }
+
+        public static double HestonForwardPercentagePutPrice(double kappa, double theta, double rho, double v0, double sigma, double s0, double K, double r, double q, double T, double T0, Func<double, double, double> discountingFactorFunction = null, double? paymentTime = null)
+        {
+            int verbosity = Engine.Verbose;
+            double Tp = paymentTime ?? T;
+            if (verbosity > 0)
+            {
+                Console.WriteLine("Calculating price of a FS call with Heston model");
+                Console.WriteLine("Heston Parameters");
+                Console.WriteLine("kappa\ttheta\tsigma\trho\tv0");
+                Console.WriteLine($"{kappa}\t{theta}\t{sigma}\t{rho}\t{v0}");
+                Console.WriteLine("Call Option Information");
+                Console.WriteLine("s0\tK\tT\tT0\tTimeToPaymentDate\tr\tq");
+                Console.WriteLine($"{s0}\t{K}\t{T}\t{T0}\t{Tp}\t{r}\t{q}");
+
+            }
+
+            if (discountingFactorFunction == null)
+            {
+                discountingFactorFunction = (t, T) => System.Math.Exp(-r * (T - t));
+            }
+
+            // v follows a CIR process so we take its expectations 
+            var v_T0 = ExpectationCIRProcess(v0, kappa, theta, T0);
+
+            Engine.Verbose = 0;
+            var c = HestonCall.HestonUndiscountedPutPrice(
+                kappa: kappa,
+                theta: theta,
+                sigma: sigma,
+                rho: rho,
+                v0: v_T0,
+                s0: 1.0,
+                T: T - T0,
+                K: K,
+                r: r,
+                q: q,
+                timeToPaymentDate: Tp);
+            Engine.Verbose = verbosity;
+
+            // call(K, T-S) --> Df(0,T-S) * undiscountedCall
+
+            // this is DF(0,Tp) * undiscountedCall
+            var discountingFactor = discountingFactorFunction(0, Tp);
+            var forwardStartingPut = discountingFactor * c;
+
+
+            if (verbosity > 0)
+            {
+                Console.WriteLine($"Price of the Forward Starting Percentage Put Option is {forwardStartingPut}");
+            }
+
+            return forwardStartingPut;
         }
 
         public static double HestonForwardDigitalPutPrice(double kappa, double theta, double rho, double v0, double sigma, double s0, double K, double r, double q, double T, double T0, double? Tp = null)
