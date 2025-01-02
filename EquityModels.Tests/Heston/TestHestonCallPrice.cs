@@ -336,7 +336,7 @@ namespace Heston
             double kappa = 2.5;
             double theta = 0.4;
             double sigma = 0.2;
-            double s0 = 10.0;
+            double s0 = 1.0;
             double v0 = 0.3;
             double rho = -0.8;
             double T0 = 0.01;
