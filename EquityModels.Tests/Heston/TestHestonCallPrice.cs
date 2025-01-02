@@ -17,6 +17,7 @@
  */
 
 using System;
+using System.ComponentModel.DataAnnotations;
 using System.Numerics;
 using DVPLI;
 using HestonEstimator;
@@ -339,7 +340,7 @@ namespace Heston
             double s0 = 10.0;
             double v0 = 0.3;
             double rho = -0.8;
-            double T0 = 1.0;
+            double T0 = 0.01;
 
             // Calculates the greeks.
             Engine.Verbose = 0;
@@ -351,7 +352,7 @@ namespace Heston
 
 
             var analyticalGreeks = HestonForwardApproximated.HestonForwardCallWithGreeks(kappa: kappa, theta: theta, sigma: sigma, rho: rho, v0: v0, s0: s0, T: tau, T0: T0, K: k, r: rate, q: dy);
-
+            var analyticalGreeksPercentage = HestonForwardApproximated.HestonForwardPercentageCallWithGreeks(kappa: kappa, theta: theta, sigma: sigma, rho: rho, v0: v0, s0: s0, T: tau, T0: T0, K: k, r: rate, q: dy);
 
             Assert.AreEqual(analyticalGreeks.Deltas[0], numericalDelta, 1e-3);
             Assert.AreEqual(analyticalGreeks.Gammas[0], numericalGamma, 1e-3);

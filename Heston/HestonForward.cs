@@ -380,6 +380,23 @@ namespace HestonEstimator
             return Complex.Sqrt(arg);
         }
 
+        public static Complex ModSqrt( Complex z)
+        {
+            var i = Complex.I;
+            double absZ = Complex.Abs(z);
+            int sgnb = 1;
+            if (z.Im < 0)
+            {
+                sgnb = -1;
+            }
+
+            //return Math.Sqrt((absZ + z.Re) / 2) + Math.Sqrt((absZ - z.Re) / 2) * i * sgnb;
+
+            double theta = Math.Atan(z.Im / z.Re);
+
+            return Math.Sqrt(Complex.Abs(z)) * (Math.Cos(theta / 2) + Complex.I * Math.Sin(theta / 2));
+        }
+
         public static Complex rPlus(double lambda, double rho, double eta, double j, double T, double T0, double kappa)
         {
             var beta0 = Beta(lambda: lambda, rho: rho, eta: eta, j: j, T: T, T0: T0, tau: 0.0, kappa: kappa);
@@ -710,7 +727,7 @@ namespace HestonEstimator
             double Tp = paymentTime ?? T;
             if (verbosity > 0)
             {
-                Console.WriteLine("Calculating price of a FS call with Heston model");
+                Console.WriteLine("Calculating price of a FS percentage call with Heston model");
                 Console.WriteLine("Heston Parameters");
                 Console.WriteLine("kappa\ttheta\tsigma\trho\tv0");
                 Console.WriteLine($"{kappa}\t{theta}\t{sigma}\t{rho}\t{v0}");
@@ -808,11 +825,11 @@ namespace HestonEstimator
             double Tp = paymentTime ?? T;
             if (verbosity > 0)
             {
-                Console.WriteLine("Calculating price of a FS call with Heston model");
+                Console.WriteLine("Calculating price of a FS percentage put with Heston model");
                 Console.WriteLine("Heston Parameters");
                 Console.WriteLine("kappa\ttheta\tsigma\trho\tv0");
                 Console.WriteLine($"{kappa}\t{theta}\t{sigma}\t{rho}\t{v0}");
-                Console.WriteLine("Call Option Information");
+                Console.WriteLine("Put Option Information");
                 Console.WriteLine("s0\tK\tT\tT0\tTimeToPaymentDate\tr\tq");
                 Console.WriteLine($"{s0}\t{K}\t{T}\t{T0}\t{Tp}\t{r}\t{q}");
 
@@ -1097,6 +1114,205 @@ namespace HestonEstimator
             return result;
 
         }
+
+
+        public static double FSPCallCalculateDelta(double s0, double K, double T, double T0, double r, double q, double kappa, double theta, double sigma, double rho, double v0, Func<double, double, double> discountingFactorFunction = null)
+        {
+            return 0.0;
+        }
+
+        public static double FSPCallCalculateGamma(double s0, double K, double T, double T0, double r, double q, double kappa, double theta, double sigma, double rho, double v0, Func<double, double, double> discountingFactorFunction = null)
+        {
+            return 0.0;
+        }
+
+        public static double FSPCallCalculateTheta(double s0, double K, double T, double T0, double r, double q, double kappa, double theta, double sigma, double rho, double v0, Func<double, double, double> discountingFactorFunction = null,double? paymentTime = null)
+        {
+            if (discountingFactorFunction == null)
+            {
+                discountingFactorFunction = (t, T) => System.Math.Exp(-r * (T - t));
+            }
+            var Tp = paymentTime ?? T;
+            var discountingFactor = discountingFactorFunction(0, Tp);
+            var discountingRate = -System.Math.Log(discountingFactor) / Tp;
+            var relativeBump = 0.01/100;
+            var derivativeDiscountFactor = (discountingFactorFunction(0, Tp + Tp * relativeBump) - discountingFactor) / (Tp * relativeBump);
+            var undiscountedCall = HestonCall.HestonUndiscountedCallPrice(
+                kappa: kappa,
+                theta: theta,
+                sigma: sigma,
+                rho: rho,
+                v0: ExpectationCIRProcess(v0, kappa, theta, T0),
+                s0: 1.0,
+                T: T - T0,
+                K: K,
+                r: r,
+                q: q,
+                timeToPaymentDate: Tp);
+            var hestonVega = HestonVega.VegaCall(
+                        kappa: kappa,
+                        theta: theta,
+                        rho: rho,
+                        v0: ExpectationCIRProcess(v0, kappa, theta, T0),
+                        sigma: sigma,
+                        s0: 1.0,
+                        T: T - T0,
+                        K: K,
+                        r: r,
+                        q: q,
+                        (_, _) => 1.0);
+            var derivativeOfvT0WRTt = - kappa * v0 * Math.Exp(- kappa * T0) + kappa * theta * Math.Exp(-kappa * T0); 
+
+            return derivativeDiscountFactor * undiscountedCall + derivativeOfvT0WRTt * hestonVega * undiscountedCall;
+        }
+
+        public static double FSPCallCalculateVega(double s0, double K, double T, double T0, double r, double q, double kappa, double theta, double sigma, double rho, double v0, Func<double, double, double> discountingFactorFunction = null, double? paymentTime = null)
+        {
+            if (discountingFactorFunction == null)
+            {
+                // setting discounting Rate equal to the risk free rate
+                discountingFactorFunction = (t, T) => System.Math.Exp(-r * (T - t));
+            }
+            // derive the formula for the vega
+
+            var Tp = paymentTime ?? T;
+            var discountingFactor = discountingFactorFunction(0, Tp);
+
+            return discountingFactor * derivativeExpectationCIRProcess(v0, kappa, theta, T0) * HestonVega.VegaCall(
+                        kappa: kappa,
+                        theta: theta,                        
+                        rho: rho,
+                        v0: ExpectationCIRProcess(v0, kappa, theta, T0),
+                        sigma: sigma,
+                        s0: 1.0,
+                        T: T - T0,
+                        K: K,
+                        r: r,
+                        q: q,
+                        (_,_) => 1.0);
+        }
+
+        public static double FSPCallCalculateRho(double s0, double K, double T, double T0, double r, double q, double kappa, double theta, double sigma, double rho, double v0, Func<double, double, double> discountingFactorFunction = null, double? paymentTime = null)
+        {
+            if (discountingFactorFunction == null)
+            {
+                // setting discounting Rate equal to the risk free rate
+                discountingFactorFunction = (t, T) => System.Math.Exp(-r * (T - t));
+            }
+            // derive the formula for the vega
+            
+            var Tp = paymentTime ?? T;
+            var discountingFactor = discountingFactorFunction(0, Tp);
+            var derivativeDiscountFactor = -Tp * discountingFactor;
+            var v_T0 = ExpectationCIRProcess(v0, kappa, theta, T0);
+            var undiscountedCall = HestonCall.HestonUndiscountedCallPrice(
+                kappa: kappa,
+                theta: theta,
+                sigma: sigma,
+                rho: rho,
+                v0: v_T0,
+                s0: 1.0,
+                T: T - T0,
+                K: K,
+                r: r,
+                q: q,
+                timeToPaymentDate: Tp); 
+
+            return derivativeDiscountFactor * undiscountedCall + discountingFactor * HestonRho.RhoCall(
+                        kappa: kappa,
+                        theta: theta,
+                        rho: rho,
+                        v0: ExpectationCIRProcess(v0, kappa, theta, T0),
+                        sigma: sigma,
+                        s0: 1.0,
+                        T: T - T0,
+                        K: K,
+                        r: r, q: q,
+                        (_, _) => 1.0);
+        }
+
+        public static GreeksDerivatives HestonForwardPercentageCallWithGreeks(double kappa, double theta, double rho, double v0, double sigma, double s0, double K, double r, double q, double T, double T0, Func<double, double, double> discountingFactorFunction = null, double? paymentTime = null)
+        {
+
+
+            int verbosity = Engine.Verbose;
+
+            if (verbosity > 0)
+            {
+                Console.WriteLine("Calculating price and greeks of a FS Call with Heston model");
+                Console.WriteLine("Heston Parameters");
+                Console.WriteLine("kappa\ttheta\tsigma\trho\tv0");
+                Console.WriteLine($"{kappa}\t{theta}\t{sigma}\t{rho}\t{v0}");
+                Console.WriteLine("Call Option Information");
+                Console.WriteLine("s0\tK\tT\tT0\tr\tq");
+                Console.WriteLine($"{s0}\t{K}\t{T}\t{T0}\t{r}\t{q}");
+            }
+
+            if (discountingFactorFunction == null)
+            {
+                // setting discounting Rate equal to the risk free rate
+                discountingFactorFunction = (t, T) => System.Math.Exp(-r * (T - t));
+            }
+            // derive the formula for the vega
+
+            var Tp = paymentTime ?? T;
+            var discountingFactor = discountingFactorFunction(0, Tp);
+
+            // v follows a CIR process so we take its expectations 
+            var v_T0 = ExpectationCIRProcess(v0, kappa, theta, T0);
+
+            Engine.Verbose = 0;
+
+            var c = HestonCall.HestonCallPrice(
+                kappa: kappa,
+                theta: theta,
+                sigma: sigma,
+                rho: rho,
+                v0: v_T0,
+                s0: 1.0,
+                T: T - T0,
+                K: K,
+                r: r,
+                q: q,
+                timeToPaymentDate: Tp);
+
+            var fscallMarkToMarket = s0 * Math.Exp(-q * T0) * c;
+
+            var fsCallDelta = 0.0;
+
+            var fsCallGamma = 0.0;
+
+            var fsCallTheta = HestonForwardApproximated.FSPCallCalculateTheta(kappa: kappa, theta: theta, sigma: sigma, rho: rho, v0: v0, s0: s0, T: T, T0: T0, K: K, r: r, q: q);
+
+
+            var fsCallVega = HestonForwardApproximated.FSPCallCalculateVega(kappa: kappa, theta: theta, sigma: sigma, rho: rho, v0: v0, s0: s0, T: T, T0: T0, K: K, r: r, q: q);
+
+            var rhoGreek = HestonForwardApproximated.FSPCallCalculateRho(kappa: kappa, theta: theta, sigma: sigma, rho: rho, v0: v0, s0: s0, T: T, T0: T0, K: K, r: r, q: q);
+            Engine.Verbose = verbosity;
+
+
+            var result = new GreeksDerivatives()
+            {
+                Deltas = (Vector)fsCallDelta,
+                Gammas = (Vector)fsCallGamma,
+                Theta = fsCallTheta,
+                Vegas = (Vector)fsCallVega,
+                MarkToMarket = fscallMarkToMarket,
+                Rho = rhoGreek
+            };
+
+            if (verbosity > 0)
+            {
+                Console.WriteLine("Price and Greeks of the Forward Starting Call Option");
+                Console.WriteLine("Delta\tGamma\tTheta\tVega\tRho\tPrice");
+                Console.WriteLine($"{result.Deltas[0]}\t{result.Gammas[0]}\t{result.Theta}\t{result.Vegas[0]}\t{result.Rho}\t{result.MarkToMarket}");
+            }
+
+
+            return result;
+
+        }
+
 
         public static double FSPutCalculateDelta(double s0, double K, double T, double T0, double r, double q, double kappa, double theta, double sigma, double rho, double v0)
         {
