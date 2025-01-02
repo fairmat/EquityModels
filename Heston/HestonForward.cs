@@ -675,7 +675,7 @@ namespace HestonEstimator
             return Math.Exp(-a * t);
         }
 
-        public static double tderivativeExpectationCIRProcess(double x0, double a, double b, double t)
+        public static double tDerivativeExpectationCIRProcess(double x0, double a, double b, double t)
         {
             return -a * x0 * Math.Exp(-a * t) + a * b * Math.Exp(-a * t);
         }
@@ -1167,7 +1167,7 @@ namespace HestonEstimator
                         q: q,
                         (_, _) => 1.0);
 
-            return derivativeDiscountFactor * undiscountedCall + tderivativeExpectationCIRProcess(v0, kappa, theta, T0) * hestonVega * discountingFactor;
+            return derivativeDiscountFactor * undiscountedCall + tDerivativeExpectationCIRProcess(v0, kappa, theta, T0) * hestonVega * discountingFactor;
         }
 
         public static double FSPCallCalculateVega(double s0, double K, double T, double T0, double r, double q, double kappa, double theta, double sigma, double rho, double v0, Func<double, double, double> discountingFactorFunction = null, double? paymentTime = null)
