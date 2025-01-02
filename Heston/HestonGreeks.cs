@@ -215,7 +215,7 @@ namespace HestonEstimator
                 K: K,
                 r: r,
                 q: q,
-                timeToPaymentDate: T - Tp
+                timeToPaymentDate: Tp
                 );
 
             Engine.Verbose = 0;
