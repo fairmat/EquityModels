@@ -222,29 +222,29 @@ FS^{BS}(\overline{K}, T, T_0, S_0, V_0)
 &= DF(t,T)  \mathbb{E}_t   \left[  S_{T_0}  \mathbb{E}_{T_0} \left[ \left( \frac{S_T}{S_{T_0}} - \overline{K}\right)^+\right]       \right]
 \\
 &=
-DF(t,T) \mathbb{E}_t \left[ S_{T_0}  \tilde{C}^{BS}(\overline{K}, T-T_0, 1 ,\sigma) \right] 
-\\ &=DF(t,T) S_0 e^{(r-q) (T_0-t)}   \tilde{C}^{BS}(\overline{K}, T-T_0, 1 ,\sigma) \ , 
+DF(t,T) \mathbb{E}_t \left[ S_{T_0}  \widetilde{C}^{BS}(\overline{K}, T-T_0, 1 ,\sigma) \right] 
+\\ &=DF(t,T) S_0 e^{(r-q) (T_0-t)}   \widetilde{C}^{BS}(\overline{K}, T-T_0, 1 ,\sigma) \ , 
 \end{aligned}
 $$
-where $\tilde{C}^{BS}(\overline{K}, T-T_0, 1 , \sigma)$ is the undiscounted price of a call option under the Black-Scholes framework, with initial underlying value equal to $1$, volatility parameter $\sigma$, strike $\overline{K}$ and time to maturity $T-T_0$.
+where $\widetilde{C}^{BS}(\overline{K}, T-T_0, 1 , \sigma)$ is the undiscounted price of a call option under the Black-Scholes framework, with initial underlying value equal to $1$, volatility parameter $\sigma$, strike $\overline{K}$ and time to maturity $T-T_0$.
 In the context of the Heston framework, it is possible to undertake the following approximation
 $$
 \begin{aligned}
-FS(\overline{K}, T, T_0, S_0, V_0) = 
+FS(\overline{K}, T, T_0, S_0, V_0) 
 &= DF(t,T) \mathbb{E}_t   \left[  S_{T_0}   \mathbb{E}_{T_0} \left[ \left( \frac{S_T}{S_{T_0}} - \overline{K}\right)^+\right]       \right]
 \\
 &\approx DF(t,T)  \mathbb{E}_t   \left[  S_{T_0}  \right] \times \mathbb{E}_t \left[ \mathbb{E}_{T_0} \left[ \left( \frac{S_T}{S_{T_0}} - \overline{K}\right)^+\right]       \right]
 \\ 
 &=
-DF(t,T)  S_0 e^{(r-q) (T_0-t)}   \tilde{C}(\overline{K}, T-T_0, 1, \tilde{V}) \ , 
+DF(t,T)  S_0 e^{(r-q) (T_0-t)}    \widetilde{C}(\overline{K}, T-T_0, 1, \widetilde{V}) \ , 
 \end{aligned}
 $$
 with
 \begin{equation}
 \label{vol-cir-exp}
-\tilde{V} = \mathbb{E}_t[ V_{T_0} ] = V_t  e^{-\kappa  (T_0 -t) } + \theta \left(1 - e^{-\kappa   (T_0 -t) }\right) \ ,
+\widetilde{V} = \mathbb{E}_t[ V_{T_0} ] = V_t  e^{-\kappa  (T_0 -t) } + \theta \left(1 - e^{-\kappa   (T_0 -t) }\right) \ ,
 \end{equation}
-where  $\tilde{C}$ indicates the undiscounted call price under the Heston model. 
+where  $\widetilde{C}$ indicates the undiscounted call price under the Heston model. 
 It should be stressed that this approach represents an approximation based on the assumption of absence of correlation between the stock process and the variance process. 
 
 The relative version of the forward starting call option can be priced similarly to what seen above
@@ -253,7 +253,7 @@ $$
 FSC_{Relative}(\overline{K}, T, T_0, S_0, V_0)  &= DF(t,T) \mathbb{E}_t   \left[\left(\frac{S_T}{S_{T_0}} - \overline{K} \right)^+\right] 
 \\
 &\approx
-DF(t,T)   \tilde{C}(\overline{K}, T-T_0, 1, \tilde{V}) \ . 
+DF(t,T)   \widetilde{C}(\overline{K}, T-T_0, 1, \widetilde{V}) \ . 
 \end{aligned}
 $$
 
@@ -627,7 +627,7 @@ where $\frac{\partial f_2(u)}{\partial V_0}$ is derived in Equation \ref{eq:deri
 
 \subsubsection{Greeks of a European digital put option}
 
-The price of a European digital put option ucan be derived from the price of a European digital call option using the fact that the sum of the prices of a digital call and a digital put is equal to $e^{-rT}$. This gives us:
+The price of a European digital put option ucan be derived from the price of a European digital call option using the fact that the sum of the prices of a digital call and a digital put is equal to $DF(0,T)$. This gives us:
 $$
 DP(K,T, S_0, V_0) = DF(0,T) - DC(K,T,  S_0, V_0) \ .
 $$
