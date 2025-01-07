@@ -743,9 +743,9 @@ namespace HestonEstimator
             Complex edT = Complex.Exp(-d * T);
             Complex numArg = 1.0 - g * edT;
             A = (theta * kappa) * (par * T - 2.0 * Complex.Log(numArg / (1.0 - g))) / (ss);
-            B = v0 * (par * (1.0 - edT) / numArg) / ss;
+            B = (par * (1.0 - edT) / numArg) / ss;
 
-            val = Complex.Exp(I * u * (Math.Log(s0) + r * T) + A + B);
+            val = Complex.Exp(I * u * (Math.Log(s0) + r * T) + A + B * v0);
             return val;
         }
 
