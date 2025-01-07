@@ -162,34 +162,40 @@ The price of an European call option with strike $K$ and time to maturity $T$ is
 
 \begin{equation}
 \begin{aligned}
-C(K,T, S_0, V_0) &= e^{-r T}\left(	\mathbb{E}\left[S_T 1_{S_T \geq K} \right] - K \mathbb{E}\left[1_{S_T \geq K} \right]\right) \\
-&=\frac{1}{2}S_0e^{-q T}+ \frac{e^{-r T}}{\pi}\int_0^{\infty}f_1(u) du  \\
-&- K e^{-r T}  \left[ \frac{1}{2} + \frac{1}{\pi}\int_0^{\infty}f_2(u) du \right] \\
-&=  \frac{1}{2}\left[S_0e^{-q T} - Ke^{-r T}\right] + \frac{e^{-r T}}{\pi}\int_0^{\infty}\left[f_1(u) - Kf_2(u)\right]du
+C(K,T, S_0, V_0) & = DF(0,T) \left(	\mathbb{E}\left[S_T 1_{S_T \geq K} \right] - K \mathbb{E}\left[1_{S_T \geq K} \right]\right) \\
+&= DF(0,T) \left[ \frac{1}{2}S_0e^{(r-q) T}+ \frac{1}{\pi}\int_0^{\infty}f_1(u) du  \right] \\
+&- DF(0,T) K   \left[ \frac{1}{2} + \frac{1}{\pi}\int_0^{\infty}f_2(u) du \right]  \\
+&=  \frac{DF(0,T)}{2}\left[S_0e^{(r-q) T} - K\right] + \frac{DF(0,T)}{\pi}\int_0^{\infty}\left[f_1(u) - Kf_2(u)\right]du
 \end{aligned}
 \end{equation}
 where the two functions $f_1$ and $f_2$ are
 \begin{align}
 f_1(u) & = \mathrm{Re}\left[\frac{\exp(-iu\log K)\phi(u-i,T)}{iu}\right]\\
-f_2(u) & = \mathrm{Re}\left[\frac{\exp(-iu\log K)\phi(u,T)}{iu}\right].
+f_2(u) & = \mathrm{Re}\left[\frac{\exp(-iu\log K)\phi(u,T)}{iu}\right],
 \end{align}
+and where $DF(t,T)$ represents the discounting factor between time $t$ and $T$. 
+In the case of a flat discounting curve with discounting rate equal to $r$ we have the following
+$$
+DF(t,T) = e^{-r(T-t)} \ .
+$$
+
 
 \subsection{Digital call price formula}
 \label{digital}
 The price of an European digital call option with strike $K$ and time to maturity $T$ is given by the formula
 \begin{equation}
 \begin{aligned}
-DC(K,T, S_0, V_0) &= e^{-r T} \mathbb{P}(S_T > K) \\ &=  e^{-r T} \mathbb{E}\left[1_{S_T > K}\right] \\
-&= e^{-r T}  \left[ \frac{1}{2} + \frac{1}{\pi}\int_0^{\infty}f_2(u) du \right] 
+DC(K,T, S_0, V_0) &=DF(0,T) \mathbb{P}(S_T > K) \\ &=  DF(0,T)\mathbb{E}\left[1_{S_T > K}\right] \\
+&= DF(0,T) \left[ \frac{1}{2} + \frac{1}{\pi}\int_0^{\infty}f_2(u) du \right] 
 \end{aligned}
 \end{equation}
 
 Similarly, the price of an European digital put option with strike $K$ and time to maturity $T$ is given by the formula
 \begin{equation}
 \begin{aligned}
-DP(K,T, S_0, V_0) &= e^{-r T} P(S_T \leq K) \\ 
-&= e^{-r T} (1-P(S_T > K))  \\ 
-& = e^{-r T}  \left[  \frac{1}{2} - \frac{1}{\pi}\int_0^{\infty}f_2(u) du \right] 
+DP(K,T, S_0, V_0) &= DF(0,T) P(S_T \leq K) \\ 
+&= DF(0,T) (1-P(S_T > K))  \\ 
+& = DF(0,T)  \left[  \frac{1}{2} - \frac{1}{\pi}\int_0^{\infty}f_2(u) du \right] 
 \end{aligned} 
 \end{equation}
 
@@ -205,7 +211,7 @@ The approach undertaken to price forward starting options is taken from \cite{ah
 To describe the approximate approach, let us consider a forward starting call options, with maturity $T$, strike date $T_0$, and strike percentage $\overline{K}$. 
 The pricing problem, at time $t$, consists in determining the following expectation
 $$
-FS(\overline{K}, T, T_0, S_0, V_0)  = e^{-r (T-t)}\mathbb{E}_t   \left[\left(S_T - \overline{K} S_{T_0}\right)^+\right] \ .
+FS(\overline{K}, T, T_0, S_0, V_0)  = DF(t,T) \mathbb{E}_t   \left[\left(S_T - \overline{K} S_{T_0}\right)^+\right] \ .
 $$
 In the case of $t \in [T_0, T)$ this option corresponds to a vanilla call options and it can be priced using the formula derived in \ref{call}. 
 In the case of $t \in [0, T_0)$ we can use an approximated approach taken from the Black-Scholes framework. 
@@ -213,11 +219,11 @@ Indeed, in the Black-Scholes framework the price of a forward starting call opti
 $$
 \begin{aligned}
 FS^{BS}(\overline{K}, T, T_0, S_0, V_0) 
-&= e^{-r (T_0-t)} \mathbb{E}_t   \left[  S_{T_0}  e^{-r (T-T_0)} \mathbb{E}_{T_0} \left[ \left( \frac{S_T}{S_{T_0}} - \overline{K}\right)^+\right]       \right]
+&= DF(t,T_0)  \mathbb{E}_t   \left[ DF(T_0,T) S_{T_0}  \mathbb{E}_{T_0} \left[ \left( \frac{S_T}{S_{T_0}} - \overline{K}\right)^+\right]       \right]
 \\
 &=
-e^{-r (T_0-t)} \mathbb{E}_t \left[ S_{T_0}  C^{BS}(\overline{K}, T-T_0, 1 ,\sigma) \right] 
-\\ &=S_0 e^{-q (T_0-t)}   C^{BS}(\overline{K}, T-T_0, 1 ,\sigma) \ , 
+DF(t,T_0) \mathbb{E}_t \left[ S_{T_0}  C^{BS}(\overline{K}, T-T_0, 1 ,\sigma) \right] 
+\\ &=DF(t,T_0) S_0 e^{(r-q) (T_0-t)}   C^{BS}(\overline{K}, T-T_0, 1 ,\sigma) \ , 
 \end{aligned}
 $$
 where $C^{BS}(\overline{K}, T-T_0, 1 , \sigma)$ is the price of a call option under the Black-Scholes framework, with initial underlying value equal to $1$, volatility parameter $\sigma$, strike $\overline{K}$ and time to maturity $T-T_0$.
@@ -225,12 +231,12 @@ In the context of the Heston framework, it is possible to undertake the followin
 $$
 \begin{aligned}
 FS(\overline{K}, T, T_0, S_0, V_0) = 
-&= e^{-r (T_0-t)} \mathbb{E}_t   \left[  S_{T_0}  e^{-r (T-T_0)} \mathbb{E}_{T_0} \left[ \left( \frac{S_T}{S_{T_0}} - \overline{K}\right)^+\right]       \right]
+&= DF(t,T_0) \mathbb{E}_t   \left[ DF(T_0,T) S_{T_0}   \mathbb{E}_{T_0} \left[ \left( \frac{S_T}{S_{T_0}} - \overline{K}\right)^+\right]       \right]
 \\
-&\approx e^{-r (T_0-t)} \mathbb{E}_t   \left[  S_{T_0}  \right] \times \mathbb{E}_t \left[ e^{-r (T-T_0)} \mathbb{E}_{T_0} \left[ \left( \frac{S_T}{S_{T_0}} - \overline{K}\right)^+\right]       \right]
+&\approx DF(t,T_0)  \mathbb{E}_t   \left[  S_{T_0}  \right] \times \mathbb{E}_t \left[ DF(T_0,T) \mathbb{E}_{T_0} \left[ \left( \frac{S_T}{S_{T_0}} - \overline{K}\right)^+\right]       \right]
 \\ 
 &=
-S_0 e^{-q (T_0-t)}   C(\overline{K}, T-T_0, 1, \tilde{V}) \ , 
+DF(t,T_0)  S_0 e^{(r-q) (T_0-t)}   C(\overline{K}, T-T_0, 1, \tilde{V}) \ , 
 \end{aligned}
 $$
 with
@@ -255,11 +261,11 @@ It should be stressed that this approach represents an approximation based on th
 
 To estimate the function $\mu(t)$ it is necessary to have the zero coupon curve and a curve describing the expected dividend yield at future dates. The zero coupon curve can be calculated from cash rates and swap rates observed in the market and will be denoted with $ZR(t)$. Expected dividend yields can be calculated through put-call parity relation. In the case of continuous constant dividend yield this relation states that
 \begin{equation}
-P(K, T, S_0, V_0) = C(K, T, S_0, V_0)  - S_0 e^{-qT} + Ke^{-rT}
+P(K, T, S_0, V_0) = C(K, T, S_0, V_0)  - DF(0,T) \left[ S_0 e^{(r-q)T} - K \right]
 \end{equation}
 Solving for $q$ we have
 \begin{equation}
-q = -\frac{1}{T}\ln\left[\frac{C(K, T, S_0, V_0)-P(K, T, S_0, V_0) + Ke^{-rT}}{S_0}\right].
+q = -\frac{1}{T}\ln\left[\frac{C(K, T, S_0, V_0)-P(K, T, S_0, V_0) +DF(0,T) K}{DF(0,T)S_0 e^{rT}}\right].
 \end{equation}
 Observing call and put prices for at the money options at different maturities we can calculate $q(t)$ and use this values in formula (\ref{eq:mu}).
 
@@ -288,7 +294,9 @@ In this section, we describe how the calculation of the Greeks can be computed i
 As described in section \ref{call}, the price of a European Call option under the Heston stochastic process is given by the following formula:
 
 $$
-C(K,T, S_0, V_0) = \frac{1}{2}\left[S_0e^{-q T} - Ke^{-r T}\right] + \frac{e^{-r T}}{\pi}\int_0^{\infty}\left[f_1(u) - Kf_2(u)\right]du
+C(K,T, S_0, V_0) = 
+%\frac{1}{2}\left[S_0e^{-q T} - Ke^{-r T}\right] + \frac{e^{-r T}}{\pi}\int_0^{\infty}\left[f_1(u) - Kf_2(u)\right]du
+\frac{DF(0,T)}{2}\left[S_0e^{(r-q) T} - K\right] + \frac{DF(0,T)}{\pi}\int_0^{\infty}\left[f_1(u) - Kf_2(u)\right]du
 $$
 
 
@@ -300,8 +308,8 @@ The Delta of a call option measures the rate of change of the option price with 
 
 $$
 \begin{aligned}
-\Delta_C(K,T, S_0, V_0) = \frac{ \partial C(K,T, S_0, V_0) }{\partial S_0} &=
- \frac{1}{2}e^{-q T} + \frac{e^{-r T}}{\pi} \int_0^{\infty}\frac{ \partial  }{\partial S_0}  \left[f_1(u) - Kf_2(u)\right]du
+\Delta_C(K,T, S_0, V_0) = \frac{ \partial C(K,T, S_0, V_0) }{\partial S_0} &= 
+ \frac{DF(0,T)}{2}e^{(r-q) T} \\ &+ \frac{DF(0,T)}{\pi} \int_0^{\infty}\frac{ \partial  }{\partial S_0}  \left[f_1(u) - Kf_2(u)\right]du
 \end{aligned}
 $$
 
@@ -327,7 +335,7 @@ $$
 \begin{aligned}
 \Gamma_C(K,T, S_0, V_0) =
 \frac{ \partial^2 C(K,T, S_0, V_0) }{\partial S_0^2} &=
- \frac{e^{-r T}}{\pi} \int_0^{\infty}\frac{ \partial^2  }{\partial S_0^2}  \left[f_1(u) - Kf_2(u)\right]du \ .
+ \frac{DF(0,T)}{\pi} \int_0^{\infty}\frac{ \partial^2  }{\partial S_0^2}  \left[f_1(u) - Kf_2(u)\right]du \ .
 \end{aligned}
 $$
 The second derivatives of the functions $ f_1(u) $ and $ f_2(u) $ with respect to $ S_0 $ are given by:
@@ -352,15 +360,29 @@ $$
 
 The Rho of a call option measures the rate of change of the option price with respect to changes in the risk-free interest rate. It can be represented as follows:
 
+%$$
+%\begin{aligned}
+%\text{Rho}_C(K,T, S_0, V_0) &= 
+%\frac{ \partial C(K,T, S_0, V_0) }{\partial r} 
+%\\ &=
+%\frac{T}{2} Ke^{-r T}  - \frac{T e^{-r T}} {\pi}\int_0^{\infty}\left[f_1(u) - Kf_2(u)\right]du 
+%\\&+ \frac{e^{-r T}} {\pi}\int_0^{\infty}\frac{ \partial \left[f_1(u) - Kf_2(u)\right]}{\partial r}   du \ .
+%\end{aligned}
+%$$
+% \frac{DF(0,T)}{2}\left[S_0e^{(r-q) T} - K\right] + \frac{DF(0,T)}{\pi}\int_0^{\infty}\left[f_1(u) - Kf_2(u)\right]du
 $$
 \begin{aligned}
 \text{Rho}_C(K,T, S_0, V_0) &= 
 \frac{ \partial C(K,T, S_0, V_0) }{\partial r} 
 \\ &=
-\frac{T}{2} Ke^{-r T}  - \frac{T e^{-r T}} {\pi}\int_0^{\infty}\left[f_1(u) - Kf_2(u)\right]du 
-\\&+ \frac{e^{-r T}} {\pi}\int_0^{\infty}\frac{ \partial \left[f_1(u) - Kf_2(u)\right]}{\partial r}   du \ .
+\frac{ \partial DF(0,T) }{\partial r} \left[ \frac{1}{2}\left[S_0e^{(r-q) T} - K\right] + \frac{1}{\pi}\int_0^{\infty}\left[f_1(u) - Kf_2(u)\right]du \right]
+\\
+&+
+DF(0,T)\left[ \frac{T}{2} S_0 e^{(r-q) T} +\frac{1} {\pi}\int_0^{\infty}\frac{ \partial \left[f_1(u) - Kf_2(u)\right]}{\partial r}   du \right]
 \end{aligned}
 $$
+
+
 The derivatives of the functions $ f_1(u) $ and $ f_2(u) $ with respect to $ r $ are given by:
 
 \begin{equation}
@@ -382,22 +404,21 @@ $$
 
 The Theta of a call option measures the rate of change of the option price with respect to changes in time, or the time decay of the option. It can be represented as follows:
 $$
-\Theta_C(K,T, S_0, V_0) = \frac{\partial C(K,T, S_0, V_0)}{\partial T} \ . 
+\Theta_C(K,T, S_0, V_0) = - \frac{\partial C(K,T, S_0, V_0)}{\partial T} \ . 
 $$
 
 Given the complexity of the Heston model, an analytical solution for the Theta could be complex. Therefore, we use the central difference method, which approximates the derivative of a function at a point.
 $$
-\Theta_C(K,T, S_0, V_0) \approx \frac{C(K,T+h) - C(K,T-h)}{2h} \ , 
+\Theta_C(K,T, S_0, V_0) \approx  \frac{C(K,T-h) - C(K,T+h)}{2h} \ , 
 $$
 where $h$ is a small increment in time. 
-
 
 \item \textbf{Vega} 
 
 In the Heston model, Vega measures the rate of change of the option price with respect to changes in the initial value of the variance $V_0$. It can be derived as follows:
 
 $$
-\text{Vega}_C(K,T, S_0, V_0) = \frac{\partial C(K,T, S_0, V_0)}{\partial V_0} = \frac{e^{-r T}}{\pi} \int_0^{\infty}\frac{ \partial  }{\partial V_0}  \left[f_1(u) - Kf_2(u)\right]du \ . 
+\text{Vega}_C(K,T, S_0, V_0) = \frac{\partial C(K,T, S_0, V_0)}{\partial V_0} = \frac{DF(0,T)}{\pi} \int_0^{\infty}\frac{ \partial  }{\partial V_0}  \left[f_1(u) - Kf_2(u)\right]du \ . 
 $$
 
 The derivatives of the functions $ f_1(u) $ and $ f_2(u) $ with respect to $ V_0$ are given by:
@@ -428,12 +449,12 @@ $$
 
 The Greeks of a European put option can be derived from the Greeks of a European call option using the put-call parity. The put-call parity is a principle that defines a relationship between the price of European put options and calls options of the same class (that is, with the same underlying asset, strike price and expiration date). It is given by:
 $$
-C(K, T, S_0, V_0) - P(K, T, S_0, V_0)  = S_0 e^{-q T} - K e^{-r T} \ .
+C(K, T, S_0, V_0) - P(K, T, S_0, V_0)  =DF(0,T)\left[ S_0 e^{(r-q) T} - K \right] \ .
 $$
 Rearranging the terms, we get the price of a European put option:
 
 $$
-P(K, T, S_0, V_0) = C(K, T, S_0, V_0) - \left(S_0 e^{-q T} - K e^{-r T}\right) \ .
+P(K, T, S_0, V_0) = C(K, T, S_0, V_0) - DF(0,T)\left[ S_0 e^{(r-q) T} - K \right] \ .
 $$
 
 Now, let's calculate the Greeks:
@@ -445,7 +466,7 @@ Now, let's calculate the Greeks:
 The Delta of a put option is the rate of change of the option price with respect to changes in the underlying asset's price. It can be calculated from the Delta of a call option as follows:
 
 $$
-\Delta_P(K,T,S_0,V_0) = \Delta_C(K,T, S_0, V_0) - e^{-q T} \ .
+\Delta_P(K,T,S_0,V_0) = \Delta_C(K,T, S_0, V_0) - DF(0,T) e^{(r-q) T} \ .
 $$
 
 
@@ -464,7 +485,12 @@ $$
 The Rho of a put option measures the rate of change of the option price with respect to changes in the risk-free interest rate. It can be represented as follows:
 
 $$
-\text{Rho}_P(K,T,S_0,V_0) = \text{Rho}_C(K,T, S_0, V_0) - KTe^{-rT} \ .
+\begin{aligned}
+\text{Rho}_P(K,T,S_0,V_0) &= \text{Rho}_C(K,T, S_0, V_0) - \frac{\partial DF(0,T)}{\partial r}\left[ S_0 e^{(r-q) T} - K \right] 
+\\
+&-
+DF(0,T) T S_0 e^{(r-q) T} 
+\end{aligned}
 $$
 
 
@@ -473,7 +499,7 @@ $$
 
 The Theta of a put option measures the rate of change of the option price with respect to changes in time, or the time decay of the option. Similary to the call option case, we approximate it using the central difference method. 
 $$
- \Theta_P(K,T,S_0,V_0) \approx \frac{P(K,T+h) - P(K,T-h)}{2h} \ ,
+ \Theta_P(K,T,S_0,V_0) \approx \frac{P(K,T-h) - P(K,T+h)}{2h} \ ,
 $$
 where $h$ is a small increment in time. 
 
@@ -503,7 +529,7 @@ $$
 \subsubsection{Greeks of a European digital call option}
 As described in section \ref{digital} the price of a European digital call option under the Heston stochastic process is given by
 $$
-DC(K,T, S_0, V_0) = e^{-r T}  \left[ \frac{1}{2} + \frac{1}{\pi}\int_0^{\infty}f_2(u) du \right]  \ .
+DC(K,T, S_0, V_0) = DF(0,T)  \left[ \frac{1}{2} + \frac{1}{\pi}\int_0^{\infty}f_2(u) du \right]  \ .
 $$
 
 
@@ -512,7 +538,7 @@ $$
 
 The Delta of a digital call option measures the rate of change of the option price with respect to changes in the underlying asset's price. For the digital call option, it can be calculated as follows:
 $$
-\Delta_{DC}(K,T,S_0,V_0) =  e^{-r T}   \frac{1}{\pi}\int_0^{\infty}  \frac{\partial f_2(u)}{\partial S_0}  du  \ , 
+\Delta_{DC}(K,T,S_0,V_0) =  DF(0,T)    \frac{1}{\pi}\int_0^{\infty}  \frac{\partial f_2(u)}{\partial S_0}  du  \ , 
 $$
 where $\frac{\partial f_2(u)}{\partial S_0}$ is derived in Equation \ref{eq:derivative-s0-f1-f2}.
 
@@ -522,7 +548,7 @@ where $\frac{\partial f_2(u)}{\partial S_0}$ is derived in Equation \ref{eq:deri
 The Gamma of an option measures the rate of change in the Delta with respect to changes in the underlying price. This is essentially measuring the second-order sensitivity of the option value to price changes in the underlying asset. For the digital call option, it can be calculated as follows:
 
 $$
-\Gamma_{DC}(K,T,S_0,V_0) =  e^{-r T}   \frac{1}{\pi}\int_0^{\infty}  \frac{\partial^2 f_2(u)}{\partial^2 S_0}  du \ , 
+\Gamma_{DC}(K,T,S_0,V_0) =  DF(0,T)    \frac{1}{\pi}\int_0^{\infty}  \frac{\partial^2 f_2(u)}{\partial^2 S_0}  du \ , 
 $$
 where $\frac{\partial^2 f_2(u)}{\partial S_0^2}$ is derived in Equation \ref{eq:s-derivative-s0-f1-f2}.
 
@@ -532,12 +558,25 @@ where $\frac{\partial^2 f_2(u)}{\partial S_0^2}$ is derived in Equation \ref{eq:
 The Rho of a digital call option measures the rate of change of the option price with respect to changes in the risk-free interest rate. It can be represented as follows:
 
 
+%$$
+%\begin{aligned}
+%\text{Rho}_{DC}(K,T,S_0,V_0) &= 
+%\frac{ \partial DC(K,T, S_0, V_0) }{\partial r} 
+%\\ &=
+%-T * DC(K,T, S_0, V_0) + e^{-r T}  \left[ \frac{1}{2} + \frac{1}{\pi}\int_0^{\infty} \frac{ \partial f_2(u)}{\partial r}  du \right] \ ,
+%\end{aligned}
+%$$
+
+
 $$
 \begin{aligned}
 \text{Rho}_{DC}(K,T,S_0,V_0) &= 
 \frac{ \partial DC(K,T, S_0, V_0) }{\partial r} 
 \\ &=
--T * DC(K,T, S_0, V_0) + e^{-r T}  \left[ \frac{1}{2} + \frac{1}{\pi}\int_0^{\infty} \frac{ \partial f_2(u)}{\partial r}  du \right] \ ,
+\frac{\partial DF(0,T)}{\partial r}  \left[ \frac{1}{2} + \frac{1}{\pi}\int_0^{\infty}f_2(u) du \right]  
+\\
+&+
+ DF(0,T)  \left[\frac{1}{\pi}\int_0^{\infty} \frac{ \partial f_2(u)}{\partial r}  du \right] \ .
 \end{aligned}
 $$
 where $\frac{\partial f_2(u)}{\partial r}$ is derived in Equation \ref{eq:derivative-r-f1-f2}.
@@ -549,7 +588,7 @@ where $\frac{\partial f_2(u)}{\partial r}$ is derived in Equation \ref{eq:deriva
 
 The Theta of a digital call option measures the rate of change of the option price with respect to changes in time, or the time decay of the option. Similary to the call option case, we approximate it using the central difference method. 
 $$
- \Theta_{DC}(K,T,S_0,V_0) \approx \frac{DC(K,T+h) - DC(K,T-h)}{2h} \  ,
+ \Theta_{DC}(K,T,S_0,V_0) \approx \frac{DC(K,T-h) - DC(K,T+h)}{2h} \  ,
 $$
 where $h$ is a small increment in time. 
 
@@ -559,7 +598,7 @@ where $h$ is a small increment in time.
 In the Heston model, Vega measures the rate of change of the option price with respect to changes in the initial value of the variance $V_0$. For a digital call option, it can be derived as follows:
 
 $$
-\text{Vega}_{DC}(K,T,S_0,V_0) = \frac{\partial DC(K,T, S_0, V_0)}{\partial V_0} = e^{-r T}   \frac{1}{\pi}\int_0^{\infty}\frac{\partial f_2(u)}{\partial V_0} du \ ,
+\text{Vega}_{DC}(K,T,S_0,V_0) = \frac{\partial DC(K,T, S_0, V_0)}{\partial V_0} =  \frac{DF(0,T)  }{\pi}\int_0^{\infty}\frac{\partial f_2(u)}{\partial V_0} du \ ,
 $$
 where $\frac{\partial f_2(u)}{\partial V_0}$ is derived in Equation \ref{eq:derivative-v0-f1-f2}.
 
@@ -583,7 +622,7 @@ where $\frac{\partial f_2(u)}{\partial V_0}$ is derived in Equation \ref{eq:deri
 
 The price of a European digital put option ucan be derived from the price of a European digital call option using the fact that the sum of the prices of a digital call and a digital put is equal to $e^{-rT}$. This gives us:
 $$
-DP(K,T, S_0, V_0) = e^{-rT} - DC(K,T,  S_0, V_0) \ .
+DP(K,T, S_0, V_0) = DF(0,T) - DC(K,T,  S_0, V_0) \ .
 $$
 Now, let's calculate the Greeks:
 
@@ -612,7 +651,7 @@ $$
 The Rho of a digital call option measures the rate of change of the option price with respect to changes in the risk-free interest rate. It can be represented as follows:
 $$
 \text{Rho}_{DP}(K,T,S_0,V_0) = 
--Te^{-rT} - \text{Rho}_{DC}(K,T,S_0,V_0) \ .
+\frac{\partial DF(0,T)}{\partial r}  - \text{Rho}_{DC}(K,T,S_0,V_0) \ .
 $$
 
 
@@ -620,7 +659,7 @@ $$
 
 The Theta of a digital put option measures the rate of change of the option price with respect to changes in time, or the time decay of the option. Similary to the call option case, we approximate it using the central difference method. 
 $$
- \Theta_{DP}(K,T,S_0,V_0) \approx \frac{DP(K,T+h) - DP(K,T-h)}{2h} \ ,
+ \Theta_{DP}(K,T,S_0,V_0) \approx \frac{DP(K,T-h) - DP(K,T+h)}{2h} \ ,
 $$
 where $h$ is a small increment in time. 
 
