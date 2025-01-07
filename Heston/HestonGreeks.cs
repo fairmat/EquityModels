@@ -2604,7 +2604,7 @@ namespace HestonEstimator
                 Console.WriteLine("Rho: {0}", Rho);
 
 
-            return rho;
+            return Rho;
         }
 
         public static double RhoPut(double kappa, double theta, double rho, double v0, double sigma, double s0, double T, double K, double r, double q)

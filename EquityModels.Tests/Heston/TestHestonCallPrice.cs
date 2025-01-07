@@ -377,8 +377,8 @@ namespace Heston
             double v0 = 0.3;
             double rho = -0.8;
             double T0 = 0.01;
-            var Tp = tau + 0.1;
-
+            var Tp = tau + 0.01;
+            
             double[] tenors = [0.1, 0.2, 0.5, 1, 2];
             double[] rates = [0.01, 0.015, 0.02, 0.05, 0.06];
             var df = new DVPLDOM.PFunction((DVPLI.Vector)tenors, (DVPLI.Vector)rates);
