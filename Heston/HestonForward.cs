@@ -1181,7 +1181,7 @@ namespace HestonEstimator
                         q: q
                         );
 
-            return derivativeDiscountFactor * undiscountedCall + tDerivativeExpectationCIRProcess(v0, kappa, theta, T0) * hestonVega * discountingFactor;
+            return - derivativeDiscountFactor * undiscountedCall - tDerivativeExpectationCIRProcess(v0, kappa, theta, T0) * hestonVega * discountingFactor;
         }
 
         public static double FSPCallCalculateVega(double s0, double K, double T, double T0, double r, double q, double kappa, double theta, double sigma, double rho, double v0, Func<double, double, double> discountingFactorFunction = null, double? paymentTime = null)
@@ -1221,7 +1221,7 @@ namespace HestonEstimator
             
             var Tp = paymentTime ?? T;
             var discountingFactor = discountingFactorFunction(0, Tp);
-            var derivativeDiscountFactor = -Tp * discountingFactor;
+            var derivativeDiscountFactor = - Tp * discountingFactor;
             var v_T0 = ExpectationCIRProcess(v0, kappa, theta, T0);
             var undiscountedCall = HestonCall.HestonUndiscountedCallPrice(
                 kappa: kappa,

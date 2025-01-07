@@ -203,6 +203,7 @@ namespace HestonEstimator
 
             var Tp = paymentTime ?? T;
             var discountingFactor = discountingFactorFunction(0, Tp);
+            var s = Tp - T;
 
             Func<double, double> callPrice = (double timeToMat) => HestonCall.HestonCallPrice(
                 kappa: kappa,
@@ -215,7 +216,9 @@ namespace HestonEstimator
                 K: K,
                 r: r,
                 q: q,
-                timeToPaymentDate: Tp
+                discountingFactorFunction: discountingFactorFunction,
+                timeToPaymentDate: s + timeToMat
+
                 );
 
             Engine.Verbose = 0;

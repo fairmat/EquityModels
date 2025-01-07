@@ -226,7 +226,7 @@ namespace HestonEstimator
                 timeToPaymentDate:this.timeToPaymentDate);
         }
 
-        public static double HestonCallPrice(double kappa, double theta, double rho, double v0, double sigma, double s0, double T, double K, double r, double q, double? timeToPaymentDate = null)
+        public static double HestonCallPrice(double kappa, double theta, double rho, double v0, double sigma, double s0, double T, double K, double r, double q, Func<double, double, double> discountingFactorFunction = null, double? timeToPaymentDate = null)
         {
             var tp = timeToPaymentDate ?? T;
             if (Engine.Verbose > 0)
@@ -240,7 +240,11 @@ namespace HestonEstimator
                 Console.WriteLine("{0}\t{1}\t{2}\t{3}\t{4}\t{5}", s0, K, T,timeToPaymentDate, r, q);
 
             }
-
+            if (discountingFactorFunction == null)
+            {
+                // setting discounting Rate equal to the risk free rate
+                discountingFactorFunction = (t, T) => System.Math.Exp(-r * (T -t));
+            }
             double F = s0 * Math.Exp((r - q) * T);
             double firstTerm = 0.5 * (F - K);
             double a = 1E-8;
@@ -254,7 +258,7 @@ namespace HestonEstimator
 
             double unDiscountedCall =  (firstTerm + integral / Math.PI);
 
-            double call = Math.Exp(-r * tp) * unDiscountedCall;
+            double call = discountingFactorFunction(0, tp) * unDiscountedCall;
 
             if (Engine.Verbose > 0)
             {
