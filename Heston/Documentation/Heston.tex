@@ -219,24 +219,24 @@ Indeed, in the Black-Scholes framework the price of a forward starting call opti
 $$
 \begin{aligned}
 FS^{BS}(\overline{K}, T, T_0, S_0, V_0) 
-&= DF(t,T_0)  \mathbb{E}_t   \left[ DF(T_0,T) S_{T_0}  \mathbb{E}_{T_0} \left[ \left( \frac{S_T}{S_{T_0}} - \overline{K}\right)^+\right]       \right]
+&= DF(t,T)  \mathbb{E}_t   \left[  S_{T_0}  \mathbb{E}_{T_0} \left[ \left( \frac{S_T}{S_{T_0}} - \overline{K}\right)^+\right]       \right]
 \\
 &=
-DF(t,T_0) \mathbb{E}_t \left[ S_{T_0}  C^{BS}(\overline{K}, T-T_0, 1 ,\sigma) \right] 
-\\ &=DF(t,T_0) S_0 e^{(r-q) (T_0-t)}   C^{BS}(\overline{K}, T-T_0, 1 ,\sigma) \ , 
+DF(t,T) \mathbb{E}_t \left[ S_{T_0}  \tilde{C}^{BS}(\overline{K}, T-T_0, 1 ,\sigma) \right] 
+\\ &=DF(t,T) S_0 e^{(r-q) (T_0-t)}   \tilde{C}^{BS}(\overline{K}, T-T_0, 1 ,\sigma) \ , 
 \end{aligned}
 $$
-where $C^{BS}(\overline{K}, T-T_0, 1 , \sigma)$ is the price of a call option under the Black-Scholes framework, with initial underlying value equal to $1$, volatility parameter $\sigma$, strike $\overline{K}$ and time to maturity $T-T_0$.
+where $\tilde{C}^{BS}(\overline{K}, T-T_0, 1 , \sigma)$ is the undiscounted price of a call option under the Black-Scholes framework, with initial underlying value equal to $1$, volatility parameter $\sigma$, strike $\overline{K}$ and time to maturity $T-T_0$.
 In the context of the Heston framework, it is possible to undertake the following approximation
 $$
 \begin{aligned}
 FS(\overline{K}, T, T_0, S_0, V_0) = 
-&= DF(t,T_0) \mathbb{E}_t   \left[ DF(T_0,T) S_{T_0}   \mathbb{E}_{T_0} \left[ \left( \frac{S_T}{S_{T_0}} - \overline{K}\right)^+\right]       \right]
+&= DF(t,T) \mathbb{E}_t   \left[  S_{T_0}   \mathbb{E}_{T_0} \left[ \left( \frac{S_T}{S_{T_0}} - \overline{K}\right)^+\right]       \right]
 \\
-&\approx DF(t,T_0)  \mathbb{E}_t   \left[  S_{T_0}  \right] \times \mathbb{E}_t \left[ DF(T_0,T) \mathbb{E}_{T_0} \left[ \left( \frac{S_T}{S_{T_0}} - \overline{K}\right)^+\right]       \right]
+&\approx DF(t,T)  \mathbb{E}_t   \left[  S_{T_0}  \right] \times \mathbb{E}_t \left[ \mathbb{E}_{T_0} \left[ \left( \frac{S_T}{S_{T_0}} - \overline{K}\right)^+\right]       \right]
 \\ 
 &=
-DF(t,T_0)  S_0 e^{(r-q) (T_0-t)}   C(\overline{K}, T-T_0, 1, \tilde{V}) \ , 
+DF(t,T)  S_0 e^{(r-q) (T_0-t)}   \tilde{C}(\overline{K}, T-T_0, 1, \tilde{V}) \ , 
 \end{aligned}
 $$
 with
@@ -244,11 +244,18 @@ with
 \label{vol-cir-exp}
 \tilde{V} = \mathbb{E}_t[ V_{T_0} ] = V_t  e^{-\kappa  (T_0 -t) } + \theta \left(1 - e^{-\kappa   (T_0 -t) }\right) \ ,
 \end{equation}
-
+where  $\tilde{C}$ indicates the undiscounted call price under the Heston model. 
 It should be stressed that this approach represents an approximation based on the assumption of absence of correlation between the stock process and the variance process. 
 
-
-
+The relative version of the forward starting call option can be priced similarly to what seen above
+$$
+\begin{aligned}
+FSC_{Relative}(\overline{K}, T, T_0, S_0, V_0)  &= DF(t,T) \mathbb{E}_t   \left[\left(\frac{S_T}{S_{T_0}} - \overline{K} \right)^+\right] 
+\\
+&\approx
+DF(t,T)   \tilde{C}(\overline{K}, T-T_0, 1, \tilde{V}) \ . 
+\end{aligned}
+$$
 
 
 
