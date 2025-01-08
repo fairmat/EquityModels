@@ -440,6 +440,46 @@ namespace Heston
         }
 
         [Test]
+        public void TestGreeksFSPPut()
+        {
+            double k = 0.9;
+            double tau = 2.0;
+
+            double rate = 0.1;
+            double dy = 0.07;
+            double kappa = 2.5;
+            double theta = 0.4;
+            double sigma = 0.2;
+            double s0 = 1.0;
+            double v0 = 0.3;
+            double rho = -0.8;
+            double T0 = 0.01;
+            var Tp = tau + 0.01;
+
+            double[] tenors = [0.1, 0.2, 0.5, 1, 2];
+            double[] rates = [0.01, 0.015, 0.02, 0.05, 0.06];
+            var df = new DVPLDOM.PFunction((DVPLI.Vector)tenors, (DVPLI.Vector)rates);
+            Func<double, double, double> discountingFunction = (t, T) => df.Evaluate(T);
+
+            // Calculates the greeks.
+            Engine.Verbose = 0;
+
+            (var numericalDelta, var numericalGamma) = HestonNumericalGreeks.DeltaGammaFSPPut(kappa: kappa, theta: theta, sigma: sigma, rho: rho, v0: v0, s0: s0, T: tau, T0: T0, K: k, r: rate, q: dy, discountingFactorFunction: discountingFunction, timeToPaymentDate: Tp);
+            var numericalRho = HestonNumericalGreeks.RhoFSPPut(kappa: kappa, theta: theta, sigma: sigma, rho: rho, v0: v0, s0: s0, T: tau, T0: T0, K: k, r: rate, q: dy, discountingFactorFunction: discountingFunction, Tp: Tp);
+            var numericalVega = HestonNumericalGreeks.VegaFSPPut(kappa: kappa, theta: theta, sigma: sigma, rho: rho, v0: v0, s0: s0, T: tau, T0: T0, K: k, r: rate, q: dy, discountingFactorFunction: discountingFunction, Tp: Tp);
+            var numericalTheta = HestonNumericalGreeks.ThetaFSPPut(kappa: kappa, theta: theta, sigma: sigma, rho: rho, v0: v0, s0: s0, T: tau, T0: T0, K: k, r: rate, q: dy, discountingFactorFunction: discountingFunction, Tp: Tp);
+
+
+            var analyticalGreeksPercentage = HestonForwardApproximated.HestonForwardPercentagePutWithGreeks(kappa: kappa, theta: theta, sigma: sigma, rho: rho, v0: v0, s0: s0, T: tau, T0: T0, K: k, r: rate, q: dy, discountingFactorFunction: discountingFunction, paymentTime: Tp);
+
+            Assert.AreEqual(analyticalGreeksPercentage.Deltas[0], numericalDelta, 1e-3);
+            Assert.AreEqual(analyticalGreeksPercentage.Gammas[0], numericalGamma, 1e-3);
+            Assert.AreEqual(analyticalGreeksPercentage.Vegas[0], numericalVega, 1e-3);
+            Assert.AreEqual(analyticalGreeksPercentage.Theta, numericalTheta, 1e-3);
+            Assert.AreEqual(analyticalGreeksPercentage.Rho, numericalRho, 1e-3);
+        }
+
+        [Test]
         public void TestGreeksFSDigitalPut()
         {
             double k = 0.9;
