@@ -74,24 +74,17 @@ namespace Heston
             param[3] = rho;
             param[4] = v0;
             double fairmatPrice = HestonCall.HestonCallPrice(param, s0, tau, k, rate, dy);
-            //double fairmatPriceF = HestonForwardAhlipRutkowski.HestonForwardCallPrice(kappa, theta, rho, v0, sigma, s0, k, rate, dy, tau, T0);
-            // in lucic paper we have 
-            // lambda * (vhat - v )
-            // in our notation we have
-            //kappa(theta-v)
 
             double lambda = kappa;
             double vhat = theta;
             double eta = sigma;
 
-            var fairmatPriceLucic = (HestonForwardLucic.HestonForwardLucicCallPrice(lambda: lambda, rho: rho, eta: eta, T: tau, T0: T0, tau: tau-T0, vhat: vhat, v: v0, rate: rate, K: k)).Re;
             double tol = 1e-3;
             double benchmarkPrice = 0.339537359104676;
 
             Console.WriteLine("Theoretical Benchmark  Price = " + benchmarkPrice.ToString());
             Console.WriteLine("Theoretical Fairmat    Price = " + fairmatPrice);
-            //Console.WriteLine("Theoretical Fairmat forward  Price = " + fairmatPriceF);
-            Console.WriteLine("Theoretical Fairmat forward  Lucic  Price = " + fairmatPriceLucic);
+
             var fairmatPriceApprox = HestonForwardApproximated.HestonForwardCallPrice(x: param, s0, T: tau, T0: T0, K: k, r: rate, q: dy);
             var fairmatPriceApprox2 = HestonForwardApproximated.HestonForwardPercentageCallPrice(x: param, s0, T: tau, T0: T0, K: k, r: rate, q: dy);
 
@@ -417,6 +410,11 @@ namespace Heston
             double v0 = 0.3;
             double rho = -0.8;
             double T0 = 1.0;
+
+            double[] tenors = [0.1, 0.2, 0.5, 1, 2];
+            double[] rates = [0.01, 0.015, 0.02, 0.05, 0.06];
+            var df = new DVPLDOM.PFunction((DVPLI.Vector)tenors, (DVPLI.Vector)rates);
+            Func<double, double, double> discountingFunction = (t, T) => df.Evaluate(T);
 
             // Calculates the greeks.
             Engine.Verbose = 0;
