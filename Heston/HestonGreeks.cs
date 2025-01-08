@@ -41,8 +41,12 @@ namespace HestonEstimator
 
         #region call options numerical greeks
 
-        public static (double, double) DeltaGammaCall(double kappa, double theta, double rho, double v0, double sigma, double s0, double T, double K, double r, double q, double bumpPercentage = 0.01, double? unBumpedPrice = null, double? Tp = null)
+        public static (double, double) DeltaGammaCall(double kappa, double theta, double rho, double v0, double sigma, double s0, double T, double K, double r, double q, double bumpPercentage = 0.01, double? unBumpedPrice = null, double? Tp = null, Func<double, double, double> discountingFactorFunction = null)
         {
+            if (discountingFactorFunction == null)
+            {
+               discountingFactorFunction = (t, T) => System.Math.Exp(-r * (T - t));
+            }
 
             if (!unBumpedPrice.HasValue)
             {
@@ -57,7 +61,8 @@ namespace HestonEstimator
                     K: K,
                     r: r,
                     q: q,
-                    timeToPaymentDate: Tp
+                    timeToPaymentDate: Tp, 
+                    discountingFactorFunction: discountingFactorFunction
                     );
             }
 
@@ -74,7 +79,8 @@ namespace HestonEstimator
                 K: K,
                 r: r,
                 q: q, 
-                timeToPaymentDate: Tp
+                timeToPaymentDate: Tp, 
+                discountingFactorFunction: discountingFactorFunction
                 );
 
             double callPriceBumpDown = HestonCall.HestonCallPrice(
@@ -88,7 +94,8 @@ namespace HestonEstimator
                 K: K,
                 r: r,
                 q: q,
-                timeToPaymentDate: Tp
+                timeToPaymentDate: Tp, 
+                discountingFactorFunction:discountingFactorFunction
                 );
 
             var delta = (callPriceBumpUp - callPriceBumpDown) / (2 * deltaS);
@@ -96,9 +103,14 @@ namespace HestonEstimator
             return (delta, gamma);
         }
 
-        public static double VegaCall(double kappa, double theta, double rho, double v0, double sigma, double s0, double T, double K, double r, double q, double bumpPercentage = 0.01, double? timeToPaymentDate = null)
+        public static double VegaCall(double kappa, double theta, double rho, double v0, double sigma, double s0, double T, double K, double r, double q, double bumpPercentage = 0.01, double? timeToPaymentDate = null, Func<double, double, double> discountingFactorFunction = null)
         {
             int verbosity = Engine.Verbose;
+
+            if (discountingFactorFunction == null)
+            {
+                discountingFactorFunction = (t, T) => System.Math.Exp(-r * (T - t));
+            }
 
             if (verbosity > 0)
             {
@@ -123,7 +135,8 @@ namespace HestonEstimator
                 K: K,
                 r: r,
                 q: q,
-                timeToPaymentDate: timeToPaymentDate
+                timeToPaymentDate: timeToPaymentDate, 
+                discountingFactorFunction: discountingFactorFunction
                 );
 
             Engine.Verbose = 0;
@@ -138,7 +151,7 @@ namespace HestonEstimator
             return vega;
         }
 
-        public static double RhoCall(double kappa, double theta, double rho, double v0, double sigma, double s0, double T, double K, double r, double q, double bumpPercentage = 0.01, double? Tp = null)
+        public static double RhoCall(double kappa, double theta, double rho, double v0, double sigma, double s0, double T, double K, double r, double q, double bumpPercentage = 0.01, double? Tp = null, Func<double, double, double> discountingFactorFunction = null)
         {
             int verbosity = Engine.Verbose;
 
@@ -153,6 +166,20 @@ namespace HestonEstimator
                 Console.WriteLine("{0}\t{1}\t{2}\t{3}\t{4}", s0, K, T, Tp, r, q);
             }
 
+            if (discountingFactorFunction == null)
+            {
+                discountingFactorFunction = (t, T) => System.Math.Exp(-r * (T - t));
+            }
+
+            double DiscountingFunctionAsFunctionOfIR(double IR, double t, double T)
+            {
+                Func<double, double, double> discountingRate = (t, T) => -System.Math.Log(discountingFactorFunction(t, T)) / (T - t);
+                var spread = discountingRate(t, T) - r;
+                // r = discountingRate(t,T) - spread
+                // discountingRate(t,T) = r + spread
+                return System.Math.Exp(-(IR + spread) * (T - t));
+            }
+
             Func<double, double> callPrice = (double interestRate) => HestonCall.HestonCallPrice(
                 kappa: kappa,
                 theta: theta,
@@ -164,7 +191,10 @@ namespace HestonEstimator
                 K: K,
                 r: interestRate,
                 q: q,
-                timeToPaymentDate:Tp);
+                timeToPaymentDate:Tp, 
+                discountingFactorFunction: (t,T) => DiscountingFunctionAsFunctionOfIR(interestRate, t, T)
+                );
+
 
             Engine.Verbose = 0;
             var rhoGreek = GreeksBumper(bumpPercentage, r, callPrice);
@@ -982,7 +1012,7 @@ namespace HestonEstimator
 
         }
 
-        public static double RhoFSPCall(double kappa, double theta, double rho, double v0, double sigma, double s0, double T, double K, double r, double q, double T0, double bumpPercentage = 0.01, Func<double, double, double> discountingFactorFunction = null, double? Tp = null)
+        public static double RhoFSPCall(double kappa, double theta, double rho, double v0, double sigma, double s0, double T, double K, double r, double q, double T0, double bumpPercentage = 0.0001, Func<double, double, double> discountingFactorFunction = null, double? Tp = null)
         {
             int verbosity = Engine.Verbose;
             if (verbosity > 0)
@@ -2132,7 +2162,7 @@ namespace HestonEstimator
 
         }
 
-        public static double DeltaCall(double kappa, double theta, double rho, double v0, double sigma, double s0, double T, double K, double r, double q)
+        public static double DeltaCall(double kappa, double theta, double rho, double v0, double sigma, double s0, double T, double K, double r, double q, Func<double, double, double> discountingFactorFunction =null, double? paymentTime = null)
         {
 
             if (Engine.Verbose > 0)
@@ -2147,6 +2177,12 @@ namespace HestonEstimator
 
             }
 
+            if (discountingFactorFunction == null)
+            {
+                discountingFactorFunction = (t, T) => System.Math.Exp(-r * (T - t));
+            }
+
+            var Tp = paymentTime ?? T;
             double F = 1.0 * Math.Exp((r - q) * T);
             double firstTerm = 0.5 * F;
             double a = 1E-8;
@@ -2160,7 +2196,7 @@ namespace HestonEstimator
 
             double delta = (firstTerm + integral / Math.PI);
 
-            double adjustedDelta = Math.Exp(-r * T) * delta;
+            double adjustedDelta = discountingFactorFunction(0,Tp) * delta;
 
             if (Engine.Verbose > 0)
                 Console.WriteLine("Delta: {0}", adjustedDelta);
@@ -2317,7 +2353,7 @@ namespace HestonEstimator
 
         }
 
-        public static double GammaCall(double kappa, double theta, double rho, double v0, double sigma, double s0, double T, double K, double r, double q)
+        public static double GammaCall(double kappa, double theta, double rho, double v0, double sigma, double s0, double T, double K, double r, double q, Func<double, double, double> discountingFactorFunction = null, double? paymentTime = null)
         {
 
             if (Engine.Verbose > 0)
@@ -2332,6 +2368,12 @@ namespace HestonEstimator
 
             }
 
+            if (discountingFactorFunction == null)
+            {
+                discountingFactorFunction = (t, T) => System.Math.Exp(-r * (T - t));
+            }
+
+            var Tp = paymentTime ?? T;
             double firstTerm = 0.0;
             double a = 1E-8;
             double b = 1000.0;
@@ -2344,7 +2386,7 @@ namespace HestonEstimator
 
             double gamma = (firstTerm + integral / Math.PI);
 
-            double adjustedGamma = Math.Exp(-r * T) * gamma;
+            double adjustedGamma = discountingFactorFunction(0,Tp) * gamma;
 
             if (Engine.Verbose > 0)
                 Console.WriteLine("Gamma: {0}", adjustedGamma);
@@ -2545,30 +2587,8 @@ namespace HestonEstimator
                 discountingFactorFunction = (t, T) => System.Math.Exp(-r * (T - t));
             }
 
-            if (Engine.Verbose > 0)
-            {
-                Console.WriteLine("Calculating vega of a call with Heston model");
-                Console.WriteLine("Heston Parameters");
-                Console.WriteLine("kappa\ttheta\tsigma\trho\tv0");
-                Console.WriteLine("{0}\t{1}\t{2}\t{3}\t{4}", kappa, theta, sigma, rho, v0);
-                Console.WriteLine("Call Option Information");
-                Console.WriteLine("s0\tK\tT\tr\tq");
-                Console.WriteLine("{0}\t{1}\t{2}\t{3}\t{4}", s0, K, T, r, q);
-
-            }
-
             var Tp = paymentTime ?? T;
-            double a = 1E-8;
-            double b = 1000.0;
-
-            
-
-            TAEDelegateFunction1D functionToIntegrate = (double u) => IntegrandFunc(u: u, kappa: kappa, theta: theta, sigma: sigma, rho: rho, v0: v0, s0: s0, r: r, q: q, T: T, K: K);
-            double part1 = PerformIntegral(a, b, functionToIntegrate);
-
-            double integral = part1 + a * functionToIntegrate(a / 2.0);
-
-            double v = integral / Math.PI ;
+            var v = VegaUndiscountedCall(kappa, theta, rho, v0, sigma, s0, T, K, r, q);
 
             double adjustedVega = discountingFactorFunction(0, Tp) * v;
 
@@ -2579,7 +2599,7 @@ namespace HestonEstimator
             return adjustedVega;
         }
 
-        public static double VegaUndiscountedCall(double kappa, double theta, double rho, double v0, double sigma, double s0, double T, double K, double r, double q, double? paymentTime = null)
+        public static double VegaUndiscountedCall(double kappa, double theta, double rho, double v0, double sigma, double s0, double T, double K, double r, double q)
         {
             if (Engine.Verbose > 0)
             {
@@ -2593,20 +2613,15 @@ namespace HestonEstimator
 
             }
 
-            var Tp = paymentTime ?? T;
             double a = 1E-8;
             double b = 1000.0;
-
-
 
             TAEDelegateFunction1D functionToIntegrate = (double u) => IntegrandFunc(u: u, kappa: kappa, theta: theta, sigma: sigma, rho: rho, v0: v0, s0: s0, r: r, q: q, T: T, K: K);
             double part1 = PerformIntegral(a, b, functionToIntegrate);
 
             double integral = part1 + a * functionToIntegrate(a / 2.0);
 
-            double v = integral / Math.PI;
-
-            double adjustedVega = v;
+            double adjustedVega = integral / Math.PI;
 
             if (Engine.Verbose > 0)
                 Console.WriteLine("Vega: {0}", adjustedVega);
@@ -2805,58 +2820,19 @@ namespace HestonEstimator
                 // setting discounting Rate equal to the risk free rate
                 discountingFactorFunction = (t, T) => System.Math.Exp(-r * (T - t));
             }
-            // derive the formula for the vega
 
             var Tp = paymentTime ?? T;
             var discountingFactor = discountingFactorFunction(0, Tp);
             var derivativeDiscontingFactor = - Tp * discountingFactor;
 
-            if (Engine.Verbose > 0)
-            {
-                Console.WriteLine("Calculating rho of a call with Heston model");
-                Console.WriteLine("Heston Parameters");
-                Console.WriteLine("kappa\ttheta\tsigma\trho\tv0");
-                Console.WriteLine("{0}\t{1}\t{2}\t{3}\t{4}", kappa, theta, sigma, rho, v0);
-                Console.WriteLine("Call Option Information");
-                Console.WriteLine("s0\tK\tT\tr\tq");
-                Console.WriteLine("{0}\t{1}\t{2}\t{3}\t{4}", s0, K, T, r, q);
-
-            }
-            double a = 1E-8;
-            double b = 1000.0;
-            var firstTerm = (0.5 * (s0 * Math.Exp((r - q) * T) - K));
-            var derivativeFirstTerm = (0.5 * s0 * T * Math.Exp((r - q) * T));
-
-            TAEDelegateFunction1D functionToIntegrate1 = (double u) =>
-                 HestonCall.IntegrandFunc(u: u, kappa: kappa, theta: theta, sigma: sigma, rho: rho, v0: v0, s0: s0, r: r, q: q, T: T, K: K);
-
-            double part1 = PerformIntegral(a, b, functionToIntegrate1);
-
-            double integral1 = part1 + a * functionToIntegrate1(a / 2.0);
+            var rhoUndiscountedCall = RhoUndiscountedCall(kappa, theta, rho, v0, sigma, s0, T, K, r, q);
+            var undiscountedCall = HestonCall.HestonUndiscountedCallPrice(kappa, theta, rho, v0, sigma, s0, T, K, r, q);
+            return discountingFactor * rhoUndiscountedCall + derivativeDiscontingFactor * undiscountedCall;
             
-            TAEDelegateFunction1D functionToIntegrate2 = (double u) =>
-                 IntegrandFunc(u: u, kappa: kappa, theta: theta, sigma: sigma, rho: rho, v0: v0, s0: s0, r: r, q: q, T: T, K: K);
-
-            double part2 = PerformIntegral(a, b, functionToIntegrate2);
-
-            double integral2 = part2 + a * functionToIntegrate2(a / 2.0);
-
-            double rho2 = discountingFactor * ( integral2 / Math.PI + derivativeFirstTerm);
-
-            double rho1 = derivativeDiscontingFactor * (firstTerm + integral1 / Math.PI);
-
-            var adjustedRho = rho1 + rho2;
-
-            if (Engine.Verbose > 0)
-                Console.WriteLine("Rho: {0}", adjustedRho);
-
-
-            return adjustedRho;
         }
 
-        public static double RhoUndiscountedCall(double kappa, double theta, double rho, double v0, double sigma, double s0, double T, double K, double r, double q, double? paymentTime = null)
+        public static double RhoUndiscountedCall(double kappa, double theta, double rho, double v0, double sigma, double s0, double T, double K, double r, double q)
         {
-            var Tp = paymentTime ?? T;
             
             if (Engine.Verbose > 0)
             {
@@ -2881,17 +2857,17 @@ namespace HestonEstimator
 
             double integral = part1 + a * functionToIntegrate(a / 2.0);
 
-            double Rho = (integral / Math.PI + derivativeFirstTerm);
+            double rhoGreek = (integral / Math.PI + derivativeFirstTerm);
 
 
             if (Engine.Verbose > 0)
-                Console.WriteLine("Rho: {0}", Rho);
+                Console.WriteLine("Rho Undiscounted Call: {0}", rhoGreek);
 
 
-            return Rho;
+            return rhoGreek;
         }
 
-        public static double RhoPut(double kappa, double theta, double rho, double v0, double sigma, double s0, double T, double K, double r, double q)
+        public static double RhoPut(double kappa, double theta, double rho, double v0, double sigma, double s0, double T, double K, double r, double q, Func<double, double, double> discountingFactorFunction = null, double? paymentTime = null)
         {
             var verbosity = Engine.Verbose;
             if (verbosity > 0)
@@ -2908,7 +2884,7 @@ namespace HestonEstimator
 
 
             Engine.Verbose = 0;
-            var rhoCall = RhoCall(kappa: kappa, theta: theta, rho: rho, v0: v0, sigma: sigma, s0: s0, T, K, r, q);
+            var rhoCall = RhoCall(kappa: kappa, theta: theta, rho: rho, v0: v0, sigma: sigma, s0: s0, T, K, r, q, discountingFactorFunction, paymentTime);
             Engine.Verbose = verbosity;
 
             return rhoCall - K*T*Math.Exp(-r*T);

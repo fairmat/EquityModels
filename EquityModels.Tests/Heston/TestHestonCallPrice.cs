@@ -214,7 +214,9 @@ namespace Heston
         [Test]
         public void TestGreeksCall()
         {
-            double k = 0.9;
+            double s0 = 100.0;
+
+            double k = 0.9*s0;
             double tau = 2.0;
 
             double rate = 0.1;
@@ -222,45 +224,51 @@ namespace Heston
             double kappa = 2.5;
             double theta = 0.4;
             double sigma = 0.2;
-            double s0 = 1.0;
             double v0 = 0.3;
             double rho = -0.8;
+            var Tp = tau + 0.5;
+
+            double[] tenors = [0.1, 0.2, 0.5, 1, 2];
+            double[] rates = [0.1, 0.1, 0.1, 0.1, 0.1];
+            var df = new DVPLDOM.PFunction((DVPLI.Vector)tenors, (DVPLI.Vector)rates);
+            df.m_Function.iType = DVPLUtils.EInterpolationType.ZERO_ORDER;
+
+            Func<double, double, double> discountingFunction = (t, T) => Math.Exp(-df.Evaluate(T)*T) ;
 
             // Calculates the greeks.
             Engine.Verbose = 0;
 
-            var analyticalDelta = HestonDelta.DeltaCall(kappa: kappa, theta: theta, sigma: sigma, rho: rho, v0: v0, s0: s0, T: tau, K: k, r: rate, q: dy);
-            var analyticalGamma = HestonGamma.GammaCall(kappa: kappa, theta: theta, sigma: sigma, rho: rho, v0: v0, s0: s0, T: tau, K: k, r: rate, q: dy);
-            var analyticalRho = HestonRho.RhoCall(kappa: kappa, theta: theta, sigma: sigma, rho: rho, v0: v0, s0: s0, T: tau, K: k, r: rate, q: dy);
-            var analyticalVega = HestonVega.VegaCall(kappa: kappa, theta: theta, sigma: sigma, rho: rho, v0: v0, s0: s0, T: tau, K: k, r: rate, q: dy);
+            var analyticalDelta = HestonDelta.DeltaCall(kappa: kappa, theta: theta, sigma: sigma, rho: rho, v0: v0, s0: s0, T: tau, K: k, r: rate, q: dy, discountingFactorFunction: discountingFunction, paymentTime: Tp);
+            var analyticalGamma = HestonGamma.GammaCall(kappa: kappa, theta: theta, sigma: sigma, rho: rho, v0: v0, s0: s0, T: tau, K: k, r: rate, q: dy, discountingFactorFunction: discountingFunction, paymentTime: Tp);
+            var analyticalRho = HestonRho.RhoCall(kappa: kappa, theta: theta, sigma: sigma, rho: rho, v0: v0, s0: s0, T: tau, K: k, r: rate, q: dy, discountingFactorFunction: discountingFunction, paymentTime: Tp);
+            var analyticalVega = HestonVega.VegaCall(kappa: kappa, theta: theta, sigma: sigma, rho: rho, v0: v0, s0: s0, T: tau, K: k, r: rate, q: dy, discountingFactorFunction: discountingFunction, paymentTime: Tp);
 
 
-            (double delta, double gamma) = HestonNumericalGreeks.DeltaGammaCall(bumpPercentage : 0.001, kappa: kappa, theta: theta, sigma: sigma, rho: rho, v0: v0, s0: s0, T: tau, K: k, r: rate, q: dy);
-            double expectedDelta = 0.6459985446;
+            (double delta, double gamma) = HestonNumericalGreeks.DeltaGammaCall(bumpPercentage: 0.001, kappa: kappa, theta: theta, sigma: sigma, rho: rho, v0: v0, s0: s0, T: tau, K: k, r: rate, q: dy, discountingFactorFunction:discountingFunction, Tp: Tp);
+            double expectedDelta = 0.61450217824972952;
             Assert.AreEqual(expectedDelta, delta, 1e-3);
             Assert.AreEqual(analyticalDelta, delta, 1e-3);
 
 
-
-            double expectedGamma = 0.3264832;
+            double expectedGamma = 0.00310550;
             Assert.AreEqual(expectedGamma, gamma, 1e-3);
             Assert.AreEqual(analyticalGamma, gamma, 1e-3);
 
 
-            double rhoGreek = HestonNumericalGreeks.RhoCall(bumpPercentage: 0.001, kappa: kappa, theta: theta, sigma: sigma, rho: rho, v0: v0, s0: s0, T: tau, K: k, r: rate, q: dy);
-            double expectedRho = 0.61272535;
+            double rhoGreek = HestonNumericalGreeks.RhoCall(bumpPercentage: 0.001, kappa: kappa, theta: theta, sigma: sigma, rho: rho, v0: v0, s0: s0, T: tau, K: k, r: rate, q: dy, discountingFactorFunction: discountingFunction, Tp:Tp);
+            double expectedRho = 42.1301853;
             Assert.AreEqual(expectedRho, rhoGreek, 1e-3);
             Assert.AreEqual(analyticalRho, rhoGreek, 1e-3);
 
 
-            double vega = HestonNumericalGreeks.VegaCall(bumpPercentage: 0.001, kappa: kappa, theta: theta, sigma: sigma, rho: rho, v0: v0, s0: s0, T: tau, K: k, r: rate, q: dy);
-            double expectedVega = 0.06372181708;
+            double vega = HestonNumericalGreeks.VegaCall(bumpPercentage: 0.001, kappa: kappa, theta: theta, sigma: sigma, rho: rho, v0: v0, s0: s0, T: tau, K: k, r: rate, q: dy, discountingFactorFunction: discountingFunction, timeToPaymentDate:Tp);
+            double expectedVega = 6.061406719;
             Assert.AreEqual(expectedVega, vega, 1e-3);
             Assert.AreEqual(analyticalVega, vega, 1e-3);
 
 
-            double thetaGreek = HestonNumericalGreeks.ThetaCall(bumpPercentage: 0.001, kappa: kappa, theta: theta, sigma: sigma, rho: rho, v0: v0, s0: s0, T: tau, K: k, r: rate, q: dy);  
-            double expectedTheta = - 0.0494223;
+            double thetaGreek = HestonNumericalGreeks.ThetaCall(bumpPercentage: 0.001, kappa: kappa, theta: theta, sigma: sigma, rho: rho, v0: v0, s0: s0, T: tau, K: k, r: rate, q: dy, discountingFactorFunction: discountingFunction, paymentTime:Tp);
+            double expectedTheta = -4.701290525161;
             Assert.AreEqual(expectedTheta, thetaGreek, 1e-3);
 
 
@@ -269,7 +277,6 @@ namespace Heston
         [Test]
         public void TestGreeksPut()
         {
-            double k = 0.9;
             double tau = 2.0;
 
             double rate = 0.1;
@@ -277,7 +284,9 @@ namespace Heston
             double kappa = 2.5;
             double theta = 0.4;
             double sigma = 0.2;
-            double s0 = 1.0;
+            double s0 = 100.0;
+            var k = 0.9 * s0;
+            
             double v0 = 0.3;
             double rho = -0.8;
 
@@ -295,25 +304,25 @@ namespace Heston
             Assert.AreEqual(expectedDelta, delta, 1e-3);
             Assert.AreEqual(analyticalDelta, delta, 1e-3);
 
-            double expectedGamma = 0.3264832;
+            double expectedGamma = 0.003264832;
             Assert.AreEqual(expectedGamma, gamma, 1e-3);
             Assert.AreEqual(analyticalGamma, gamma, 1e-3);
 
 
             double rhoGreek = HestonNumericalGreeks.RhoPut(bumpPercentage: 0.001, kappa: kappa, theta: theta, sigma: sigma, rho: rho, v0: v0, s0: s0, T: tau, K: k, r: rate, q: dy);
-            double expectedRho = -0.86098999518;
+            double expectedRho = -86.098999518;
             Assert.AreEqual(expectedRho, rhoGreek, 1e-3);
             Assert.AreEqual(analyticalRho, rhoGreek, 1e-3);
 
 
             double vega = HestonNumericalGreeks.VegaPut(bumpPercentage: 0.001, kappa: kappa, theta: theta, sigma: sigma, rho: rho, v0: v0, s0: s0, T: tau, K: k, r: rate, q: dy);
-            double expectedVega = 0.06372181708;
+            double expectedVega = 6.372181708;
             Assert.AreEqual(expectedVega, vega, 1e-3);
             Assert.AreEqual(analyticalVega, vega, 1e-3);
 
 
             double thetaGreek = HestonNumericalGreeks.ThetaPut(bumpPercentage: 0.001, kappa: kappa, theta: theta, sigma: sigma, rho: rho, v0: v0, s0: s0, T: tau, K: k, r: rate, q: dy);
-            double expectedTheta =- 0.03659261685613;
+            double expectedTheta =-3.659261685613;
             Assert.AreEqual(expectedTheta, thetaGreek, 1e-3);
 
 
@@ -330,7 +339,7 @@ namespace Heston
             double kappa = 2.5;
             double theta = 0.4;
             double sigma = 0.2;
-            double s0 = 1.0;
+            double s0 = 100.0;
             double v0 = 0.3;
             double rho = -0.8;
             double T0 = 0.01;
@@ -366,17 +375,17 @@ namespace Heston
             double kappa = 2.5;
             double theta = 0.4;
             double sigma = 0.2;
-            double s0 = 1.0;
+            double s0 = 100.0;
             double v0 = 0.3;
             double rho = -0.8;
             double T0 = 0.01;
-            var Tp = tau + 0.01;
+            var Tp = tau + 0.1;
             
             double[] tenors = [0.1, 0.2, 0.5, 1, 2];
             double[] rates = [0.01, 0.015, 0.02, 0.05, 0.06];
             var df = new DVPLDOM.PFunction((DVPLI.Vector)tenors, (DVPLI.Vector)rates);
-            Func<double, double, double> discountingFunction = (t, T) => df.Evaluate(T);
-            
+            Func<double, double, double> discountingFunction = (t, T) => Math.Exp(-df.Evaluate(T) * T);
+
             // Calculates the greeks.
             Engine.Verbose = 0;
 
@@ -406,7 +415,7 @@ namespace Heston
             double kappa = 2.5;
             double theta = 0.4;
             double sigma = 0.2;
-            double s0 = 10.0;
+            double s0 = 100.0;
             double v0 = 0.3;
             double rho = -0.8;
             double T0 = 1.0;
@@ -448,7 +457,7 @@ namespace Heston
             double kappa = 2.5;
             double theta = 0.4;
             double sigma = 0.2;
-            double s0 = 1.0;
+            double s0 = 100.0;
             double v0 = 0.3;
             double rho = -0.8;
             double T0 = 0.01;
@@ -488,7 +497,7 @@ namespace Heston
             double kappa = 2.5;
             double theta = 0.4;
             double sigma = 0.2;
-            double s0 = 10.0;
+            double s0 = 100.0;
             double v0 = 0.3;
             double rho = -0.8;
             double T0 = 1.0;
@@ -523,7 +532,7 @@ namespace Heston
             double kappa = 2.5;
             double theta = 0.4;
             double sigma = 0.2;
-            double s0 = 10.0;
+            double s0 = 100.0;
             double v0 = 0.3;
             double rho = -0.8;
             double T0 = 1.0;
