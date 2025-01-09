@@ -3,6 +3,7 @@ using Heston;
 using Fairmat.Math;
 using DVPLI;
 using System.Linq;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 //using QLNet;
 //using DVPLDOM.Underlying;
 //using QLNet;
@@ -861,7 +862,7 @@ namespace HestonEstimator
             return forwardStartingPut;
         }
 
-        public static double HestonForwardDigitalPutPrice(double kappa, double theta, double rho, double v0, double sigma, double s0, double K, double r, double q, double T, double T0, double? Tp = null)
+        public static double HestonForwardDigitalPutPrice(double kappa, double theta, double rho, double v0, double sigma, double s0, double K, double r, double q, double T, double T0, double? Tp = null, Func<double, double, double> discountingFactorFunction = null)
         {
 
             int verbosity = Engine.Verbose;
@@ -878,10 +879,17 @@ namespace HestonEstimator
 
             }
 
+            if (discountingFactorFunction is null)
+            {
+                discountingFactorFunction = (t, T) => Math.Exp(-r * (T - t));
+            }
+
             // v follows a CIR process so we take its expectations 
             var v_T0 = ExpectationCIRProcess(v0, kappa, theta, T0);
 
             Engine.Verbose = 0;
+
+            // undiscounted digital put 
             var dput = HestonDigital.HestonDigitalPutPrice(
                 kappa: kappa,
                 theta: theta,
@@ -893,10 +901,12 @@ namespace HestonEstimator
                 K: K,
                 r: r,
                 q: q,
-                timeToPaymentDate: Tp);
+                discountingFactorFunction: (_, _) => 1.0);
+
             Engine.Verbose = verbosity;
 
-            var digitalPrice = HestonDigital.DiscountFactor(r, T0) * dput;
+            var tp = Tp ?? T;
+            var digitalPrice = discountingFactorFunction(0, tp) * dput;
 
             if (verbosity > 0)
             {
@@ -906,7 +916,7 @@ namespace HestonEstimator
             return digitalPrice;
         }
 
-        public static double HestonForwardDigitalCallPrice(double kappa, double theta, double rho, double v0, double sigma, double s0, double K, double r, double q, double T, double T0, double? Tp = null)
+        public static double HestonForwardDigitalCallPrice(double kappa, double theta, double rho, double v0, double sigma, double s0, double K, double r, double q, double T, double T0, double? Tp = null, Func<double, double, double> discountingFactorFunction = null)
         {
             int verbosity = Engine.Verbose;
 
@@ -922,10 +932,17 @@ namespace HestonEstimator
 
             }
 
+            if (discountingFactorFunction is null)
+            {
+                discountingFactorFunction = (t, T) => Math.Exp(-r * (T - t));
+            }
+
             // v follows a CIR process so we take its expectations 
             var v_T0 = ExpectationCIRProcess(v0, kappa, theta, T0);
 
             Engine.Verbose = 0;
+
+            // undiscounted digital call
             var dcall = HestonDigital.HestonDigitalCallPrice(
                 kappa: kappa,
                 theta: theta,
@@ -937,11 +954,11 @@ namespace HestonEstimator
                 K: K,
                 r: r,
                 q: q,
-                timeToPaymentDate: Tp
+                discountingFactorFunction: (_, _) => 1.0
                 );
             Engine.Verbose = verbosity;
 
-            var digitalPrice = HestonDigital.DiscountFactor(r, T0) * dcall;
+            var digitalPrice = discountingFactorFunction(0, Tp ?? T) * dcall;
 
             if (verbosity > 0)
             {
@@ -1589,14 +1606,22 @@ namespace HestonEstimator
             return 0.0;
         }
 
-        public static double FSDPutCalculateTheta(double kappa, double theta, double rho, double v0, double sigma, double s0, double K, double r, double q, double T, double T0)
+        public static double FSDPutCalculateTheta(double kappa, double theta, double rho, double v0, double sigma, double s0, double K, double r, double q, double T, double T0, double? paymentDate = null, Func<double, double, double> discountingFactorFunction = null)
         {
-            return HestonNumericalGreeks.ThetaFSDPut(kappa: kappa, theta: theta, sigma: sigma, rho: rho, v0: v0, s0: s0, T: T, T0: T0, K: K, r: r, q: q);
+            return HestonNumericalGreeks.ThetaFSDPut(kappa: kappa, theta: theta, sigma: sigma, rho: rho, v0: v0, s0: s0, T: T, T0: T0, K: K, r: r, q: q, paymentDate:paymentDate, discountingFactorFunction: discountingFactorFunction);
         }
 
-        public static double FSDPutCalculateVega(double kappa, double theta, double rho, double v0, double sigma, double s0, double K, double r, double q, double T, double T0)
+        public static double FSDPutCalculateVega(double kappa, double theta, double rho, double v0, double sigma, double s0, double K, double r, double q, double T, double T0, double? paymentDate = null, Func<double, double, double> discountingFactorFunction = null)
         {
-            return HestonDigital.DiscountFactor(r, T0) * derivativeExpectationCIRProcess(v0, kappa, theta, T0) * HestonVega.VegaDigitalPut(
+            if (discountingFactorFunction==null)
+            {
+                 discountingFactorFunction = (t, T) => System.Math.Exp(-r * (T - t));
+            }
+
+            var Tp = paymentDate ?? T;
+            var df = discountingFactorFunction(0, Tp);
+
+            return df * derivativeExpectationCIRProcess(v0, kappa, theta, T0) * -1.0 * HestonVega.VegaUndiscountedDigitalCall(
                         kappa: kappa,
                         theta: theta,
                         sigma: sigma,
@@ -1609,35 +1634,50 @@ namespace HestonEstimator
                         q: q);
         }
 
-        public static double FSDPutCalculateRho(double kappa, double theta, double rho, double v0, double sigma, double s0, double K, double r, double q, double T, double T0, double? Tp = null)
+        public static double FSDPutCalculateRho(double kappa, double theta, double rho, double v0, double sigma, double s0, double K, double r, double q, double T, double T0, double? paymentDate = null, Func<double, double, double> discountingFactorFunction = null)
         {
-            var res = HestonDigital.DiscountFactor(r, T0) * HestonRho.RhoDigitalPut(
+            if (discountingFactorFunction == null)
+            {
+                // setting discounting Rate equal to the risk free rate
+                discountingFactorFunction = (t, T) => System.Math.Exp(-r * (T - t));
+            }
+
+            var Tp = paymentDate ?? T;
+            var df = discountingFactorFunction(0, Tp);
+            var derivativeDiscountingFactor = -Tp * df;
+
+            var v_T0 = ExpectationCIRProcess(v0, kappa, theta, T0);
+
+            var res = df * HestonRho.RhoUndiscountedPut(
                         kappa: kappa,
                         theta: theta,
                         sigma: sigma,
                         rho: rho,
-                        v0: ExpectationCIRProcess(v0, kappa, theta, T0),
+                        v0: v_T0,
                         s0: 1.0,
                         T: T - T0,
                         K: K,
                         r: r,
                         q: q);
 
-            return res - T0 * HestonDigital.DiscountFactor(r, T0) * HestonDigital.HestonDigitalPutPrice(
+            var undiscountedPutPrice = 1.0 - HestonDigital.UndiscountedHestonDigitalCallPrice(
                 kappa: kappa,
                 theta: theta,
                 sigma: sigma,
                 rho: rho,
-                v0: ExpectationCIRProcess(v0, kappa, theta, T0),
+                v0: v_T0,
                 s0: 1.0,
                 T: T - T0,
                 K: K,
                 r: r,
-                q: q,
-                timeToPaymentDate: Tp); ;
+                q: q);
+
+            res += derivativeDiscountingFactor * undiscountedPutPrice;
+
+            return res;
         }
 
-        public static GreeksDerivatives HestonForwardDigitalPutWithGreeks(double kappa, double theta, double rho, double v0, double sigma, double s0, double K, double r, double q, double T, double T0, double? Tp = null)
+        public static GreeksDerivatives HestonForwardDigitalPutWithGreeks(double kappa, double theta, double rho, double v0, double sigma, double s0, double K, double r, double q, double T, double T0, double? paymentDate = null, Func<double, double, double> discountingFactorFunction = null)
         {
             int verbosity = Engine.Verbose;
 
@@ -1649,14 +1689,25 @@ namespace HestonEstimator
                 Console.WriteLine($"{kappa}\t{theta}\t{sigma}\t{rho}\t{v0}");
                 Console.WriteLine("Call Option Information");
                 Console.WriteLine("s0\tK\tT\tT0\ttimeToPaymentDate\tr\tq");
-                Console.WriteLine($"{s0}\t{K}\t{T}\t{T0}\t{Tp}\t{r}\t{q}");
+                Console.WriteLine($"{s0}\t{K}\t{T}\t{T0}\t{paymentDate}\t{r}\t{q}");
             }
 
             Engine.Verbose = 0;
+
+            if (discountingFactorFunction == null)
+            {
+                // setting discounting Rate equal to the risk free rate
+                discountingFactorFunction = (t, T) => System.Math.Exp(-r * (T - t));
+            }
+
+            var Tp = paymentDate ?? T;
+
+            var df = discountingFactorFunction(0, Tp); 
+
             // v follows a CIR process so we take its expectations 
             var v_T0 = ExpectationCIRProcess(v0, kappa, theta, T0);
 
-            var dPut = HestonDigital.HestonDigitalPutPrice(
+            var undiscountedPutOption = 1.0 - HestonDigital.UndiscountedHestonDigitalCallPrice(
                 kappa: kappa,
                 theta: theta,
                 sigma: sigma,
@@ -1666,20 +1717,21 @@ namespace HestonEstimator
                 T: T - T0,
                 K: K,
                 r: r,
-                q: q,
-                timeToPaymentDate: Tp
+                q: q
                 );
 
 
-            var fsDPutMarkToMarket = HestonDigital.DiscountFactor(r, T0) * dPut;
+            var fsDPutMarkToMarket = df * undiscountedPutOption;
 
             var fsDPutDelta = 0.0;
 
             var fsDPutGamma = 0.0;
 
-            var fsDPutTheta = HestonNumericalGreeks.ThetaFSDPut(kappa: kappa, theta: theta, sigma: sigma, rho: rho, v0: v0, s0: s0, T: T, T0: T0, K: K, r: r, q: q);
+            // theta 
+            var fsDPutTheta = HestonNumericalGreeks.ThetaFSDPut(kappa: kappa, theta: theta, sigma: sigma, rho: rho, v0: v0, s0: s0, T: T, T0: T0, K: K, r: r, q: q, discountingFactorFunction:discountingFactorFunction, paymentDate:paymentDate);
 
-            var fsDPutVega = HestonDigital.DiscountFactor(r, T0) * derivativeExpectationCIRProcess(v0, kappa, theta, T0) * HestonVega.VegaDigitalPut(
+            // vega 
+            var fsDPutVega = - df * derivativeExpectationCIRProcess(v0, kappa, theta, T0) * HestonVega.VegaUndiscountedDigitalCall(
                         kappa: kappa,
                         theta: theta,
                         sigma: sigma,
@@ -1691,7 +1743,8 @@ namespace HestonEstimator
                         r: r,
                         q: q);
 
-            var fsDPutRho = HestonDigital.DiscountFactor(r, T0) * HestonRho.RhoDigitalPut(
+            // rho 
+            var fsDPutRho = df * HestonRho.RhoUndiscountedDigitalPut(
                         kappa: kappa,
                         theta: theta,
                         sigma: sigma,
@@ -1703,7 +1756,10 @@ namespace HestonEstimator
                         r: r,
                         q: q);
 
-            fsDPutRho += -T0 * fsDPutMarkToMarket;
+            fsDPutRho += -Tp * df * undiscountedPutOption;
+
+
+
             Engine.Verbose = verbosity;
 
 
@@ -1819,15 +1875,23 @@ namespace HestonEstimator
             return 0.0;
         }
 
-        public static double FSDCallCalculateTheta(double kappa, double theta, double rho, double v0, double sigma, double s0, double K, double r, double q, double T, double T0)
+        public static double FSDCallCalculateTheta(double kappa, double theta, double rho, double v0, double sigma, double s0, double K, double r, double q, double T, double T0, double? paymentDate = null, Func<double, double, double> discountingFactorFunction = null)
         {
-            return HestonNumericalGreeks.ThetaFSDCall(kappa: kappa, theta: theta, sigma: sigma, rho: rho, v0: v0, s0: s0, T: T, T0: T0, K: K, r: r, q: q);
+            return HestonNumericalGreeks.ThetaFSDCall(kappa: kappa, theta: theta, sigma: sigma, rho: rho, v0: v0, s0: s0, T: T, T0: T0, K: K, r: r, q: q, paymentDate:paymentDate, discountingFactorFunction:discountingFactorFunction);
 
         }
 
-        public static double FSDCallCalculateVega(double kappa, double theta, double rho, double v0, double sigma, double s0, double K, double r, double q, double T, double T0)
+        public static double FSDCallCalculateVega(double kappa, double theta, double rho, double v0, double sigma, double s0, double K, double r, double q, double T, double T0, double? paymentDate = null, Func<double, double, double> discountingFactorFunction = null)
         {
-            return HestonDigital.DiscountFactor(r, T0) * derivativeExpectationCIRProcess(v0, kappa, theta, T0) * HestonVega.VegaDigitalCall(
+            var Tp = paymentDate ?? T;
+
+            if (discountingFactorFunction == null)
+            {
+                discountingFactorFunction = (t, T) => System.Math.Exp(-r * (T - t));
+            }
+            var df = discountingFactorFunction(0, Tp);
+
+            return df * derivativeExpectationCIRProcess(v0, kappa, theta, T0) * HestonVega.VegaUndiscountedDigitalCall(
                         kappa: kappa,
                         theta: theta,
                         sigma: sigma,
@@ -1840,10 +1904,21 @@ namespace HestonEstimator
                         q: q);
         }
 
-        public static double FSDCallCalculateRho(double kappa, double theta, double rho, double v0, double sigma, double s0, double K, double r, double q, double T, double T0, double? Tp = null)
+        public static double FSDCallCalculateRho(double kappa, double theta, double rho, double v0, double sigma, double s0, double K, double r, double q, double T, double T0, double? paymentDate = null, Func<double, double, double> discountingFactorFunction = null)
         {
+            if (discountingFactorFunction == null)
+            {
+               // setting discounting Rate equal to the risk free rate
+                discountingFactorFunction = (t, T) => System.Math.Exp(-r * (T - t));
+            }
+
+            var Tp = paymentDate ?? T;
+            var df = discountingFactorFunction(0, Tp);
+            var derivativeDiscountingFactor = -Tp * df;
+
             var v_T0 = ExpectationCIRProcess(v0, kappa, theta, T0);
-            var res = HestonDigital.DiscountFactor(r, T0) * HestonRho.RhoDigitalCall(
+
+            var res = df * HestonRho.RhoUndiscountedDigitalCall(
                         kappa: kappa,
                         theta: theta,
                         sigma: sigma,
@@ -1855,7 +1930,7 @@ namespace HestonEstimator
                         r: r,
                         q: q);
 
-            return res - T0 * HestonDigital.HestonDigitalCallPrice(
+            res += derivativeDiscountingFactor * HestonDigital.UndiscountedHestonDigitalCallPrice(
                 kappa: kappa,
                 theta: theta,
                 sigma: sigma,
@@ -1865,12 +1940,13 @@ namespace HestonEstimator
                 T: T - T0,
                 K: K,
                 r: r,
-                q: q,
-                timeToPaymentDate: Tp)
-                * HestonDigital.DiscountFactor(r, T0);
+                q: q);
+
+            return res; 
+
         }
 
-        public static GreeksDerivatives HestonForwardDigitalCallWithGreeks(double kappa, double theta, double rho, double v0, double sigma, double s0, double K, double r, double q, double T, double T0, double? Tp = null)
+        public static GreeksDerivatives HestonForwardDigitalCallWithGreeks(double kappa, double theta, double rho, double v0, double sigma, double s0, double K, double r, double q, double T, double T0, double? paymentDate = null, Func<double, double, double> discountingFactorFunction = null)
         {
             int verbosity = Engine.Verbose;
 
@@ -1882,15 +1958,24 @@ namespace HestonEstimator
                 Console.WriteLine($"{kappa}\t{theta}\t{sigma}\t{rho}\t{v0}");
                 Console.WriteLine("Call Option Information");
                 Console.WriteLine("s0\tK\tT\tT0\ttimeToPaymentDate\tr\tq");
-                Console.WriteLine($"{s0}\t{K}\t{T}\t{T0}\t{Tp}\t{r}\t{q}");
+                Console.WriteLine($"{s0}\t{K}\t{T}\t{T0}\t{paymentDate}\t{r}\t{q}");
             }
 
             Engine.Verbose = 0;
 
+            if (discountingFactorFunction == null)
+            { 
+               // setting discounting Rate equal to the risk free rate
+                discountingFactorFunction = (t, T) => System.Math.Exp(-r * (T - t));
+            }
+
+            var Tp = paymentDate ?? T;
+            var df = discountingFactorFunction(0, Tp);
+
             // v follows a CIR process so we take its expectations 
             var v_T0 = ExpectationCIRProcess(v0, kappa, theta, T0);
 
-            var dCall = HestonDigital.HestonDigitalCallPrice(
+            var undiscountedDCall = HestonDigital.UndiscountedHestonDigitalCallPrice(
                 kappa: kappa,
                 theta: theta,
                 sigma: sigma,
@@ -1900,19 +1985,19 @@ namespace HestonEstimator
                 T: T - T0,
                 K: K,
                 r: r,
-                q: q,
-                timeToPaymentDate: Tp);
+                q: q
+                );
 
 
-            var fsDCallMarkToMarket = HestonDigital.DiscountFactor(r, T0) * dCall;
+            var fsDCallMarkToMarket = df * undiscountedDCall;
 
             var fsCallDelta = 0.0;
 
             var fsDCallGamma = 0.0;
 
-            var fsDCallTheta = HestonNumericalGreeks.ThetaFSDCall(kappa: kappa, theta: theta, sigma: sigma, rho: rho, v0: v0, s0: s0, T: T, T0: T0, K: K, r: r, q: q);
+            var fsDCallTheta = HestonNumericalGreeks.ThetaFSDCall(kappa: kappa, theta: theta, sigma: sigma, rho: rho, v0: v0, s0: s0, T: T, T0: T0, K: K, r: r, q: q, discountingFactorFunction:discountingFactorFunction, paymentDate:paymentDate);
 
-            var fsDCallVega = HestonDigital.DiscountFactor(r, T0) * derivativeExpectationCIRProcess(v0, kappa, theta, T0) * HestonVega.VegaDigitalCall(
+            var fsDCallVega = df * derivativeExpectationCIRProcess(v0, kappa, theta, T0) * HestonVega.VegaUndiscountedDigitalCall(
                         kappa: kappa,
                         theta: theta,
                         sigma: sigma,
@@ -1924,7 +2009,7 @@ namespace HestonEstimator
                         r: r,
                         q: q);
 
-            var fsDCallRho = HestonDigital.DiscountFactor(r, T0) * HestonRho.RhoDigitalCall(
+            var fsDCallRho = df * HestonRho.RhoUndiscountedDigitalCall(
                         kappa: kappa,
                         theta: theta,
                         sigma: sigma,
@@ -1936,7 +2021,7 @@ namespace HestonEstimator
                         r: r,
                         q: q);
 
-            fsDCallRho += -T0 * fsDCallMarkToMarket;
+            fsDCallRho += -Tp * df * undiscountedDCall;
 
             Engine.Verbose = verbosity;
 

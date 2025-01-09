@@ -97,7 +97,7 @@ namespace Heston
             var analyticalGamma = HestonGamma.GammaDigitalCall(kappa: kappa, theta: theta, sigma: sigma, rho: rho, v0: v0, s0: s0, T: tau, K: k, r: rate, q: dy);
             var analyticalRho = HestonRho.RhoDigitalCall(kappa: kappa, theta: theta, sigma: sigma, rho: rho, v0: v0, s0: s0, T: tau, K: k, r: rate, q: dy);
             var analyticalVega = HestonVega.VegaDigitalCall(kappa: kappa, theta: theta, sigma: sigma, rho: rho, v0: v0, s0: s0, T: tau, K: k, r: rate, q: dy);
-
+            
 
             (double delta, double gamma) = HestonNumericalGreeks.DeltaGammaDCall(bumpPercentage: 0.001, kappa: kappa, theta: theta, sigma: sigma, rho: rho, v0: v0, s0: s0, T: tau, K: k, r: rate, q: dy);
             double expectedDelta = 0.362747513586;

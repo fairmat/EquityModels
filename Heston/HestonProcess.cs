@@ -492,7 +492,9 @@ namespace Heston
                        T: timeToMaturity,
                        K: strike,
                        r: rParam,
-                       q: qParam);
+                       q: qParam, 
+                       paymentTime: timeToPaymentDate
+                       );
 
                     result.Deltas = (Vector)(delta);
                     break;
@@ -509,7 +511,8 @@ namespace Heston
                         T: timeToMaturity,
                         K: strike,
                         r: rParam,
-                        q: qParam);
+                        q: qParam, 
+                        paymentTime: timeToPaymentDate);
 
                     result.Gammas = (Vector)(gamma);
                     break;
@@ -527,7 +530,7 @@ namespace Heston
                        T: timeToMaturity,
                        K: strike,
                        r: rParam,
-                       q: qParam);
+                       q: qParam, paymentTime: timeToPaymentDate);
 
                     result.Rho = rho;
                     break;
@@ -545,7 +548,7 @@ namespace Heston
                        T: timeToMaturity,
                        K: strike,
                        r: rParam,
-                       q: qParam);
+                       q: qParam, paymentTime: timeToPaymentDate);
 
                     result.Theta = theta;
                     break;
@@ -561,13 +564,13 @@ namespace Heston
                        T: timeToMaturity,
                        K: strike,
                        r: rParam,
-                       q: qParam);
+                       q: qParam, paymentTime: timeToPaymentDate);
                     result.Vegas = (Vector)vega;
                     break;
                 
                 case AnalyticalPricingFunctionsValuationMode.All:
                     Func< Dictionary<string, object>, GreeksDerivatives > myFunc = 
-                        (Dictionary<string, object>  info) => Call(component, strike, timeToMaturity, info);
+                        (Dictionary<string, object>  info) => Call(component, strike, timeToMaturity, info, timeToPaymentDate: timeToPaymentDate);
                     return AnalyticalPricingFunctions.ComputeAllGreeks(myFunc); 
             }
 
@@ -630,7 +633,7 @@ namespace Heston
                        T: timeToMaturity,
                        K: strike,
                        r: rParam,
-                       q: qParam);
+                       q: qParam, timeToPaymentDate: timeToPaymentDate);
                     break;
 
 
@@ -645,7 +648,8 @@ namespace Heston
                        T: timeToMaturity,
                        K: strike,
                        r: rParam,
-                       q: qParam);
+                       q: qParam
+                       );
 
                     result.Deltas = (Vector)(delta);
                     break;
@@ -799,7 +803,7 @@ namespace Heston
                        T: timeToMaturity,
                        K: strike,
                        r: rParam,
-                       q: qParam);
+                       q: qParam, paymentTime: timeToPaymentDate);
 
                     result.Deltas = (Vector)(delta);
                     break;
@@ -816,7 +820,7 @@ namespace Heston
                         T: timeToMaturity,
                         K: strike,
                         r: rParam,
-                        q: qParam);
+                        q: qParam, paymentTime: timeToPaymentDate);
 
                     result.Gammas = (Vector)(gamma);
                     break;
@@ -834,7 +838,7 @@ namespace Heston
                        T: timeToMaturity,
                        K: strike,
                        r: rParam,
-                       q: qParam);
+                       q: qParam, paymentTime: timeToPaymentDate);
 
                     result.Rho = rho;
                     break;
@@ -852,7 +856,7 @@ namespace Heston
                        T: timeToMaturity,
                        K: strike,
                        r: rParam,
-                       q: qParam);
+                       q: qParam, timeToPaymentDate: timeToPaymentDate);
 
                     result.Theta = theta;
                     break;
@@ -874,7 +878,7 @@ namespace Heston
 
                 case AnalyticalPricingFunctionsValuationMode.All:
                     Func<Dictionary<string, object>, GreeksDerivatives> myFunc =
-                        (Dictionary<string, object> info) => DigitalCall(component, strike, timeToMaturity, info);
+                        (Dictionary<string, object> info) => DigitalCall(component, strike, timeToMaturity, info, timeToPaymentDate: timeToPaymentDate);
                     return AnalyticalPricingFunctions.ComputeAllGreeks(myFunc);
             }
 
@@ -953,7 +957,8 @@ namespace Heston
                        T: timeToMaturity,
                        K: strike,
                        r: rParam,
-                       q: qParam);
+                       q: qParam, 
+                       paymentTime: timeToPaymentDate);
 
                     result.Deltas = (Vector)(delta);
                     break;
@@ -970,7 +975,8 @@ namespace Heston
                         T: timeToMaturity,
                         K: strike,
                         r: rParam,
-                        q: qParam);
+                        q: qParam, 
+                        paymentTime: timeToPaymentDate);
 
                     result.Gammas = (Vector)(gamma);
                     break;
@@ -988,7 +994,7 @@ namespace Heston
                        T: timeToMaturity,
                        K: strike,
                        r: rParam,
-                       q: qParam);
+                       q: qParam, paymentTime: timeToPaymentDate);
 
                     result.Rho = rho;
                     break;
@@ -1006,7 +1012,8 @@ namespace Heston
                        T: timeToMaturity,
                        K: strike,
                        r: rParam,
-                       q: qParam);
+                       q: qParam, timeToPaymentDate: timeToPaymentDate
+                       );
 
                     result.Theta = theta;
                     break;
@@ -1022,13 +1029,13 @@ namespace Heston
                        T: timeToMaturity,
                        K: strike,
                        r: rParam,
-                       q: qParam);
+                       q: qParam, paymentTime: timeToPaymentDate);
                     result.Vegas = (Vector)vega;
                     break;
 
                 case AnalyticalPricingFunctionsValuationMode.All:
                     Func<Dictionary<string, object>, GreeksDerivatives> myFunc =
-                        (Dictionary<string, object> info) => DigitalPut(component, strike, timeToMaturity, info);
+                        (Dictionary<string, object> info) => DigitalPut(component, strike, timeToMaturity, info, timeToPaymentDate:timeToPaymentDate);
                     return AnalyticalPricingFunctions.ComputeAllGreeks(myFunc);
             }
 
@@ -1216,7 +1223,7 @@ namespace Heston
                         r: this.r.fV(),
                         q: this.q.fV(),
                         T0: fsTime,
-                        Tp: timeToPaymentDate
+                        paymentDate: timeToPaymentDate
                         );
             }
 
@@ -1494,7 +1501,8 @@ namespace Heston
                         K: strikeFraction,
                         r: this.r.fV(),
                         q: this.q.fV(),
-                        T0: fsTime
+                        T0: fsTime 
+
                         );
 
                     result.Deltas = (Vector)(delta);
@@ -1533,7 +1541,7 @@ namespace Heston
                         r: this.r.fV(),
                         q: this.q.fV(),
                         T0: fsTime,
-                        Tp: timeToPaymentDate ?? timeToMaturity
+                        paymentDate: timeToPaymentDate ?? timeToMaturity
                         );
 
                     result.Rho = rho;
@@ -1553,7 +1561,9 @@ namespace Heston
                         K: strikeFraction,
                         r: this.r.fV(),
                         q: this.q.fV(),
-                        T0: fsTime
+                        T0: fsTime, 
+                        paymentDate: timeToPaymentDate
+                        
                         );
                     result.Theta = theta;
                     break;
@@ -1570,7 +1580,8 @@ namespace Heston
                         K: strikeFraction,
                         r: this.r.fV(),
                         q: this.q.fV(),
-                        T0: fsTime
+                        T0: fsTime, 
+                        paymentDate: timeToPaymentDate
                         );
 
                     result.Vegas = (Vector)vega;
@@ -1589,7 +1600,7 @@ namespace Heston
                         r: this.r.fV(),
                         q: this.q.fV(),
                         T0: fsTime,
-                        Tp: timeToPaymentDate
+                        paymentDate: timeToPaymentDate
                         );
             }
 
@@ -1699,7 +1710,7 @@ namespace Heston
                         r: this.r.fV(),
                         q: this.q.fV(),
                         T0: fsTime,
-                        Tp: timeToPaymentDate ?? timeToMaturity
+                        paymentDate: timeToPaymentDate ?? timeToMaturity
                         );
 
                     result.Rho = rho;
@@ -1719,7 +1730,8 @@ namespace Heston
                         K: strikeFraction,
                         r: this.r.fV(),
                         q: this.q.fV(),
-                        T0: fsTime
+                        T0: fsTime, 
+                        paymentDate:timeToPaymentDate
                         );
                     result.Theta = theta;
                     break;
@@ -1736,7 +1748,8 @@ namespace Heston
                         K: strikeFraction,
                         r: this.r.fV(),
                         q: this.q.fV(),
-                        T0: fsTime
+                        T0: fsTime, 
+                        paymentDate:timeToPaymentDate
                         );
 
                     result.Vegas = (Vector)vega;
@@ -1755,7 +1768,7 @@ namespace Heston
                         r: this.r.fV(),
                         q: this.q.fV(),
                         T0: fsTime,
-                        Tp: timeToPaymentDate
+                        paymentDate: timeToPaymentDate
                         );
             }
 
