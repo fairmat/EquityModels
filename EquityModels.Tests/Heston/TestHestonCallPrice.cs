@@ -460,11 +460,25 @@ namespace Heston
 
             var analyticalGreeksPercentage = HestonForwardApproximated.HestonForwardPercentageCallWithGreeks(kappa: kappa, theta: theta, sigma: sigma, rho: rho, v0: v0, s0: s0, T: tau, T0: T0, K: k, r: rate, q: dy, discountingFactorFunction: discountingFunction, paymentTime: Tp);
 
-            Assert.AreEqual(analyticalGreeksPercentage.Deltas[0], numericalDelta, 1e-3);
-            Assert.AreEqual(analyticalGreeksPercentage.Gammas[0], numericalGamma, 1e-3);
-            Assert.AreEqual(analyticalGreeksPercentage.Vegas[0], numericalVega, 1e-3);
-            Assert.AreEqual(analyticalGreeksPercentage.Theta, numericalTheta, 1e-3);
-            Assert.AreEqual(analyticalGreeksPercentage.Rho, numericalRho, 1e-3);
+            var expectedDelta = 0;
+            Assert.AreEqual(analyticalGreeksPercentage.Deltas[0], numericalDelta, 1e-5);
+            Assert.AreEqual(analyticalGreeksPercentage.Deltas[0], expectedDelta, 1e-5);
+
+            var expectedGamma = 0;
+            Assert.AreEqual(analyticalGreeksPercentage.Gammas[0], numericalGamma, 1e-5);
+            Assert.AreEqual(analyticalGreeksPercentage.Gammas[0], expectedGamma, 1e-5);
+
+            var expectedVega = 0.066917570932606418;
+            Assert.AreEqual(analyticalGreeksPercentage.Vegas[0], numericalVega, 1e-5);
+            Assert.AreEqual(analyticalGreeksPercentage.Vegas[0], expectedVega, 1e-5);
+
+            var expectedTheta = 0.013138142550550569;
+            Assert.AreEqual(analyticalGreeksPercentage.Theta, numericalTheta, 1e-5);
+            Assert.AreEqual(analyticalGreeksPercentage.Theta, expectedTheta, 1e-5);
+
+            var expectedRho = 0.6156029386666928;
+            Assert.AreEqual(analyticalGreeksPercentage.Rho, numericalRho, 1e-5);
+            Assert.AreEqual(analyticalGreeksPercentage.Rho, expectedRho, 1e-5);
         }
 
         [Test]
@@ -524,7 +538,7 @@ namespace Heston
             double v0 = 0.3;
             double rho = -0.8;
             double T0 = 0.01;
-            var Tp = tau + 0.01;
+            var Tp = tau + 0.1;
 
             double[] tenors = [0.1, 0.2, 0.5, 1, 2];
             double[] rates = [0.01, 0.015, 0.02, 0.05, 0.06];
@@ -542,11 +556,25 @@ namespace Heston
 
             var analyticalGreeksPercentage = HestonForwardApproximated.HestonForwardPercentagePutWithGreeks(kappa: kappa, theta: theta, sigma: sigma, rho: rho, v0: v0, s0: s0, T: tau, T0: T0, K: k, r: rate, q: dy, discountingFactorFunction: discountingFunction, paymentTime: Tp);
 
-            Assert.AreEqual(analyticalGreeksPercentage.Deltas[0], numericalDelta, 1e-3);
-            Assert.AreEqual(analyticalGreeksPercentage.Gammas[0], numericalGamma, 1e-3);
-            Assert.AreEqual(analyticalGreeksPercentage.Vegas[0], numericalVega, 1e-3);
-            Assert.AreEqual(analyticalGreeksPercentage.Theta, numericalTheta, 1e-3);
-            Assert.AreEqual(analyticalGreeksPercentage.Rho, numericalRho, 1e-3);
+            var expectedDelta = 0;
+            Assert.AreEqual(analyticalGreeksPercentage.Deltas[0], numericalDelta, 1e-5);
+            Assert.AreEqual(analyticalGreeksPercentage.Deltas[0], expectedDelta, 1e-5);
+
+            var expectedGamma = 0;
+            Assert.AreEqual(analyticalGreeksPercentage.Gammas[0], numericalGamma, 1e-5);
+            Assert.AreEqual(analyticalGreeksPercentage.Gammas[0], expectedGamma, 1e-5);
+
+            var expectedVega = 0.0046398412977064164;
+            Assert.AreEqual(analyticalGreeksPercentage.Vegas[0], numericalVega, 1e-5);
+            Assert.AreEqual(analyticalGreeksPercentage.Vegas[0], expectedVega, 1e-5);
+
+            var expectedTheta = -0.0036849534534085654;
+            Assert.AreEqual(analyticalGreeksPercentage.Theta, numericalTheta, 1e-5);
+            Assert.AreEqual(analyticalGreeksPercentage.Theta, expectedTheta, 1e-5);
+
+            var expectedRho = -0.0654834715356255;
+            Assert.AreEqual(analyticalGreeksPercentage.Rho, numericalRho, 1e-5);
+            Assert.AreEqual(analyticalGreeksPercentage.Rho, expectedRho, 1e-5);
         }
 
         [Test]
