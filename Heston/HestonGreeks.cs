@@ -1150,7 +1150,7 @@ namespace HestonEstimator
             return rhoGreek;
         }
 
-        public static (double, double) DeltaGammaFSCall(double kappa, double theta, double rho, double v0, double sigma, double s0, double T, double T0, double K, double r, double q, double bumpPercentage = 0.01, double? unBumpedPrice = null, double? timeToPaymentDate = null)
+        public static (double, double) DeltaGammaFSCall(double kappa, double theta, double rho, double v0, double sigma, double s0, double T, double T0, double K, double r, double q, double bumpPercentage = 0.01, double? unBumpedPrice = null, double? timeToPaymentDate = null, Func<double, double, double> discountingFactorFunction = null)
         {
 
             if (!unBumpedPrice.HasValue)
@@ -1167,7 +1167,8 @@ namespace HestonEstimator
                     r: r,
                     T0:T0,
                     q: q,
-                    Tp: timeToPaymentDate
+                    timeToPaymentDate: timeToPaymentDate, 
+                    discountingFactorFunction: discountingFactorFunction
                     );
             }
 
@@ -1185,7 +1186,8 @@ namespace HestonEstimator
                 T0:T0,
                 r: r,
                 q: q,
-                Tp: timeToPaymentDate
+                timeToPaymentDate: timeToPaymentDate,
+                discountingFactorFunction: discountingFactorFunction
                 );
 
             double callPriceBumpDown = HestonForwardApproximated.HestonForwardCallPrice(
@@ -1200,15 +1202,15 @@ namespace HestonEstimator
                 K: K,
                 r: r,
                 q: q,
-                Tp: timeToPaymentDate
-                );
+                timeToPaymentDate: timeToPaymentDate,
+                discountingFactorFunction: discountingFactorFunction);
 
             var delta = (callPriceBumpUp - callPriceBumpDown) / (2 * deltaS);
             var gamma = (callPriceBumpUp - 2 * unBumpedPrice.Value + callPriceBumpDown) / (deltaS * deltaS);
             return (delta, gamma);
         }
 
-        public static double VegaFSCall(double kappa, double theta, double rho, double v0, double sigma, double s0, double T, double K, double r, double q, double T0, double bumpPercentage = 0.01, double? Tp = null)
+        public static double VegaFSCall(double kappa, double theta, double rho, double v0, double sigma, double s0, double T, double K, double r, double q, double T0, double bumpPercentage = 0.01, double? timeToPaymentDate = null, Func<double, double, double> discountingFactorFunction = null)
         {
             int verbosity = Engine.Verbose;
             if (verbosity > 0)
@@ -1219,7 +1221,7 @@ namespace HestonEstimator
                 Console.WriteLine("{0}\t{1}\t{2}\t{3}\t{4}", kappa, theta, sigma, rho, v0);
                 Console.WriteLine("Call Option Information");
                 Console.WriteLine("s0\tK\tT\tTp\tr\tq");
-                Console.WriteLine("{0}\t{1}\t{2}\t{3}\t{4}", s0, K, T, Tp, r, q);
+                Console.WriteLine("{0}\t{1}\t{2}\t{3}\t{4}", s0, K, T, timeToPaymentDate, r, q);
             }
 
             Func<double, double> callPrice = (double initialVariance) => HestonForwardApproximated.HestonForwardCallPrice(
@@ -1234,8 +1236,8 @@ namespace HestonEstimator
                 K: K,
                 r: r,
                 q: q,
-                Tp: Tp
-                );
+                timeToPaymentDate: timeToPaymentDate,
+                discountingFactorFunction: discountingFactorFunction);
 
             Engine.Verbose = 0;
             var vegaGreek = GreeksBumper(bumpPercentage, v0, callPrice);
@@ -1250,7 +1252,7 @@ namespace HestonEstimator
             return vegaGreek;
         }
 
-        public static double ThetaFSCall(double kappa, double theta, double rho, double v0, double sigma, double s0, double T, double K, double r, double q, double T0, double bumpPercentage = 0.01, double? Tp = null)
+        public static double ThetaFSCall(double kappa, double theta, double rho, double v0, double sigma, double s0, double T, double K, double r, double q, double T0, double bumpPercentage = 0.01, double? timeToPaymentDate = null, Func<double, double, double> discountingFactorFunction = null)
         {
             int verbosity = Engine.Verbose;
             if (verbosity > 0)
@@ -1261,10 +1263,13 @@ namespace HestonEstimator
                 Console.WriteLine("{0}\t{1}\t{2}\t{3}\t{4}", kappa, theta, sigma, rho, v0);
                 Console.WriteLine("Call Option Information");
                 Console.WriteLine("s0\tK\tT\tTp\tr\tq");
-                Console.WriteLine("{0}\t{1}\t{2}\t{3}\t{4}\t{5}", s0, K, T,Tp, r, q);
+                Console.WriteLine("{0}\t{1}\t{2}\t{3}\t{4}\t{5}", s0, K, T,timeToPaymentDate, r, q);
             }
 
+            var Tp = timeToPaymentDate ?? T;
             var M = T - T0;
+            var s = Tp - T0;
+
             Func<double, double> callPrice = (double strikeDate) => HestonForwardApproximated.HestonForwardCallPrice(
                 kappa: kappa,
                 theta: theta,
@@ -1277,7 +1282,8 @@ namespace HestonEstimator
                 K: K,
                 r: r,
                 q: q,
-                Tp: Tp
+                timeToPaymentDate: strikeDate + s,
+                discountingFactorFunction: discountingFactorFunction
                 );
 
             Engine.Verbose = 0;
@@ -1293,7 +1299,7 @@ namespace HestonEstimator
             return thetaGreek;
         }
 
-        public static double RhoFSCall(double kappa, double theta, double rho, double v0, double sigma, double s0, double T, double K, double r, double q, double T0, double bumpPercentage = 0.01, double? Tp = null)
+        public static double RhoFSCall(double kappa, double theta, double rho, double v0, double sigma, double s0, double T, double K, double r, double q, double T0, double bumpPercentage = 0.01, double? timeToPaymentDate = null, Func<double, double, double> discountingFactorFunction = null)
         {
             int verbosity = Engine.Verbose;
             if (verbosity > 0)
@@ -1304,8 +1310,26 @@ namespace HestonEstimator
                 Console.WriteLine("{0}\t{1}\t{2}\t{3}\t{4}", kappa, theta, sigma, rho, v0);
                 Console.WriteLine("Call Option Information");
                 Console.WriteLine("s0\tK\tT\tTp\tr\tq");
-                Console.WriteLine("{0}\t{1}\t{2}\t{3}\t{4}\t{5}", s0, K, T,Tp, r, q);
+                Console.WriteLine("{0}\t{1}\t{2}\t{3}\t{4}\t{5}", s0, K, T,timeToPaymentDate, r, q);
             }
+
+
+            var Tp = timeToPaymentDate ?? T;
+
+            if (discountingFactorFunction == null)
+            {
+                discountingFactorFunction = (t, T) => System.Math.Exp(-r * (T - t));
+            }
+
+            double DiscountingFunctionAsFunctionOfIR(double IR, double t, double T)
+            {
+                Func<double, double, double> discountingRate = (t, T) => -System.Math.Log(discountingFactorFunction(t, T)) / (T - t);
+                var spread = discountingRate(t, T) - r;
+                // r = discountingRate(t,T) - spread
+                // discountingRate(t,T) = r + spread
+                return System.Math.Exp(-(IR + spread) * (T - t));
+            }
+
 
             Func<double, double> callPrice = (double interestRate) => HestonForwardApproximated.HestonForwardCallPrice(
                 kappa: kappa,
@@ -1319,7 +1343,8 @@ namespace HestonEstimator
                 K: K,
                 r: interestRate,
                 q: q,
-                Tp: Tp
+                timeToPaymentDate: Tp,
+                discountingFactorFunction: (t, tt) => DiscountingFunctionAsFunctionOfIR(interestRate, t, tt)
                 );
 
             Engine.Verbose = 0;
@@ -1335,7 +1360,7 @@ namespace HestonEstimator
             return rhoGreek;
         }
 
-        public static (double, double) DeltaGammaFSPut(double kappa, double theta, double rho, double v0, double sigma, double s0, double T, double T0, double K, double r, double q, double bumpPercentage = 0.01, double? unBumpedPrice = null, double? Tp = null)
+        public static (double, double) DeltaGammaFSPut(double kappa, double theta, double rho, double v0, double sigma, double s0, double T, double T0, double K, double r, double q, double bumpPercentage = 0.01, double? unBumpedPrice = null, double? timeToPaymentDate = null, Func<double, double, double> discountingFactorFunction = null)
         {
 
             if (!unBumpedPrice.HasValue)
@@ -1352,8 +1377,8 @@ namespace HestonEstimator
                     r: r,
                     T0: T0,
                     q: q,
-                    Tp: Tp
-                    );
+                paymentDate: timeToPaymentDate,
+                discountingFactorFunction: discountingFactorFunction);
             }
 
             double deltaS = bumpPercentage * s0;
@@ -1370,8 +1395,8 @@ namespace HestonEstimator
                 T0: T0,
                 r: r,
                 q: q,
-                Tp: Tp
-                );
+                paymentDate: timeToPaymentDate,
+                discountingFactorFunction: discountingFactorFunction);
 
             double putPriceBumpDown = HestonForwardApproximated.HestonForwardPutPrice(
                 kappa: kappa,
@@ -1385,15 +1410,15 @@ namespace HestonEstimator
                 K: K,
                 r: r,
                 q: q,
-                Tp: Tp
-                );
+                paymentDate: timeToPaymentDate,
+                discountingFactorFunction: discountingFactorFunction);
 
             var delta = (putPriceBumpUp - putPriceBumpDown) / (2 * deltaS);
             var gamma = (putPriceBumpUp - 2 * unBumpedPrice.Value + putPriceBumpDown) / (deltaS * deltaS);
             return (delta, gamma);
         }
 
-        public static double VegaFSPut(double kappa, double theta, double rho, double v0, double sigma, double s0, double T, double K, double r, double q, double T0, double bumpPercentage = 0.01, double? Tp = null)
+        public static double VegaFSPut(double kappa, double theta, double rho, double v0, double sigma, double s0, double T, double K, double r, double q, double T0, double bumpPercentage = 0.01, double? timeToPaymentDate = null, Func<double, double, double> discountingFactorFunction = null)
         {
             int verbosity = Engine.Verbose;
             if (verbosity > 0)
@@ -1404,7 +1429,7 @@ namespace HestonEstimator
                 Console.WriteLine("{0}\t{1}\t{2}\t{3}\t{4}", kappa, theta, sigma, rho, v0);
                 Console.WriteLine("Call Option Information");
                 Console.WriteLine("s0\tK\tT\tTp\tr\tq");
-                Console.WriteLine("{0}\t{1}\t{2}\t{3}\t{4}\t{5}", s0, K, T,Tp, r, q);
+                Console.WriteLine("{0}\t{1}\t{2}\t{3}\t{4}\t{5}", s0, K, T,timeToPaymentDate, r, q);
             }
 
             Func<double, double> putPrice = (double initialVariance) => HestonForwardApproximated.HestonForwardPutPrice(
@@ -1419,8 +1444,8 @@ namespace HestonEstimator
                 K: K,
                 r: r,
                 q: q,
-                Tp: Tp
-                );
+                paymentDate: timeToPaymentDate,
+                discountingFactorFunction: discountingFactorFunction);
 
             Engine.Verbose = 0;
             var vegaGreek = GreeksBumper(bumpPercentage, v0, putPrice);
@@ -1436,7 +1461,7 @@ namespace HestonEstimator
 
         }
 
-        public static double ThetaFSPut(double kappa, double theta, double rho, double v0, double sigma, double s0, double T, double K, double r, double q, double T0, double bumpPercentage = 0.01, double? Tp = null)
+        public static double ThetaFSPut(double kappa, double theta, double rho, double v0, double sigma, double s0, double T, double K, double r, double q, double T0, double bumpPercentage = 0.01, double? timeToPaymentDate = null, Func<double, double, double> discountingFactorFunction = null)
         {
             int verbosity = Engine.Verbose;
             if (verbosity > 0)
@@ -1447,10 +1472,15 @@ namespace HestonEstimator
                 Console.WriteLine("{0}\t{1}\t{2}\t{3}\t{4}", kappa, theta, sigma, rho, v0);
                 Console.WriteLine("Call Option Information");
                 Console.WriteLine("s0\tK\tT\tTp\tr\tq");
-                Console.WriteLine("{0}\t{1}\t{2}\t{3}\t{4}\t{5}", s0, K, T,Tp, r, q);
+                Console.WriteLine("{0}\t{1}\t{2}\t{3}\t{4}\t{5}", s0, K, T,timeToPaymentDate, r, q);
             }
 
+
+
+            var Tp = timeToPaymentDate ?? T;
+            var s = Tp - T0;
             var M = T - T0;
+
             Func<double, double> putPrice = (double strikeDate) => HestonForwardApproximated.HestonForwardPutPrice(
                 kappa: kappa,
                 theta: theta,
@@ -1463,7 +1493,8 @@ namespace HestonEstimator
                 K: K,
                 r: r,
                 q: q,
-                Tp: Tp
+                paymentDate: strikeDate+s, 
+                discountingFactorFunction: discountingFactorFunction
                 );
 
             Engine.Verbose = 0;
@@ -1479,7 +1510,7 @@ namespace HestonEstimator
             return thetaGreek;
         }
 
-        public static double RhoFSPut(double kappa, double theta, double rho, double v0, double sigma, double s0, double T, double K, double r, double q, double T0, double bumpPercentage = 0.01, double? Tp = null)
+        public static double RhoFSPut(double kappa, double theta, double rho, double v0, double sigma, double s0, double T, double K, double r, double q, double T0, double bumpPercentage = 0.01, double? timeToPaymentDate = null, Func<double, double, double> discountingFactorFunction = null)
         {
             int verbosity = Engine.Verbose;
             if (verbosity > 0)
@@ -1490,7 +1521,22 @@ namespace HestonEstimator
                 Console.WriteLine("{0}\t{1}\t{2}\t{3}\t{4}", kappa, theta, sigma, rho, v0);
                 Console.WriteLine("Call Option Information");
                 Console.WriteLine("s0\tK\tT\tTp\tr\tq");
-                Console.WriteLine("{0}\t{1}\t{2}\t{3}\t{4}\t{5}", s0, K, T,Tp, r, q);
+                Console.WriteLine("{0}\t{1}\t{2}\t{3}\t{4}\t{5}", s0, K, T,timeToPaymentDate, r, q);
+            }
+            var Tp = timeToPaymentDate ?? T;
+
+            if (discountingFactorFunction == null)
+            {
+                discountingFactorFunction = (t, T) => System.Math.Exp(-r * (T - t));
+            }
+
+            double DiscountingFunctionAsFunctionOfIR(double IR, double t, double T)
+            {
+                Func<double, double, double> discountingRate = (t, T) => -System.Math.Log(discountingFactorFunction(t, T)) / (T - t);
+                var spread = discountingRate(t, T) - r;
+                // r = discountingRate(t,T) - spread
+                // discountingRate(t,T) = r + spread
+                return System.Math.Exp(-(IR + spread) * (T - t));
             }
 
             Func<double, double> callPrice = (double interestRate) => HestonForwardApproximated.HestonForwardPutPrice(
@@ -1505,8 +1551,8 @@ namespace HestonEstimator
                 K: K,
                 r: interestRate,
                 q: q,
-                Tp: Tp
-                );
+                paymentDate: Tp,
+                discountingFactorFunction: (t, tt) => DiscountingFunctionAsFunctionOfIR(interestRate, t, tt));
 
             Engine.Verbose = 0;
             var rhoGreek = GreeksBumper(bumpPercentage, r, callPrice);
