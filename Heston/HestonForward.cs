@@ -2,11 +2,7 @@
 using Heston;
 using Fairmat.Math;
 using DVPLI;
-using System.Linq;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
-//using QLNet;
-//using DVPLDOM.Underlying;
-//using QLNet;
+
 
 
 namespace HestonEstimator

@@ -1,8 +1,6 @@
 ﻿using System;
 using Heston;
-using Fairmat.Math;
 using DVPLI;
-using Remotion.Linq.Clauses.ResultOperators;
 
 namespace HestonEstimator
 {
