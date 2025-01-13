@@ -17,8 +17,6 @@
  */
 
 using System;
-using System.Runtime.ExceptionServices;
-using DVPLDOM;
 using DVPLI;
 using Fairmat.Math;
 using Heston;
