@@ -84,7 +84,6 @@ namespace HestonEstimator
         {
             var iu = Complex.I * u;
             var onePlusIu = Complex.One + iu;
-            //return rho * onePlusIu / sigma;
             return - rho * onePlusIu / sigma;
         }
 
@@ -92,7 +91,6 @@ namespace HestonEstimator
         {
             var iu = Complex.I * u;
             var preMult = -iu / 2;
-            // return preMult * (2 * kappa * rho / sigma - iu * (1 - rho * rho) - 1.0);
             return preMult * (2 * kappa * rho / sigma + iu * (1 - rho * rho) - 1.0);
 
         }
@@ -132,13 +130,6 @@ namespace HestonEstimator
         //public static Complex H1Hat(double tau, Complex lambda, double sigma, double kappa)
         public static Complex H1Hat(double tau, Complex lambda, double sigma, double kappa, double rho)
         {
-            /*
-            var sigma2 = (sigma * sigma);
-            var preMult = -2 / sigma2;
-            var argumentNumerator = 2 * kappa * Math.Exp(2 * kappa * tau);
-            var argumentDenominator = sigma2 * lambda * (Math.Exp(kappa * tau) - 1) + 2 * kappa * Math.Exp(kappa * tau);
-            return preMult * Complex.Log(argumentNumerator / argumentDenominator);
-            */
             var kappaHat = kappa - sigma * rho;
             var sigma2 = (sigma * sigma);
             var preMult = -2 / sigma2;
@@ -151,13 +142,6 @@ namespace HestonEstimator
 
         public static Complex G1Hat(double sigma, double kappa, double tau, Complex lambda, double rho)
         {
-            /*
-            var sigma2 = (sigma * sigma);
-            var preMult = -2 / sigma2;
-            var argumentNumerator = 2 * kappa * Math.Exp(2 * kappa * tau);
-            var argumentDenominator = sigma2 * lambda * (Math.Exp(kappa * tau) - 1) + 2 * kappa * Math.Exp(kappa * tau);
-            return preMult * Complex.Log(argumentNumerator / argumentDenominator);
-            */
             var kappaHat = kappa - sigma * rho;
             var sigma2 = (sigma * sigma);
             var argumentNumerator = 2 * kappaHat * lambda;
@@ -175,7 +159,6 @@ namespace HestonEstimator
         public static Complex q2Hat(Complex u, double tau0, double rho, double sigma, Complex q1, Complex q2, double kappa, double t)
         {
             Complex iu = Complex.I * u;
-            //return -iu * rho / sigma * G1(tau: tau0, lambda: q1, mu: q2, kappa: kappa, sigma: sigma, t: t);
             return -iu * rho / sigma - G1(tau: tau0, lambda: q1, mu: q2, kappa: kappa, sigma: sigma, t: t);
         }
 
@@ -195,7 +178,6 @@ namespace HestonEstimator
             var b = -theta * H1(tau: tau0, lambda: _s1, mu: _s2, kappa: kappa, sigma: sigma);
             var c = -v0 * G1Hat(tau: tau, lambda: s2H, sigma: sigma, kappa: kappa, rho: rho);
             var d = -theta * H1Hat(tau: tau, lambda: s2H, sigma: sigma, kappa: kappa, rho: rho);
-            //var d = -theta * H1Hat(tau: tau, lambda: s2H, sigma: sigma, kappa: kappa);
             var info = Complex.Exp(a + b + c + d);
 
             return Complex.Exp(a + b + c + d);
@@ -218,7 +200,6 @@ namespace HestonEstimator
             var b = -theta * H1(tau: tau0, lambda: _q1, mu: _q2, kappa: kappa, sigma: sigma);
             var c = -v0 * G1Hat(tau: tau, lambda: q2H, sigma: sigma, kappa: kappa, rho: rho);
             var d = -theta * H1Hat(tau: tau, lambda: q2H, sigma: sigma, kappa: kappa, rho: rho);
-            //var d = -theta * H1Hat(tau: tau, lambda: q2H, sigma: sigma, kappa: kappa);
 
             return Complex.Exp(a + b + c + d);
 
@@ -366,7 +347,6 @@ namespace HestonEstimator
             var i = Complex.I;
             var theta = Theta_tau(tau: tau, T0: T0, T: T);
             return theta * (-kappa * kappa / 2 - i * kappa / 2 + i * j * kappa);
-            //return theta * (-kappa * kappa / 2 - i * kappa / 2 + i * kappa * kappa);
         }
 
 

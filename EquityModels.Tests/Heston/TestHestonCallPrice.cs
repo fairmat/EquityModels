@@ -17,7 +17,6 @@
  */
 
 using System;
-using System.Numerics;
 using DVPLI;
 using HestonEstimator;
 using NUnit.Framework;
