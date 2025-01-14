@@ -17,8 +17,6 @@
  */
 
 using System;
-using System.Runtime.ExceptionServices;
-using DVPLDOM;
 using DVPLI;
 using Fairmat.Math;
 using Heston;
@@ -226,7 +224,7 @@ namespace HestonEstimator
                 timeToPaymentDate:this.timeToPaymentDate);
         }
 
-        public static double HestonCallPrice(double kappa, double theta, double rho, double v0, double sigma, double s0, double T, double K, double r, double q, double? timeToPaymentDate = null)
+        public static double HestonCallPrice(double kappa, double theta, double rho, double v0, double sigma, double s0, double T, double K, double r, double q, Func<double, double, double> discountingFactorFunction = null, double? timeToPaymentDate = null)
         {
             var tp = timeToPaymentDate ?? T;
             if (Engine.Verbose > 0)
@@ -240,7 +238,11 @@ namespace HestonEstimator
                 Console.WriteLine("{0}\t{1}\t{2}\t{3}\t{4}\t{5}", s0, K, T,timeToPaymentDate, r, q);
 
             }
-
+            if (discountingFactorFunction == null)
+            {
+                // setting discounting Rate equal to the risk free rate
+                discountingFactorFunction = (t, T) => System.Math.Exp(-r * (T -t));
+            }
             double F = s0 * Math.Exp((r - q) * T);
             double firstTerm = 0.5 * (F - K);
             double a = 1E-8;
@@ -254,7 +256,42 @@ namespace HestonEstimator
 
             double unDiscountedCall =  (firstTerm + integral / Math.PI);
 
-            double call = Math.Exp(-r * tp) * unDiscountedCall;
+            double call = discountingFactorFunction(0, tp) * unDiscountedCall;
+
+            if (Engine.Verbose > 0)
+            {
+                Console.WriteLine("Call Price: {0}", call);
+            }
+
+            return call;
+        }
+
+        public static double HestonUndiscountedCallPrice(double kappa, double theta, double rho, double v0, double sigma, double s0, double T, double K, double r, double q)
+        {
+            if (Engine.Verbose > 0)
+            {
+                Console.WriteLine("Pricing a call option with Heston model");
+                Console.WriteLine("Heston Parameters");
+                Console.WriteLine("kappa\ttheta\tsigma\trho\tv0");
+                Console.WriteLine("{0}\t{1}\t{2}\t{3}\t{4}", kappa, theta, sigma, rho, v0);
+                Console.WriteLine("Call Option Information");
+                Console.WriteLine("s0\tK\tT\tTimeToPaymentDate\tr\tq");
+                Console.WriteLine("{0}\t{1}\t{2}\t{3}\t{4}", s0, K, T, r, q);
+
+            }
+
+            double F = s0 * Math.Exp((r - q) * T);
+            double firstTerm = 0.5 * (F - K);
+            double a = 1E-8;
+            double b = 1000.0;
+
+
+            TAEDelegateFunction1D functionToIntegrate = (double u) => IntegrandFunc(u: u, kappa: kappa, theta: theta, sigma: sigma, rho: rho, v0: v0, s0: s0, r: r, q: q, T: T, K: K);
+            double part1 = PerformIntegral(a, b, functionToIntegrate);
+
+            double integral = part1 + a * functionToIntegrate(a / 2.0);
+
+            double call = (firstTerm + integral / Math.PI);
 
             if (Engine.Verbose > 0)
             {
@@ -269,9 +306,41 @@ namespace HestonEstimator
         /// Calculates a put price using the Heston model
         /// </summary>
         /// <returns></returns>
-        internal static double HestonPutPrice(double kappa, double theta, double rho, double v0, double sigma, double s0, double T, double K, double r, double q, double? timeToPaymentDate=null)
+        internal static double HestonPutPrice(double kappa, double theta, double rho, double v0, double sigma, double s0, double T, double K, double r, double q, double? timeToPaymentDate=null, Func<double, double, double> discountingFactorFunction=null)
         {
-            var tp = timeToPaymentDate?? T;
+            double Tp = timeToPaymentDate ?? T;
+            
+            if (discountingFactorFunction == null)
+            {
+                // setting discounting Rate equal to the risk free rate
+                discountingFactorFunction = (t, T) => System.Math.Exp(-r * (T - t));
+            }
+
+            // get the discounting factor
+            var df = discountingFactorFunction(0, timeToPaymentDate ?? T);
+            // get the undiscounted put price
+            var undiscountedPutPrice = HestonUndiscountedPutPrice(kappa, theta, rho, v0, sigma, s0, T, K, r, q);
+            // return the discounted put price
+            var discountedPrice = df * undiscountedPutPrice;
+
+            if (Engine.Verbose > 0)
+            {
+                Console.WriteLine("TimeToPayment");
+                Console.WriteLine(Tp);
+                Console.WriteLine("DiscountedPrice");
+                Console.WriteLine(df);
+            }
+
+            return discountedPrice;
+
+        }
+
+        /// <summary>
+        /// Calculates a put price using the Heston model
+        /// </summary>
+        /// <returns></returns>
+        internal static double HestonUndiscountedPutPrice(double kappa, double theta, double rho, double v0, double sigma, double s0, double T, double K, double r, double q)
+        {
             if (Engine.Verbose > 0)
             {
                 Console.WriteLine("Pricing a put option with Heston model");
@@ -279,13 +348,13 @@ namespace HestonEstimator
                 Console.WriteLine("kappa\ttheta\tsigma\trho\tv0");
                 Console.WriteLine("{0}\t{1}\t{2}\t{3}\t{4}", kappa, theta, sigma, rho, v0);
                 Console.WriteLine("Put Option Information");
-                Console.WriteLine("s0\tK\tT\tTimeToPaymentDate\tr\tq");
-                Console.WriteLine("{0}\t{1}\t{2}\t{3}\t{4}\t{5}", s0, K, T, timeToPaymentDate, r, q);
+                Console.WriteLine("s0\tK\tT\tr\tq");
+                Console.WriteLine("{0}\t{1}\t{2}\t{3}\t{4}", s0, K, T, r, q);
 
             }
 
             double F = s0 * Math.Exp((r - q) * T);
-            double firstTerm = 0.5 * (K-F);
+            double firstTerm = 0.5 * (K - F);
             double a = 1E-8;
             double b = 1000.0;
 
@@ -293,13 +362,12 @@ namespace HestonEstimator
             TAEDelegateFunction1D functionToIntegrate = (double u) => IntegrandFunc(u: u, kappa: kappa, theta: theta, sigma: sigma, rho: rho, v0: v0, s0: s0, r: r, q: q, T: T, K: K);
             double part1 = PerformIntegral(a, b, functionToIntegrate);
             double integral = part1 + a * functionToIntegrate(a / 2.0);
-            double unDiscountedPut =  (firstTerm + integral / Math.PI);
-            double put = Math.Exp(-r * tp) * unDiscountedPut;
+            double unDiscountedPut = (firstTerm + integral / Math.PI);
             if (Engine.Verbose > 0)
             {
                 Console.WriteLine("Undiscounted Put Price: {0}", unDiscountedPut);
             }
-            return put;
+            return unDiscountedPut;
         }
 
         /// <summary>
@@ -397,6 +465,7 @@ namespace HestonEstimator
             } while (x < b);
             return sum;
         }
+        
 
         /// <summary>
         /// Calculates the Heston model call price.
@@ -668,9 +737,9 @@ namespace HestonEstimator
             Complex edT = Complex.Exp(-d * T);
             Complex numArg = 1.0 - g * edT;
             A = (theta * kappa) * (par * T - 2.0 * Complex.Log(numArg / (1.0 - g))) / (ss);
-            B = v0 * (par * (1.0 - edT) / numArg) / ss;
+            B = (par * (1.0 - edT) / numArg) / ss;
 
-            val = Complex.Exp(I * u * (Math.Log(s0) + r * T) + A + B);
+            val = Complex.Exp(I * u * (Math.Log(s0) + r * T) + A + B * v0);
             return val;
         }
 

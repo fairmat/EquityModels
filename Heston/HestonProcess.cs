@@ -78,6 +78,7 @@ namespace Heston
 
         #endregion Serialized Parameters
 
+        
 
         /// <summary>
         /// Gets the factors for Delta Greek derivative.
@@ -405,6 +406,14 @@ namespace Heston
 
         #region IPlainVanillaPricing Members
 
+        private static Func<double, double, double> GetDiscountFactorFunctionFromProject()
+        {
+            var prj = Project.ActiveProject;
+            var discountingModel = Option.CurrentSolving.GetDiscountingModel();
+
+            return (t, T) => discountingModel.GetDeterministicDiscountFactor(prj, t, T);
+
+        }
         /// <summary>
         /// Calculates the discount factor for a given time period.
         /// </summary>
@@ -455,6 +464,8 @@ namespace Heston
             var qParam = this.q.fV();
             var timeToPD = timeToPaymentDate?? timeToMaturity;
 
+            var discountingFunction = GetDiscountFactorFunctionFromProject(); 
+
             AnalyticalPricingFunctionsValuationMode requestedResult =
                 AttributesUtility.RetrieveAttributeOrDefaultValue(
                     additionalInformation,
@@ -477,7 +488,9 @@ namespace Heston
                        T: timeToMaturity,
                        K: strike,
                        r: rParam,
-                       q: qParam, timeToPaymentDate: timeToPaymentDate);
+                       q: qParam, 
+                       timeToPaymentDate: timeToPaymentDate, 
+                       discountingFactorFunction: discountingFunction);
                     break;
 
 
@@ -492,7 +505,10 @@ namespace Heston
                        T: timeToMaturity,
                        K: strike,
                        r: rParam,
-                       q: qParam);
+                       q: qParam, 
+                       paymentTime: timeToPaymentDate,
+                       discountingFactorFunction: discountingFunction
+                       );
 
                     result.Deltas = (Vector)(delta);
                     break;
@@ -509,7 +525,10 @@ namespace Heston
                         T: timeToMaturity,
                         K: strike,
                         r: rParam,
-                        q: qParam);
+                        q: qParam, 
+                        paymentTime: timeToPaymentDate,
+                        discountingFactorFunction: discountingFunction
+                        );
 
                     result.Gammas = (Vector)(gamma);
                     break;
@@ -527,7 +546,9 @@ namespace Heston
                        T: timeToMaturity,
                        K: strike,
                        r: rParam,
-                       q: qParam);
+                       q: qParam, paymentTime: timeToPaymentDate,
+                       discountingFactorFunction: discountingFunction
+);
 
                     result.Rho = rho;
                     break;
@@ -545,7 +566,7 @@ namespace Heston
                        T: timeToMaturity,
                        K: strike,
                        r: rParam,
-                       q: qParam);
+                       q: qParam, paymentTime: timeToPaymentDate, discountingFactorFunction: discountingFunction);
 
                     result.Theta = theta;
                     break;
@@ -561,13 +582,13 @@ namespace Heston
                        T: timeToMaturity,
                        K: strike,
                        r: rParam,
-                       q: qParam);
+                       q: qParam, paymentTime: timeToPaymentDate, discountingFactorFunction: discountingFunction);
                     result.Vegas = (Vector)vega;
                     break;
                 
                 case AnalyticalPricingFunctionsValuationMode.All:
                     Func< Dictionary<string, object>, GreeksDerivatives > myFunc = 
-                        (Dictionary<string, object>  info) => Call(component, strike, timeToMaturity, info);
+                        (Dictionary<string, object>  info) => Call(component, strike, timeToMaturity, info, timeToPaymentDate: timeToPaymentDate);
                     return AnalyticalPricingFunctions.ComputeAllGreeks(myFunc); 
             }
 
@@ -606,7 +627,7 @@ namespace Heston
             var qParam = this.q.fV();
             timeToPaymentDate = timeToPaymentDate?? timeToMaturity;
 
-
+            var discountingFunction = GetDiscountFactorFunctionFromProject();
 
             AnalyticalPricingFunctionsValuationMode requestedResult =
                 AttributesUtility.RetrieveAttributeOrDefaultValue(
@@ -630,7 +651,7 @@ namespace Heston
                        T: timeToMaturity,
                        K: strike,
                        r: rParam,
-                       q: qParam);
+                       q: qParam, timeToPaymentDate: timeToPaymentDate, discountingFactorFunction: discountingFunction);
                     break;
 
 
@@ -645,7 +666,10 @@ namespace Heston
                        T: timeToMaturity,
                        K: strike,
                        r: rParam,
-                       q: qParam);
+                       q: qParam, 
+                       paymentTime: timeToPaymentDate,
+                       discountingFactorFunction: discountingFunction
+                       );
 
                     result.Deltas = (Vector)(delta);
                     break;
@@ -662,7 +686,9 @@ namespace Heston
                         T: timeToMaturity,
                         K: strike,
                         r: rParam,
-                        q: qParam);
+                        q: qParam,
+                        paymentTime: timeToPaymentDate,
+                        discountingFactorFunction: discountingFunction);
 
                     result.Gammas = (Vector)(gamma);
                     break;
@@ -680,7 +706,9 @@ namespace Heston
                        T: timeToMaturity,
                        K: strike,
                        r: rParam,
-                       q: qParam);
+                       q: qParam,
+                       paymentTime: timeToPaymentDate,
+                       discountingFactorFunction: discountingFunction);
 
                     result.Rho = rho;
                     break;
@@ -698,7 +726,9 @@ namespace Heston
                        T: timeToMaturity,
                        K: strike,
                        r: rParam,
-                       q: qParam);
+                       q: qParam,
+                       timeToPaymentDate: timeToPaymentDate,
+                       discountingFactorFunction: discountingFunction);
 
                     result.Theta = theta;
                     break;
@@ -714,7 +744,10 @@ namespace Heston
                        T: timeToMaturity,
                        K: strike,
                        r: rParam,
-                       q: qParam);
+                       q: qParam, 
+                       paymentTime:timeToPaymentDate,
+                       discountingFactorFunction: discountingFunction);
+
                     result.Vegas = (Vector)vega;
                     break;
 
@@ -759,7 +792,7 @@ namespace Heston
             var rParam = this.r.fV();
             var qParam = this.q.fV();
 
-
+            var discountingFunction = GetDiscountFactorFunctionFromProject();
 
             AnalyticalPricingFunctionsValuationMode requestedResult =
                 AttributesUtility.RetrieveAttributeOrDefaultValue(
@@ -784,7 +817,8 @@ namespace Heston
                        K: strike,
                        r: rParam,
                        q: qParam,
-                       timeToPaymentDate: timeToPaymentDate);
+                       timeToPaymentDate: timeToPaymentDate, 
+                       discountingFactorFunction: discountingFunction);
                     break;
 
 
@@ -799,7 +833,8 @@ namespace Heston
                        T: timeToMaturity,
                        K: strike,
                        r: rParam,
-                       q: qParam);
+                       q: qParam, paymentTime: timeToPaymentDate,
+                       discountingFactorFunction: discountingFunction);
 
                     result.Deltas = (Vector)(delta);
                     break;
@@ -816,7 +851,8 @@ namespace Heston
                         T: timeToMaturity,
                         K: strike,
                         r: rParam,
-                        q: qParam);
+                        q: qParam, paymentTime: timeToPaymentDate,
+                        discountingFactorFunction: discountingFunction);
 
                     result.Gammas = (Vector)(gamma);
                     break;
@@ -834,7 +870,8 @@ namespace Heston
                        T: timeToMaturity,
                        K: strike,
                        r: rParam,
-                       q: qParam);
+                       q: qParam, paymentTime: timeToPaymentDate,
+                       discountingFactorFunction: discountingFunction);
 
                     result.Rho = rho;
                     break;
@@ -852,7 +889,8 @@ namespace Heston
                        T: timeToMaturity,
                        K: strike,
                        r: rParam,
-                       q: qParam);
+                       q: qParam, timeToPaymentDate: timeToPaymentDate,
+                       discountingFactorFunction: discountingFunction);
 
                     result.Theta = theta;
                     break;
@@ -868,13 +906,13 @@ namespace Heston
                        T: timeToMaturity,
                        K: strike,
                        r: rParam,
-                       q: qParam);
+                       q: qParam, discountingFactorFunction: discountingFunction);
                     result.Vegas = (Vector)vega;
                     break;
 
                 case AnalyticalPricingFunctionsValuationMode.All:
                     Func<Dictionary<string, object>, GreeksDerivatives> myFunc =
-                        (Dictionary<string, object> info) => DigitalCall(component, strike, timeToMaturity, info);
+                        (Dictionary<string, object> info) => DigitalCall(component, strike, timeToMaturity, info, timeToPaymentDate: timeToPaymentDate);
                     return AnalyticalPricingFunctions.ComputeAllGreeks(myFunc);
             }
 
@@ -911,6 +949,7 @@ namespace Heston
             var s0Param = this.S0.fV();
             var rParam = this.r.fV();
             var qParam = this.q.fV();
+            var discountingFunction = GetDiscountFactorFunctionFromProject();
 
 
 
@@ -937,7 +976,8 @@ namespace Heston
                        K: strike,
                        r: rParam,
                        q: qParam,
-                       timeToPaymentDate: timeToPaymentDate
+                       timeToPaymentDate: timeToPaymentDate, 
+                       discountingFactorFunction:discountingFunction
                        );
                     break;
 
@@ -953,7 +993,8 @@ namespace Heston
                        T: timeToMaturity,
                        K: strike,
                        r: rParam,
-                       q: qParam);
+                       q: qParam, 
+                       paymentTime: timeToPaymentDate, discountingFactorFunction: discountingFunction);
 
                     result.Deltas = (Vector)(delta);
                     break;
@@ -970,7 +1011,8 @@ namespace Heston
                         T: timeToMaturity,
                         K: strike,
                         r: rParam,
-                        q: qParam);
+                        q: qParam, 
+                        paymentTime: timeToPaymentDate, discountingFactorFunction: discountingFunction);
 
                     result.Gammas = (Vector)(gamma);
                     break;
@@ -988,7 +1030,7 @@ namespace Heston
                        T: timeToMaturity,
                        K: strike,
                        r: rParam,
-                       q: qParam);
+                       q: qParam, paymentTime: timeToPaymentDate, discountingFactorFunction: discountingFunction);
 
                     result.Rho = rho;
                     break;
@@ -1006,7 +1048,9 @@ namespace Heston
                        T: timeToMaturity,
                        K: strike,
                        r: rParam,
-                       q: qParam);
+                       q: qParam, timeToPaymentDate: timeToPaymentDate, 
+                       discountingFactorFunction:discountingFunction
+                       );
 
                     result.Theta = theta;
                     break;
@@ -1022,13 +1066,15 @@ namespace Heston
                        T: timeToMaturity,
                        K: strike,
                        r: rParam,
-                       q: qParam);
+                       discountingFactorFunction: discountingFunction,
+                       q: qParam, 
+                       paymentTime: timeToPaymentDate);
                     result.Vegas = (Vector)vega;
                     break;
 
                 case AnalyticalPricingFunctionsValuationMode.All:
                     Func<Dictionary<string, object>, GreeksDerivatives> myFunc =
-                        (Dictionary<string, object> info) => DigitalPut(component, strike, timeToMaturity, info);
+                        (Dictionary<string, object> info) => DigitalPut(component, strike, timeToMaturity, info, timeToPaymentDate:timeToPaymentDate);
                     return AnalyticalPricingFunctions.ComputeAllGreeks(myFunc);
             }
 
@@ -1078,7 +1124,10 @@ namespace Heston
         /// <returns>The option price</returns>
         public GreeksDerivatives FSCall(int component, double strikeFraction, double fsTime, double timeToMaturity, Dictionary<string, object> additionalInformation = null, double? timeToPaymentDate = null)
         {
+
             var result = new GreeksDerivatives();
+
+            var df = GetDiscountFactorFunctionFromProject();
 
             AnalyticalPricingFunctionsValuationMode requestedResult =
                 AttributesUtility.RetrieveAttributeOrDefaultValue(
@@ -1104,7 +1153,8 @@ namespace Heston
                     r: this.r.fV(),
                     q: this.q.fV(),
                     T0: fsTime,
-                    Tp: timeToPaymentDate
+                    timeToPaymentDate: timeToPaymentDate, 
+                    discountingFactorFunction: df
                     );
 
                     break;
@@ -1122,7 +1172,8 @@ namespace Heston
                         r: this.r.fV(),
                         q: this.q.fV(),
                         T0: fsTime,
-                        timeToPaymentDate: timeToPaymentDate??timeToMaturity
+                        timeToPaymentDate: timeToPaymentDate??timeToMaturity,discountingFactorFunction: df
+
                         );
 
                     result.Deltas = (Vector)(delta);
@@ -1142,6 +1193,7 @@ namespace Heston
                         r: this.r.fV(),
                         q: this.q.fV(),
                         T0: fsTime
+
                         );
 
                     result.Gammas = (Vector)(gamma);
@@ -1180,7 +1232,9 @@ namespace Heston
                         K: strikeFraction,
                         r: this.r.fV(),
                         q: this.q.fV(),
-                        T0: fsTime
+                        T0: fsTime, 
+                        timeToPaymentDate: timeToPaymentDate, 
+                        discountingFactorFunction: df
                         );
                     result.Theta = theta;
                     break;
@@ -1197,14 +1251,16 @@ namespace Heston
                         K: strikeFraction,
                         r: this.r.fV(),
                         q: this.q.fV(),
-                        T0: fsTime
+                        T0: fsTime, 
+                        discountingFactorFunction:df, 
+                        timeToPaymentDate:timeToPaymentDate
                         );
 
                     result.Vegas = (Vector)vega;
                     break;
 
                 case AnalyticalPricingFunctionsValuationMode.All:
-                    return HestonForwardApproximated.HestonForwardDigitalCallWithGreeks(
+                    return HestonForwardApproximated.HestonForwardCallWithGreeks(
                         kappa: k.fV(),
                         theta: this.theta.fV(),
                         sigma: this.sigma.fV(),
@@ -1216,7 +1272,8 @@ namespace Heston
                         r: this.r.fV(),
                         q: this.q.fV(),
                         T0: fsTime,
-                        Tp: timeToPaymentDate
+                        timeToPaymentDate:timeToPaymentDate, 
+                        discountingFactorFunction:df
                         );
             }
 
@@ -1252,6 +1309,8 @@ namespace Heston
                     AnalyticalPricingFunctionsValuationMode.Price
                 );
 
+            var df = GetDiscountFactorFunctionFromProject();
+
             switch (requestedResult)
             {
                 default:
@@ -1268,7 +1327,8 @@ namespace Heston
                     r: this.r.fV(),
                     q: this.q.fV(),
                     T0: fsTime,
-                    Tp: timeToPaymentDate ?? timeToMaturity
+                    paymentDate: timeToPaymentDate, 
+                    discountingFactorFunction:df
                     );
 
                     break;
@@ -1285,8 +1345,10 @@ namespace Heston
                         K: strikeFraction,
                         r: this.r.fV(),
                         q: this.q.fV(),
-                        T0: fsTime
-                        );
+                        T0:fsTime,
+                    timeToPaymentDate: timeToPaymentDate,
+                    discountingFactorFunction: df
+                    );
 
                     result.Deltas = (Vector)(delta);
                     break;
@@ -1323,8 +1385,9 @@ namespace Heston
                         K: strikeFraction,
                         r: this.r.fV(),
                         q: this.q.fV(),
-                        T0: fsTime
-                        );
+                        T0: fsTime,
+                    timeToPaymentDate: timeToPaymentDate,
+                    discountingFactorFunction: df);
 
                     result.Rho = rho;
                     break;
@@ -1343,7 +1406,9 @@ namespace Heston
                         K: strikeFraction,
                         r: this.r.fV(),
                         q: this.q.fV(),
-                        T0: fsTime
+                        T0: fsTime,
+                    timeToPaymentDate: timeToPaymentDate,
+                    discountingFactorFunction: df
                         );
                     result.Theta = theta;
                     break;
@@ -1360,7 +1425,9 @@ namespace Heston
                         K: strikeFraction,
                         r: this.r.fV(),
                         q: this.q.fV(),
-                        T0: fsTime
+                        T0: fsTime,
+                    timeToPaymentDate: timeToPaymentDate,
+                    discountingFactorFunction: df
                         );
 
                     result.Vegas = (Vector)vega;
@@ -1378,7 +1445,9 @@ namespace Heston
                         K: strikeFraction,
                         r: this.r.fV(),
                         q: this.q.fV(),
-                        T0: fsTime
+                        T0: fsTime,
+                    timeToPaymentDate: timeToPaymentDate,
+                    discountingFactorFunction: df
                         );
             }
 
@@ -1405,7 +1474,159 @@ namespace Heston
         /// <returns>The option price</returns>
         public GreeksDerivatives FSCallPercentage(int component, double strikeFraction, double fsTime, double timeToMaturity, Dictionary<string, object> additionalInformation = null, double? timeToPaymentDate = null)
         {
-            throw new NotImplementedException();
+            var result = new GreeksDerivatives();
+
+            AnalyticalPricingFunctionsValuationMode requestedResult =
+                AttributesUtility.RetrieveAttributeOrDefaultValue(
+                    additionalInformation,
+                    AnalyticalPricingFunctions.GreekNameKey,
+                    AnalyticalPricingFunctionsValuationMode.Price
+                );
+
+            var discountingFunction = GetDiscountFactorFunctionFromProject();
+
+            switch (requestedResult)
+            {
+                default:
+                case AnalyticalPricingFunctionsValuationMode.Price:
+                    result.MarkToMarket = HestonForwardApproximated.HestonForwardPercentageCallPrice(
+                    kappa: k.fV(),
+                    theta: this.theta.fV(),
+                    sigma: this.sigma.fV(),
+                    rho: this.rho.fV(),
+                    v0: this.V0.fV(),
+                    s0: this.S0.fV(),
+                    T: timeToMaturity,
+                    K: strikeFraction,
+                    r: this.r.fV(),
+                    q: this.q.fV(),
+                    T0: fsTime,
+                    discountingFactorFunction:discountingFunction,
+                    paymentTime: timeToPaymentDate
+                    );
+
+                    break;
+
+                case AnalyticalPricingFunctionsValuationMode.Delta:
+                    var delta = HestonForwardApproximated.FSPCallCalculateDelta(
+                        kappa: k.fV(),
+                        theta: this.theta.fV(),
+                        sigma: this.sigma.fV(),
+                        rho: this.rho.fV(),
+                        v0: this.V0.fV(),
+                        s0: this.S0.fV(),
+                        T: timeToMaturity,
+                        K: strikeFraction,
+                        r: this.r.fV(),
+                        q: this.q.fV(),
+                        T0: fsTime, 
+                        discountingFactorFunction:discountingFunction
+                        );
+
+                    result.Deltas = (Vector)(delta);
+                    break;
+
+                case AnalyticalPricingFunctionsValuationMode.Gamma:
+
+                    var gamma = HestonForwardApproximated.FSPCallCalculateGamma(
+                        kappa: k.fV(),
+                        theta: this.theta.fV(),
+                        sigma: this.sigma.fV(),
+                        rho: this.rho.fV(),
+                        v0: this.V0.fV(),
+                        s0: this.S0.fV(),
+                        T: timeToMaturity,
+                        K: strikeFraction,
+                        r: this.r.fV(),
+                        q: this.q.fV(),
+                        T0: fsTime, 
+                        discountingFactorFunction:discountingFunction
+                        );
+
+                    result.Gammas = (Vector)(gamma);
+                    break;
+
+
+                case AnalyticalPricingFunctionsValuationMode.Rho:
+                    var rho = HestonForwardApproximated.FSPCallCalculateRho(
+                        kappa: k.fV(),
+                        theta: this.theta.fV(),
+                        sigma: this.sigma.fV(),
+                        rho: this.rho.fV(),
+                        v0: this.V0.fV(),
+                        s0: this.S0.fV(),
+                        T: timeToMaturity,
+                        K: strikeFraction,
+                        r: this.r.fV(),
+                        q: this.q.fV(),
+                        T0: fsTime, 
+                        discountingFactorFunction:discountingFunction, 
+                        paymentTime:timeToPaymentDate
+                        );
+
+                    result.Rho = rho;
+                    break;
+
+
+                case AnalyticalPricingFunctionsValuationMode.Theta:
+
+                    var theta = HestonForwardApproximated.FSPCallCalculateTheta(
+                        kappa: k.fV(),
+                        theta: this.theta.fV(),
+                        sigma: this.sigma.fV(),
+                        rho: this.rho.fV(),
+                        v0: this.V0.fV(),
+                        s0: this.S0.fV(),
+                        T: timeToMaturity,
+                        K: strikeFraction,
+                        r: this.r.fV(),
+                        q: this.q.fV(),
+                        T0: fsTime, 
+                        paymentTime:timeToPaymentDate, 
+                        discountingFactorFunction:discountingFunction
+                        );
+                    result.Theta = theta;
+                    break;
+
+                case AnalyticalPricingFunctionsValuationMode.Vega:
+                    var vega = HestonForwardApproximated.FSPCallCalculateVega(
+                        kappa: k.fV(),
+                        theta: this.theta.fV(),
+                        sigma: this.sigma.fV(),
+                        rho: this.rho.fV(),
+                        v0: this.V0.fV(),
+                        s0: this.S0.fV(),
+                        T: timeToMaturity,
+                        K: strikeFraction,
+                        r: this.r.fV(),
+                        q: this.q.fV(),
+                        T0: fsTime,
+                        paymentTime: timeToPaymentDate,
+                        discountingFactorFunction: discountingFunction
+                        );
+
+                    result.Vegas = (Vector)vega;
+                    break;
+
+                case AnalyticalPricingFunctionsValuationMode.All:
+                    return HestonForwardApproximated.HestonForwardPercentageCallWithGreeks(
+                        kappa: k.fV(),
+                        theta: this.theta.fV(),
+                        sigma: this.sigma.fV(),
+                        rho: this.rho.fV(),
+                        v0: this.V0.fV(),
+                        s0: this.S0.fV(),
+                        T: timeToMaturity,
+                        K: strikeFraction,
+                        r: this.r.fV(),
+                        q: this.q.fV(),
+                        T0: fsTime,
+                        paymentTime: timeToPaymentDate, 
+                        discountingFactorFunction:discountingFunction
+                        );
+            }
+
+            return result;
         }
 
 
@@ -1427,7 +1648,159 @@ namespace Heston
         /// <returns>The option price</returns>
         public GreeksDerivatives FSPutPercentage(int component, double strikeFraction, double fsTime, double timeToMaturity, Dictionary<string, object> additionalInformation = null, double? timeToPaymentDate = null)
         {
-            throw new NotImplementedException();
+            var result = new GreeksDerivatives();
+
+            AnalyticalPricingFunctionsValuationMode requestedResult =
+                AttributesUtility.RetrieveAttributeOrDefaultValue(
+                    additionalInformation,
+                    AnalyticalPricingFunctions.GreekNameKey,
+                    AnalyticalPricingFunctionsValuationMode.Price
+                );
+
+            var discountingFunction = GetDiscountFactorFunctionFromProject();
+
+            switch (requestedResult)
+            {
+                default:
+                case AnalyticalPricingFunctionsValuationMode.Price:
+                    result.MarkToMarket = HestonForwardApproximated.HestonForwardPercentagePutPrice(
+                    kappa: k.fV(),
+                    theta: this.theta.fV(),
+                    sigma: this.sigma.fV(),
+                    rho: this.rho.fV(),
+                    v0: this.V0.fV(),
+                    s0: this.S0.fV(),
+                    T: timeToMaturity,
+                    K: strikeFraction,
+                    r: this.r.fV(),
+                    q: this.q.fV(),
+                    T0: fsTime,
+                    discountingFactorFunction: discountingFunction,
+                    paymentTime: timeToPaymentDate
+                    );
+
+                    break;
+
+                case AnalyticalPricingFunctionsValuationMode.Delta:
+                    var delta = HestonForwardApproximated.FSPPutCalculateDelta(
+                        kappa: k.fV(),
+                        theta: this.theta.fV(),
+                        sigma: this.sigma.fV(),
+                        rho: this.rho.fV(),
+                        v0: this.V0.fV(),
+                        s0: this.S0.fV(),
+                        T: timeToMaturity,
+                        K: strikeFraction,
+                        r: this.r.fV(),
+                        q: this.q.fV(),
+                        T0: fsTime,
+                        discountingFactorFunction: discountingFunction
+                        );
+
+                    result.Deltas = (Vector)(delta);
+                    break;
+
+                case AnalyticalPricingFunctionsValuationMode.Gamma:
+
+                    var gamma = HestonForwardApproximated.FSPPutCalculateGamma(
+                        kappa: k.fV(),
+                        theta: this.theta.fV(),
+                        sigma: this.sigma.fV(),
+                        rho: this.rho.fV(),
+                        v0: this.V0.fV(),
+                        s0: this.S0.fV(),
+                        T: timeToMaturity,
+                        K: strikeFraction,
+                        r: this.r.fV(),
+                        q: this.q.fV(),
+                        T0: fsTime,
+                        discountingFactorFunction: discountingFunction
+                        );
+
+                    result.Gammas = (Vector)(gamma);
+                    break;
+
+
+                case AnalyticalPricingFunctionsValuationMode.Rho:
+                    var rho = HestonForwardApproximated.FSPPutCalculateRho(
+                        kappa: k.fV(),
+                        theta: this.theta.fV(),
+                        sigma: this.sigma.fV(),
+                        rho: this.rho.fV(),
+                        v0: this.V0.fV(),
+                        s0: this.S0.fV(),
+                        T: timeToMaturity,
+                        K: strikeFraction,
+                        r: this.r.fV(),
+                        q: this.q.fV(),
+                        T0: fsTime,
+                        discountingFactorFunction: discountingFunction,
+                        paymentTime: timeToPaymentDate
+                        );
+
+                    result.Rho = rho;
+                    break;
+
+
+                case AnalyticalPricingFunctionsValuationMode.Theta:
+
+                    var theta = HestonForwardApproximated.FSPPutCalculateTheta(
+                        kappa: k.fV(),
+                        theta: this.theta.fV(),
+                        sigma: this.sigma.fV(),
+                        rho: this.rho.fV(),
+                        v0: this.V0.fV(),
+                        s0: this.S0.fV(),
+                        T: timeToMaturity,
+                        K: strikeFraction,
+                        r: this.r.fV(),
+                        q: this.q.fV(),
+                        T0: fsTime,
+                        paymentTime: timeToPaymentDate,
+                        discountingFactorFunction: discountingFunction
+                        );
+                    result.Theta = theta;
+                    break;
+
+                case AnalyticalPricingFunctionsValuationMode.Vega:
+                    var vega = HestonForwardApproximated.FSPPutCalculateVega(
+                        kappa: k.fV(),
+                        theta: this.theta.fV(),
+                        sigma: this.sigma.fV(),
+                        rho: this.rho.fV(),
+                        v0: this.V0.fV(),
+                        s0: this.S0.fV(),
+                        T: timeToMaturity,
+                        K: strikeFraction,
+                        r: this.r.fV(),
+                        q: this.q.fV(),
+                        T0: fsTime,
+                        paymentTime: timeToPaymentDate,
+                        discountingFactorFunction: discountingFunction
+                        );
+
+                    result.Vegas = (Vector)vega;
+                    break;
+
+                case AnalyticalPricingFunctionsValuationMode.All:
+                    return HestonForwardApproximated.HestonForwardPercentagePutWithGreeks(
+                        kappa: k.fV(),
+                        theta: this.theta.fV(),
+                        sigma: this.sigma.fV(),
+                        rho: this.rho.fV(),
+                        v0: this.V0.fV(),
+                        s0: this.S0.fV(),
+                        T: timeToMaturity,
+                        K: strikeFraction,
+                        r: this.r.fV(),
+                        q: this.q.fV(),
+                        T0: fsTime,
+                        paymentTime: timeToPaymentDate,
+                        discountingFactorFunction: discountingFunction
+                        );
+            }
+
+            return result;
         }
 
 
@@ -1460,6 +1833,7 @@ namespace Heston
                     AnalyticalPricingFunctionsValuationMode.Price
                 );
 
+            var discountingFunction = GetDiscountFactorFunctionFromProject();
 
             switch (requestedResult)
             {
@@ -1477,7 +1851,8 @@ namespace Heston
                     r: this.r.fV(),
                     q: this.q.fV(),
                     T0: fsTime,
-                    Tp: timeToPaymentDate ?? timeToMaturity
+                    Tp: timeToPaymentDate ?? timeToMaturity, 
+                    discountingFactorFunction:discountingFunction
                     );
 
                     break;
@@ -1495,6 +1870,7 @@ namespace Heston
                         r: this.r.fV(),
                         q: this.q.fV(),
                         T0: fsTime
+                        
                         );
 
                     result.Deltas = (Vector)(delta);
@@ -1533,7 +1909,8 @@ namespace Heston
                         r: this.r.fV(),
                         q: this.q.fV(),
                         T0: fsTime,
-                        Tp: timeToPaymentDate ?? timeToMaturity
+                        paymentDate: timeToPaymentDate, 
+                        discountingFactorFunction:discountingFunction
                         );
 
                     result.Rho = rho;
@@ -1553,7 +1930,10 @@ namespace Heston
                         K: strikeFraction,
                         r: this.r.fV(),
                         q: this.q.fV(),
-                        T0: fsTime
+                        T0: fsTime, 
+                        paymentDate: timeToPaymentDate,
+                        discountingFactorFunction: discountingFunction
+
                         );
                     result.Theta = theta;
                     break;
@@ -1570,7 +1950,9 @@ namespace Heston
                         K: strikeFraction,
                         r: this.r.fV(),
                         q: this.q.fV(),
-                        T0: fsTime
+                        T0: fsTime, 
+                        paymentDate: timeToPaymentDate,
+                        discountingFactorFunction: discountingFunction
                         );
 
                     result.Vegas = (Vector)vega;
@@ -1589,7 +1971,8 @@ namespace Heston
                         r: this.r.fV(),
                         q: this.q.fV(),
                         T0: fsTime,
-                        Tp: timeToPaymentDate
+                        paymentDate: timeToPaymentDate,
+                        discountingFactorFunction: discountingFunction
                         );
             }
 
@@ -1626,6 +2009,7 @@ namespace Heston
                     AnalyticalPricingFunctionsValuationMode.Price
                 );
 
+            var discountingFunction = GetDiscountFactorFunctionFromProject();
 
             switch (requestedResult)
             {
@@ -1643,7 +2027,9 @@ namespace Heston
                     r: this.r.fV(),
                     q: this.q.fV(),
                     T0: fsTime,
-                    Tp: timeToPaymentDate ?? timeToMaturity
+                    Tp: timeToPaymentDate,
+                    discountingFactorFunction: discountingFunction
+
                     );
 
                     break;
@@ -1699,7 +2085,8 @@ namespace Heston
                         r: this.r.fV(),
                         q: this.q.fV(),
                         T0: fsTime,
-                        Tp: timeToPaymentDate ?? timeToMaturity
+                        paymentDate: timeToPaymentDate,
+                        discountingFactorFunction: discountingFunction
                         );
 
                     result.Rho = rho;
@@ -1719,7 +2106,9 @@ namespace Heston
                         K: strikeFraction,
                         r: this.r.fV(),
                         q: this.q.fV(),
-                        T0: fsTime
+                        T0: fsTime, 
+                        paymentDate:timeToPaymentDate,
+                        discountingFactorFunction: discountingFunction
                         );
                     result.Theta = theta;
                     break;
@@ -1736,7 +2125,9 @@ namespace Heston
                         K: strikeFraction,
                         r: this.r.fV(),
                         q: this.q.fV(),
-                        T0: fsTime
+                        T0: fsTime, 
+                        paymentDate:timeToPaymentDate,
+                        discountingFactorFunction: discountingFunction
                         );
 
                     result.Vegas = (Vector)vega;
@@ -1755,7 +2146,8 @@ namespace Heston
                         r: this.r.fV(),
                         q: this.q.fV(),
                         T0: fsTime,
-                        Tp: timeToPaymentDate
+                        paymentDate: timeToPaymentDate,
+                        discountingFactorFunction: discountingFunction
                         );
             }
 

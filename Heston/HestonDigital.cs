@@ -1,6 +1,5 @@
 ﻿using System;
 using Heston;
-using Fairmat.Math;
 using DVPLI;
 
 namespace HestonEstimator
@@ -82,7 +81,7 @@ namespace HestonEstimator
         /// <param name="r">The risk-free interest rate.</param>
         /// <param name="q">The dividend yield.</param>
         /// <returns>The price of the digital call option.</returns>
-        public static double HestonDigitalCallPrice(Vector x, double s0, double T, double K, double r, double q, double? timeToPaymentDate = null)
+        public static double HestonDigitalCallPrice(Vector x, double s0, double T, double K, double r, double q, double? timeToPaymentDate = null, Func<double, double, double> discountingFactorFunction = null)
         {
             return HestonDigitalCallPrice(
                 kappa: x[0],
@@ -95,7 +94,8 @@ namespace HestonEstimator
                 K: K,
                 r: r,
                 q: q,
-                timeToPaymentDate: timeToPaymentDate
+                timeToPaymentDate: timeToPaymentDate,
+                discountingFactorFunction : discountingFactorFunction
                 );
         }
 
@@ -109,7 +109,7 @@ namespace HestonEstimator
         /// <param name="r">The risk-free interest rate.</param>
         /// <param name="q">The dividend yield.</param>
         /// <returns>The price of the digital put option.</returns>
-        public static double HestonDigitalPutPrice(Vector x, double s0, double T, double K, double r, double q, double? timeToPaymentDate = null)
+        public static double HestonDigitalPutPrice(Vector x, double s0, double T, double K, double r, double q, double? timeToPaymentDate = null, Func<double, double, double> discountingFactorFunction = null)
         {
             return HestonDigitalPutPrice(
                 kappa: x[0],
@@ -122,7 +122,8 @@ namespace HestonEstimator
                 K: K,
                 r: r,
                 q: q,
-                timeToPaymentDate:timeToPaymentDate?? T
+                timeToPaymentDate:timeToPaymentDate?? T, 
+                discountingFactorFunction: discountingFactorFunction
                 );
         }
 
@@ -130,7 +131,7 @@ namespace HestonEstimator
         /// Calculates the price of a digital call option using the Heston model.
         /// </summary>
         /// <returns>The price of the digital call option.</returns>
-        public static double HestonDigitalCallPrice(double kappa, double theta, double rho, double v0, double sigma, double s0, double T, double K, double r, double q, double? timeToPaymentDate = null)
+        public static double HestonDigitalCallPrice(double kappa, double theta, double rho, double v0, double sigma, double s0, double T, double K, double r, double q, double? timeToPaymentDate = null, Func<double, double, double> discountingFactorFunction = null)
         {
 
             if (Engine.Verbose > 0)
@@ -145,6 +146,11 @@ namespace HestonEstimator
 
             }
 
+            if (discountingFactorFunction == null)
+            {
+                discountingFactorFunction = (t, T) => Math.Exp(-r * (T - t));
+            }
+
             var undiscountedCallPrice = UndiscountedHestonDigitalCallPrice(
                 kappa: kappa,
                 theta: theta,
@@ -155,11 +161,11 @@ namespace HestonEstimator
                 T: T,
                 K: K,
                 r: r,
-                q: q,
-                timeToPaymentDate: timeToPaymentDate
+                q: q
                 );
 
-            var price =  DiscountFactor(rate: r, T: T) * undiscountedCallPrice;
+            var Tp = timeToPaymentDate ?? T;
+            var price =  discountingFactorFunction(0,Tp) * undiscountedCallPrice;
 
             if (Engine.Verbose > 0)
             {
@@ -201,7 +207,7 @@ namespace HestonEstimator
         /// Calculates the price of a digital put option using the Heston model.
         /// </summary>
         /// <returns>The price of the digital put option.</returns>
-        public static double HestonDigitalPutPrice(double kappa, double theta, double rho, double v0, double sigma, double s0, double T, double K, double r, double q, double? timeToPaymentDate = null)
+        public static double HestonDigitalPutPrice(double kappa, double theta, double rho, double v0, double sigma, double s0, double T, double K, double r, double q, double? timeToPaymentDate = null, Func<double, double, double> discountingFactorFunction = null)
         {
             // Price of the digital put is discountFactor * P(St<K) = discountFactor * (1 - P(St>K))
 
@@ -218,6 +224,11 @@ namespace HestonEstimator
 
             }
 
+            if (discountingFactorFunction == null)
+            {
+                discountingFactorFunction = (t, T) => Math.Exp(-r * (T - t));
+            }    
+
             var undiscountedCallPrice = UndiscountedHestonDigitalCallPrice(
                 kappa:kappa, 
                 theta:theta,
@@ -228,12 +239,12 @@ namespace HestonEstimator
                 T:T,
                 K:K,
                 r:r,
-                q:q,
-                timeToPaymentDate: timeToPaymentDate
+                q:q
                 );
 
+            var Tp = timeToPaymentDate ?? T;
             var undiscountedPutPrice = 1.0 - undiscountedCallPrice;
-            var price = DiscountFactor(rate: r, T:T) * undiscountedPutPrice;
+            var price = discountingFactorFunction(0, Tp) * undiscountedPutPrice;
 
             if (Engine.Verbose > 0)
             {
@@ -248,7 +259,7 @@ namespace HestonEstimator
         /// Calculates the undiscounted price of a digital call option using the Heston model.
         /// </summary>
         /// <returns>The undiscounted price of the digital call option.</returns>
-        protected static double UndiscountedHestonDigitalCallPrice(double kappa, double theta, double rho, double v0, double sigma, double s0, double T, double K, double r, double q, double? timeToPaymentDate = null)
+        internal static double UndiscountedHestonDigitalCallPrice(double kappa, double theta, double rho, double v0, double sigma, double s0, double T, double K, double r, double q)
         {
             // the formula to price a digital call is given by 
             //  exp(-r*T) (0.5 +  1/pi * integral from 0 to infinity of Re((exp(-i*ln(K)*u)*phi(u)/(i*u))du )
@@ -265,12 +276,7 @@ namespace HestonEstimator
             return (0.5 + 1 / Math.PI * integral);
         }
 
-        /// <summary>
-        /// Calculates the discount factor.
-        /// </summary>
-        /// <returns>The discount factor.</returns>
-        internal static double DiscountFactor(double rate, double T ) { return Math.Exp(-rate * T); }
-
+     
 
 
     }
