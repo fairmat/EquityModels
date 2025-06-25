@@ -10,7 +10,7 @@ namespace Heston
     [TestFixture]
     public class TestHestonDigital
     {
-        [SetUp]
+        [OneTimeSetUp]
         public void Init()
         {
             TestCommon.TestInitialization.CommonInitialization();
