@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>net8.0;net48</TargetFrameworks>
+    <TargetFrameworks>net8.0</TargetFrameworks>
     <OutputType>Library</OutputType>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <Title>EquityModels.Tests</Title>
@@ -27,13 +27,11 @@
     <ProjectReference Include="..\Heston\Heston.csproj" />
     <ProjectReference Include="..\VarianceGamma\VarianceGamma.csproj" />
   </ItemGroup>
-  <ItemGroup Condition="'$(TargetFramework)'=='net8.0'">
-	<PackageReference Include="Microsoft.NET.Test.Sdk" />
-  </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Accord.Math" />
     <PackageReference Include="Basic.Reference.Assemblies" />
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
     <PackageReference Include="Mono.Addins" />
     <PackageReference Include="NUnit" />
     <PackageReference Include="NUnit3TestAdapter" />
