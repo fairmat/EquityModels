@@ -23,9 +23,7 @@ using System.Linq;
 using Accord.Math.Random;
 using DVPLI;
 using Fairmat.MarketData;
-using Fairmat.Statistics;
 using NUnit.Framework;
-using Range = System.Range;
 
 namespace VarianceGamma
 {
@@ -40,7 +38,7 @@ namespace VarianceGamma
 
             // Exercise price of the option (Strike price).
             double k = 100;
-            // var rand = new Random(); 
+            // Random rand = new Random(); 
             var rand = new UniformOneGenerator(); // rand \sim U(0,1)
 
             // Number of observed options samples.
@@ -50,22 +48,22 @@ namespace VarianceGamma
             int nk = 3;
 
             // Drift theta of VG model.
-            double theta = -0.02 + (3 * rand.Next() -3) * 0.04;
+            double theta = -0.02 + (4 * rand.Next() -2) * 0.04;
 
             // Volatility for VG model.
-            double sigma = 0.01 + (3 * rand.Next() -3) * 0.49;
+            double sigma = 0.01 + (4 * rand.Next() -2) * 0.49;
 
             // Nu for VG model.
-            double nu = 0.01 + (3 * rand.Next()-3) * 1.99;
+            double nu = 0.01 + (4 * rand.Next()-2) * 1.99;
 
             // Risk free rate of return.
-            double r = (3 * rand.Next() -3) * 0.4;
+            double r = (4 * rand.Next() -2) * 0.4;
 
             // Current price of the underlying asset.
-            double s0 = 60 + (3 * rand.Next() - 3) * 90;
+            double s0 = 60 + (4 * rand.Next() - 2) * 90;
 
             // Time to expiration of the option.
-            double t = 0.05 + (3 * rand.Next() -3) * 0.95;
+            double t = 0.05 + (4 * rand.Next() -2) * 0.95;
             Vector x = Test(nm, nk, q, s0, r, t, theta, sigma, nu);
             int indexTheta = 1;
             int indexSigma = 2;
