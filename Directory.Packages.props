@@ -24,7 +24,7 @@
 
     <ItemGroup>
         <PackageVersion Include="Basic.Reference.Assemblies" Version="1.5.0" />
-        <PackageVersion Include="QLNet" Version="1.11.4" />
+        <PackageVersion Include="QLNet" Version="1.13.1" />
         <PackageVersion Include="Mono.Addins.CecilReflector" Version="1.4.1" />
         <PackageVersion Include="NUnit" Version="3.14.0" />
         <PackageVersion Include="System.Configuration.ConfigurationManager" Version="8.0.0" />
