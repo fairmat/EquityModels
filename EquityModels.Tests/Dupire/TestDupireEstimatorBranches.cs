@@ -39,8 +39,8 @@ namespace Dupire
 
         private static List<object> LoadMarketData(out CallPriceMarketData hData)
         {
-            InterestRateMarketData iData = (InterestRateMarketData)ObjectSerialization.ReadFromFile("../../../TestData/IRMD-sample.bin");
-            hData = (CallPriceMarketData)ObjectSerialization.ReadFromFile("../../../TestData/CallData-sample.bin");
+            var (iData, loadedHData) = TestCommon.TestInitialization.LoadHestonSampleMarketData();
+            hData = loadedHData;
 
             var marketData = new List<object>();
             marketData.Add(iData.DiscountingCurve);

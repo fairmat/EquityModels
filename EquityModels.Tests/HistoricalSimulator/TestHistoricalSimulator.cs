@@ -155,6 +155,10 @@ namespace HistoricalSimulator
                 };
 
                 Assert.DoesNotThrow(() => sim.Setup(new double[] { 0.0 }));
+
+                var fileContentField = typeof(global::HistoricalSimulator.HistoricalSimulator)
+                    .GetField("fileContent", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+                Assert.IsNull(fileContentField.GetValue(sim));
             }
             finally
             {

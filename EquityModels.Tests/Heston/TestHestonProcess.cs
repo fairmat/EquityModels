@@ -157,6 +157,7 @@ namespace Heston
             rov.Map.Root = op;
             op.CalculateDiscountingModelCache();
 
+            var previousActiveProject = Project.ActiveProject;
             Project.ActiveProject = rov;
             Option.CurrentSolving = op;
             try
@@ -177,6 +178,7 @@ namespace Heston
             finally
             {
                 Option.CurrentSolving = null;
+                Project.ActiveProject = previousActiveProject;
             }
         }
 
@@ -195,6 +197,7 @@ namespace Heston
             rov.Map.Root = op;
             op.CalculateDiscountingModelCache();
 
+            var previousActiveProject = Project.ActiveProject;
             Project.ActiveProject = rov;
             Option.CurrentSolving = op;
             try
@@ -227,6 +230,7 @@ namespace Heston
             finally
             {
                 Option.CurrentSolving = null;
+                Project.ActiveProject = previousActiveProject;
             }
         }
 

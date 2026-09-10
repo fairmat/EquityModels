@@ -39,12 +39,11 @@ namespace Heston
 
         private static EquityCalibrationData LoadEquityCalibrationData()
         {
-            InterestRateMarketData iData = (InterestRateMarketData)ObjectSerialization.ReadFromFile("../../../TestData/IRMD-sample.bin");
-            CallPriceMarketData hData = (CallPriceMarketData)ObjectSerialization.ReadFromFile("../../../TestData/CallData-sample.bin");
+            var (iData, hData) = TestCommon.TestInitialization.LoadHestonSampleMarketData();
             return new EquityCalibrationData(hData, iData.DiscountingCurve);
         }
 
-        private static Vector DefaultBounds(out Vector matBound, out Vector strikeBound)
+        private static void DefaultBounds(out Vector matBound, out Vector strikeBound)
         {
             matBound = new Vector(2);
             matBound[0] = 1.0 / 12;
@@ -52,7 +51,6 @@ namespace Heston
             strikeBound = new Vector(2);
             strikeBound[0] = 0.4;
             strikeBound[1] = 1.6;
-            return matBound;
         }
 
         [Test, Category("BigTest")]
