@@ -15,6 +15,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+using DVPLI;
+using Fairmat.MarketData;
+
 namespace TestCommon
 {
     /// <summary>
@@ -35,6 +38,17 @@ namespace TestCommon
             // on each test (NUnit might launch different tests on different threads)
             // This should also ensure that the parser is clean on each test
             DVPLI.Engine.Parser.NewContext();
+        }
+
+        /// <summary>
+        /// Loads the shared sample interest-rate and call-price market data used by the
+        /// Heston/Dupire estimator tests.
+        /// </summary>
+        public static (InterestRateMarketData iData, CallPriceMarketData hData) LoadHestonSampleMarketData()
+        {
+            var iData = (InterestRateMarketData)ObjectSerialization.ReadFromFile("../../../TestData/IRMD-sample.bin");
+            var hData = (CallPriceMarketData)ObjectSerialization.ReadFromFile("../../../TestData/CallData-sample.bin");
+            return (iData, hData);
         }
     }
 }

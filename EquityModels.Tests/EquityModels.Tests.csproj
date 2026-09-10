@@ -26,6 +26,7 @@
     <ProjectReference Include="..\..\ModelingTools\PFunction2D\PFunction2D.csproj" />
     <ProjectReference Include="..\Heston\Heston.csproj" />
     <ProjectReference Include="..\VarianceGamma\VarianceGamma.csproj" />
+    <ProjectReference Include="..\HistoricalSimulator\HistoricalSimulator.csproj" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Accord.Math" />
