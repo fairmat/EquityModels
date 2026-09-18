@@ -23,7 +23,7 @@
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\Dupire\Dupire.csproj" />
-    <ProjectReference Include="..\..\ModelingTools\PFunction2D\PFunction2D.csproj" />
+    <PackageReference Include="Fairmat.Plugins.ModelingTools.PFunction2D" />
     <ProjectReference Include="..\Heston\Heston.csproj" />
     <ProjectReference Include="..\VarianceGamma\VarianceGamma.csproj" />
     <ProjectReference Include="..\HistoricalSimulator\HistoricalSimulator.csproj" />

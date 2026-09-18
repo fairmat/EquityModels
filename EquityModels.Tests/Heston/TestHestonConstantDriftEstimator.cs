@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Reflection;
 using DVPLI;
 using DVPLI.MarketDataTypes;
 using Fairmat.MarketData;
@@ -45,13 +46,16 @@ namespace HestonEstimator
         [Test]
         public void TestBuildEstimateWithDummyCalibration()
         {
-            var interestData = (InterestRateMarketData)ObjectSerialization.ReadFromFile("../../../TestData/IRMD-sample.bin");
-            var callData = (CallPriceMarketData)ObjectSerialization.ReadFromFile("../../../TestData/CallData-sample.bin");
-            var spot = new Scalar(callData.S0);
+            InterestRateMarketData interestData = (InterestRateMarketData)ObjectSerialization.ReadFromFile("../../../TestData/IRMD-sample.bin");
+            CallPriceMarketData callData = (CallPriceMarketData)ObjectSerialization.ReadFromFile("../../../TestData/CallData-sample.bin");
+            Scalar spot = new Scalar(callData.S0);
 
-            var estimator = new HestonConstantDriftEstimator();
-            var settings = new HestonCalibrationSettings { DummyCalibration = true };
-            var marketData = new List<object> { interestData.DiscountingCurve, callData, spot };
+            HestonConstantDriftEstimator estimator = new HestonConstantDriftEstimator();
+            HestonCalibrationSettings settings = new HestonCalibrationSettings { DummyCalibration = true };
+            List<object> marketData = new List<object> { interestData.DiscountingCurve, callData, spot };
+
+            FieldInfo avgPricingErrorField = typeof(HestonCallOptimizationProblem).GetField("avgPricingError", BindingFlags.NonPublic | BindingFlags.Static);
+            double expectedFit = (double)avgPricingErrorField.GetValue(null);
 
             EstimationResult result = estimator.Estimate(marketData, settings);
 
@@ -70,8 +74,9 @@ namespace HestonEstimator
             Assert.AreEqual(-0.5, PopulateHelper.GetValue("rho", result.Names, result.Values, out found));
             Assert.AreEqual(0.05, PopulateHelper.GetValue("V0", result.Names, result.Values, out found));
 
-            // avgPricingError is never touched on the dummy path, so it keeps its default value.
-            Assert.AreEqual(0.0, result.Fit);
+            // avgPricingError is never touched on the dummy path, so BuildEstimate should forward
+            // whatever value it already held (captured above, order-independent across the test run).
+            Assert.AreEqual(expectedFit, result.Fit);
 
             // q comes from DY(equityCalData) (call/put parity implied dividend) since
             // HestonConstantDriftEstimator.impliedDividends defaults to false.
